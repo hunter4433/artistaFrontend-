@@ -4,6 +4,10 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:test1/page-1/cred_user.dart';
+import 'package:test1/page-1/page_0.1.dart';
+import 'package:test1/page-1/skills_artist.dart';
+
+// artist_cred()
 
 class Scene2 extends StatefulWidget {
   @override
@@ -20,7 +24,18 @@ class _Scene2State extends State<Scene2> {
   bool obscurePassword = true;
   bool obscureConfirmPassword = true;
 
-  Future<void> _handleContinue() async {
+  Future<String?> getSelectedValue() async {
+    return await secureStorage.read(key: 'selected_value');
+  }
+
+  // Future<String?> _getToken() async {
+  //   return await secureStorage.read(key: 'token'); // Assuming you stored the token with key 'token'
+  // }
+
+  Future<void> _handleContinue(BuildContext context) async {
+    var kind = await getSelectedValue();
+    print(kind);
+
     if (passwordUser.text.isNotEmpty &&
         confirmPassword.text.isNotEmpty &&
         emailUser.text.isNotEmpty &&
@@ -36,45 +51,16 @@ class _Scene2State extends State<Scene2> {
       String requestBodyJson = jsonEncode(requestBody);
 
       try {
-        // Make the API call
-        final response = await http.post(
-          Uri.parse('http://127.0.0.1:8000/api/register'),
-          headers: <String, String>{
-            'Content-Type': 'application/vnd.api+json',
-            'Accept': 'application/vnd.api+json'
-          },
-          body: requestBodyJson,
-        );
-
-        // Handle the response
-        if (response.statusCode == 200) {
-          // API call successful, handle the response here
-          print('API call successful');
-          print(response.body);
-
-          Map<String, dynamic> responseData = jsonDecode(response.body);
-          String token = responseData['data']['token'];
-
-          // Store the token securely
-          await secureStorage.write(key: 'token', value: token);
-
-          // Navigate to the next screen
-          Navigator.push(
+        // Make the API call with the appropriate endpoint based on the kind variable
+        if (kind != null) { // Ensure kind is not null before calling _getEndpoint
+          final response = await _makeApiCall(
             context,
-            MaterialPageRoute(
-              builder: (context) => Signup_user(),
-            ),
+            requestBodyJson,
+            _getEndpoint(kind),
           );
+          // Handle the response as per your requirement
         } else {
-          // API call failed, handle the error
-          print('Failed with status code: ${response.statusCode}');
-          print(response.body);
-          // Show a snackbar or toast to inform the user about the error
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Failed to register. Please try again.'),
-            ),
-          );
+          throw Exception('Kind is null');
         }
       } catch (e) {
         // Handle exceptions
@@ -88,6 +74,68 @@ class _Scene2State extends State<Scene2> {
       }
     }
   }
+
+  Future<http.Response> _makeApiCall(
+      BuildContext context,
+      String requestBodyJson,
+      String endpoint,
+      ) async {
+
+    // String? token = await _getToken();
+    // print(token);
+    final response = await http.post(
+      Uri.parse('http://127.0.0.1:8000/api/$endpoint'),
+      headers: <String, String>{
+        'Content-Type': 'application/vnd.api+json',
+        'Accept': 'application/vnd.api+json',
+        // 'Authorization': 'Bearer ${token ?? ''}', // Handle token being nullable
+      },
+      body: requestBodyJson,
+    );
+
+    if (response.statusCode == 200) {
+      // API call successful
+      print('API call successful');
+      print(response.body);
+
+      Map<String, dynamic> responseData = jsonDecode(response.body);
+      String token = responseData['data']['token'];
+
+      // Store the token securely
+      await secureStorage.write(key: 'token', value: token);
+      print(token);
+
+
+    } else {
+      // API call failed, handle the error
+      print('Failed with status code: ${response.statusCode}');
+      print(response.body);
+      // Show a snackbar or toast to inform the user about the error
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to perform operation. Please try again.'),
+        ),
+      );
+    }
+
+    return response;
+  }
+
+  String _getEndpoint(String? kind) {
+    // Determine the endpoint based on the value of kind
+    switch (kind) {
+      case 'hire':
+        return 'register';
+      case 'solo_artist':
+        return 'artist/register';
+      case 'team':
+        return 'artist/register';
+      default:
+        throw Exception('Invalid kind value');
+    }
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -297,22 +345,54 @@ class _Scene2State extends State<Scene2> {
                   Padding(
                     padding: const EdgeInsets.only(left: 35, right: 35),
                     child: ElevatedButton(
-                      onPressed: () { _handleContinue();
-                        if (passwordUser.text.isNotEmpty &&
-                            confirmPassword.text.isNotEmpty &&
-                            emailUser.text.isNotEmpty &&
-                            passwordsMatch) {
-                          String userEmail = emailUser.text;
-                          String userPassword = passwordUser.text;
-                          // print("User email= $userEmail, User Password= $userPassword");
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => Signup_user(),
-                            ),
-                          );
-                        }
-                      },
+                        onPressed: () async {
+                          _handleContinue(context);
+                          if (passwordUser.text.isNotEmpty &&
+                              confirmPassword.text.isNotEmpty &&
+                              emailUser.text.isNotEmpty &&
+                              passwordsMatch) {
+                            var kind = await getSelectedValue();
+                            if (kind != null) {
+                              switch (kind) {
+                                case 'hire':
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          Signup_user(), // Assuming SignupUser is the page for 'hire'
+                                    ),
+                                  );
+                                  break;
+                                case 'solo_artist':
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          artist_cred(), // Page for 'solo_artist'
+                                    ),
+                                  );
+                                  break;
+                                case 'team':
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                      ArtistCredentials2(), // Page for 'team'
+                                    ),
+                                  );
+                                  break;
+                                default:
+                                // Handle invalid kind value
+                                  print('Invalid kind value: $kind');
+                              }
+                            } else {
+                              // Handle kind being null
+                              print('Kind is null');
+                            }
+                          }
+                        },
+
+
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color(0xffe5195e),
                         shape: RoundedRectangleBorder(

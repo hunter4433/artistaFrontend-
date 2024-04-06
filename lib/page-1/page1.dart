@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:test1/page-1/page2.1.dart';
+// import 'package:test1/page-1/page2.1.dart';
 import 'package:test1/page-1/signup_team.dart';
 import 'package:test1/page-1/page2.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class Scene1 extends StatelessWidget {
+
   const Scene1({Key? key});
 
   @override
@@ -12,6 +14,15 @@ class Scene1 extends StatelessWidget {
     double baseWidth = 390;
     double fem = MediaQuery.of(context).size.width / baseWidth;
     double ffem = fem * 0.97;
+
+    final storage = FlutterSecureStorage();
+
+    void saveSelectedValue(String value) async {
+    return await storage.write(key: 'selected_value', value: value);
+
+    }
+
+
 
     return Scaffold(
       body: SafeArea(
@@ -23,6 +34,7 @@ class Scene1 extends StatelessWidget {
               height: 72 * fem,
               decoration: BoxDecoration(
                 color: Color(0xffffffff),
+                // color : Colors.yellow,
               ),
               child: Container(
                 color: Color(0xffffffff),
@@ -86,6 +98,7 @@ class Scene1 extends StatelessWidget {
                           padding: const EdgeInsets.only(left: 25, right: 25),
                           child: ElevatedButton(
                             onPressed: () {
+                              saveSelectedValue('hire');
                               Navigator.push(context, MaterialPageRoute(builder:(context)
                               => Scene2()
                               ));
@@ -123,8 +136,9 @@ class Scene1 extends StatelessWidget {
                           padding: const EdgeInsets.only(left: 25, right: 25),
                           child: ElevatedButton(
                             onPressed: () {
+                              saveSelectedValue('solo_artist');
                               Navigator.push(context, MaterialPageRoute(builder:(context)
-                              => soloArtist()
+                              => Scene2()
                               ));
                               // Handle button press
                             },
@@ -161,8 +175,9 @@ class Scene1 extends StatelessWidget {
                           padding: const EdgeInsets.only(left: 25, right: 25),
                           child: ElevatedButton(
                             onPressed: () {
+                              saveSelectedValue('team');
                               Navigator.push(context, MaterialPageRoute(builder:(context)
-                              => Signup_team()
+                              => Scene2()
                               ));
                               // Handle button press
                             },
