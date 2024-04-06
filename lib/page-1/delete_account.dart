@@ -1,12 +1,63 @@
-
 import 'package:flutter/material.dart';
-import 'package:test1/page-1/customer_support.dart';
-import 'package:test1/page-1/edit_user_info.dart';
-
-
-import '../utils.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:test1/page-1/page0.dart';
 
 class account_delete extends StatelessWidget {
+
+  // Function to delete account
+  Future<void> _deleteAccount() async {
+    // Example URL, replace with your actual API endpoint
+
+
+    final storage = FlutterSecureStorage();
+    // static const String Scene = '/page0';
+
+    Future<String?> _getToken() async {
+      return await storage.read(key: 'token'); // Assuming you stored the token with key 'token'
+    }
+    Future<String?> _getid() async {
+      return await storage.read(key: 'id'); // Assuming you stored the token with key 'token'
+    }
+
+    String? token = await _getToken();
+    String? id = await _getid();
+    print (token);
+    print (id);
+
+    String apiUrl = 'http://127.0.0.1:8000/api/info/$id';
+
+    try {
+      // Make DELETE request to the API
+      var response = await http.delete(
+        Uri.parse(apiUrl),
+          headers: <String, String>{
+            'Content-Type': 'application/vnd.api+json',
+            'Accept': 'application/vnd.api+json',
+            'Authorization': 'Bearer $token', // Include the token in the header
+          },
+
+      );
+
+      // Check if request was successful (status code 200)
+      if (response.statusCode == 204) {
+        // Account deleted successfully, handle response if needed
+        print('Account deleted successfully');
+
+        // Example response handling
+        // print('Response: ${response.body}');
+      } else {
+        // Request failed, handle error
+        print('Failed to delete account. Status code: ${response.statusCode}');
+        // Example error handling
+        print('Error response: ${response.body}');
+      }
+    } catch (e) {
+      // Handle network errors
+      print('Error deleting account: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     double baseWidth = 390;
@@ -24,7 +75,6 @@ class account_delete extends StatelessWidget {
               color: Color(0xffffffff),
             ),
             child: Container(
-              // depth0frame0qN7 (16:2431)
               width: double.infinity,
               height: double.infinity,
               decoration: BoxDecoration (
@@ -50,24 +100,23 @@ class account_delete extends StatelessWidget {
                             '\n\nOur dedicated support team is here to assist'
                             ' you every step of the way and address any questions or concerns you may have. '
                             'Your satisfaction and peace of mind are our top priorities, and we\'re '
-                        'committed to ensuring that you have a'
-                        ' positive experience with our service.',
+                            'committed to ensuring that you have a'
+                            ' positive experience with our service.',
                         style: TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w400,
                           color: Color(0xff171111),
                           fontFamily: 'Be Vietnam Pro', // Change font family as needed
-                          // You can add more text styles as needed
                         ),
                       ),
-                
                     ),
                     Padding(
                       padding: const EdgeInsets.only(left: 45, right: 45),
                       child: ElevatedButton(
                         onPressed: () {
-                          print('hi');
-                          // Handle button press
+                          _deleteAccount();
+                          Navigator.push(context,MaterialPageRoute(builder: (context)=>
+                              Scene()));// Call function to delete account
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Color(0xffe5195e),
@@ -83,29 +132,22 @@ class account_delete extends StatelessWidget {
                         child: Center(
                           child: Text(
                             'Delete Account',
-                            style: SafeGoogleFont(
-                              'Be Vietnam Pro',
+                            style: TextStyle(
                               fontSize: 16 * ffem,
                               fontWeight: FontWeight.w700,
-                              height: 1.5 * ffem / fem,
-                              letterSpacing: 0.2399999946 * fem,
                               color: Color(0xffffffff),
                             ),
                           ),
                         ),
                       ),
                     ),
-                
-                
-                
-                
-                
                   ],
                 ),
               ),
             ),
           ),
         ),
-      ),);
+      ),
+    );
   }
 }
