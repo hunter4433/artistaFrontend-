@@ -2,14 +2,10 @@ import 'package:flutter/material.dart';
 import '../utils.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class Searched_artist extends StatelessWidget {
-  // Dummy data for testing. Replace it with actual data from your backend.
-  final List<Map<String, dynamic>> artistData = [
-    {'name': 'Sophia', 'skill': 'Classical Piano', 'rating': 4.5, 'image': 'assets/page-1/images/depth-3-frame-0-4tP.png'},
-    {'name': 'Sophia', 'skill': 'Classical Piano', 'rating': 4.5, 'image': 'assets/page-1/images/depth-3-frame-0-4tP.png'},
-    {'name': 'Sophia', 'skill': 'Classical Piano', 'rating': 4.5, 'image': 'assets/page-1/images/depth-3-frame-0-4tP.png'},
+class SearchedArtist extends StatelessWidget {
+  final List<Map<String, dynamic>> filteredArtistData;
 
-  ];
+  SearchedArtist({required this.filteredArtistData});
 
   @override
   Widget build(BuildContext context) {
@@ -19,13 +15,21 @@ class Searched_artist extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Artista'),
+        title: Text('Searched Artists'),
+        backgroundColor: Color(0xffffffff),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
       ),
       body: SafeArea(
-        child: Container(
+        child: filteredArtistData.isNotEmpty
+            ? Container(
           width: double.infinity,
           child: ListView.builder(
-            itemCount: artistData.length,
+            itemCount: filteredArtistData.length,
             itemBuilder: (context, index) {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -49,7 +53,7 @@ class Searched_artist extends StatelessWidget {
                           width: 358 * fem,
                           height: 238.66 * fem,
                           child: Image.asset(
-                            artistData[index]['image'],
+                            filteredArtistData[index]['image'],
                             fit: BoxFit.cover,
                           ),
                         ),
@@ -68,7 +72,7 @@ class Searched_artist extends StatelessWidget {
                             Container(
                               margin: EdgeInsets.only(bottom: 8 * fem),
                               child: Text(
-                                artistData[index]['name'],
+                                filteredArtistData[index]['name'],
                                 style: SafeGoogleFont(
                                   'Be Vietnam Pro',
                                   fontSize: 22 * ffem,
@@ -80,7 +84,7 @@ class Searched_artist extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              'Skill: ${artistData[index]['skill']}',
+                              'Skill: ${filteredArtistData[index]['skill']}',
                               style: SafeGoogleFont(
                                 'Be Vietnam Pro',
                                 fontSize: 17 * ffem,
@@ -103,7 +107,7 @@ class Searched_artist extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              '${artistData[index]['rating']}',
+                              '${filteredArtistData[index]['rating']}',
                               style: SafeGoogleFont(
                                 'Be Vietnam Pro',
                                 fontSize: 17 * ffem,
@@ -120,8 +124,23 @@ class Searched_artist extends StatelessWidget {
               );
             },
           ),
+        )
+            : Center(
+             child: Text(
+            'No results found',
+            style: TextStyle(
+              fontSize: 20 * ffem,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
       ),
     );
   }
+}
+
+void main() {
+  runApp(MaterialApp(
+    home: SearchedArtist(filteredArtistData: []),
+  ));
 }

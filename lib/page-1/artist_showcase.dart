@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:test1/page-1/booking_artis.dart';
 import '../utils.dart';
@@ -68,6 +67,62 @@ class artist_profile extends StatelessWidget {
 
       // Return the fetched special message
       return specialMessage;
+    }
+    Future<String> fetchAvailabilityStatus() async {
+      // Simulated delay to mimic network request
+      await Future.delayed(Duration(seconds: 2));
+
+      // Simulated data fetched from the backend
+      // You can replace this with your actual backend logic to fetch availability status
+      return 'Available for Booking'; // Example status fetched from backend
+    }
+
+    Widget buildAvailabilityText(String status) {
+      Color lightColor;
+      switch (status) {
+        case 'Available for Booking':
+          lightColor = Colors.green;
+          break;
+        case 'Booked For Today':
+          lightColor = Colors.orange;
+          break;
+        case 'Not Available':
+          lightColor = Colors.red;
+          break;
+        default:
+          lightColor = Colors.transparent;
+      }
+
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            margin: EdgeInsets.only(right: 8),
+            width: 12,
+            height: 12,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: lightColor,
+              boxShadow: [
+                BoxShadow(
+                  color: lightColor.withOpacity(0.5),
+                  spreadRadius: 3,
+                  blurRadius: 7,
+                  offset: Offset(0, 0), // changes position of shadow
+                ),
+              ],
+            ),
+          ),
+          Text(
+            status,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+          ),
+        ],
+      );
     }
 
 
@@ -269,6 +324,33 @@ class artist_profile extends StatelessWidget {
                             ],
                           ),
                         ),
+                        FutureBuilder<String>(
+                          future: fetchAvailabilityStatus(),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              return CircularProgressIndicator();
+                            } else {
+                              if (snapshot.hasData) {
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 0),
+                                  child: buildAvailabilityText(snapshot.data!),
+                                );
+                              } else {
+                                return Text(
+                                  'Error fetching availability status',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.red,
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                        ),
+
+                        SizedBox(height: 15 * fem),
+
                         Padding(
                           padding: const EdgeInsets.only(left: 25, right: 25, bottom: 25),
                           child: ElevatedButton(
