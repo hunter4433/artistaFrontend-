@@ -455,7 +455,7 @@ class _ArtistCredentials2State extends State<team2signup> {
                           ),
                         ),
                       ),
-                      GridView.count(
+                      GridView.count(physics: const NeverScrollableScrollPhysics(),
                         shrinkWrap: true,
                         crossAxisCount: 2,
                         mainAxisSpacing: 16.0,

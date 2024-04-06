@@ -11,6 +11,22 @@ class team_profile extends StatelessWidget {
     double fem = MediaQuery.of(context).size.width / baseWidth;
     double ffem = fem * 0.97;
 
+    // Simulated list of team members fetched from backend
+    final List<Map<String, String>> teamMembersFromBackend = [
+      {
+        'name': 'John Doe',
+        'role': 'Designer',
+        'image': 'image1_url_from_backend',
+      },
+      {
+        'name': 'Jane Smith Abhishek Sheoran',
+        'role': 'Developer designer mohit ka papa',
+        'image': 'image2_url_from_backend',
+      },
+      // Add more team members as needed
+    ];
+
+
 
     // Simulated list of image paths from backend
     List<String> imagePathsFromBackend = [
@@ -69,6 +85,64 @@ class team_profile extends StatelessWidget {
       // Return the fetched special message
       return specialMessage;
     }
+
+    Future<String> fetchAvailabilityStatus() async {
+      // Simulated delay to mimic network request
+      await Future.delayed(Duration(seconds: 2));
+
+      // Simulated data fetched from the backend
+      // You can replace this with your actual backend logic to fetch availability status
+      return 'Available for Booking'; // Example status fetched from backend
+    }
+
+    Widget buildAvailabilityText(String status) {
+      Color lightColor;
+      switch (status) {
+        case 'Available for Booking':
+          lightColor = Colors.green;
+          break;
+        case 'Booked For Today':
+          lightColor = Colors.orange;
+          break;
+        case 'Not Available':
+          lightColor = Colors.red;
+          break;
+        default:
+          lightColor = Colors.transparent;
+      }
+
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            margin: EdgeInsets.only(right: 8),
+            width: 12,
+            height: 12,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: lightColor,
+              boxShadow: [
+                BoxShadow(
+                  color: lightColor.withOpacity(0.5),
+                  spreadRadius: 3,
+                  blurRadius: 7,
+                  offset: Offset(0, 0), // changes position of shadow
+                ),
+              ],
+            ),
+          ),
+          Text(
+            status,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+          ),
+        ],
+      );
+    }
+
 
 
 
@@ -129,7 +203,7 @@ class team_profile extends StatelessWidget {
                                   ),
                                 ),
                                 Container(
-                                  margin: EdgeInsets.fromLTRB(20*fem, 5*fem, 0*fem, 15*fem),
+                                  margin: EdgeInsets.fromLTRB(20*fem, 5*fem, 0*fem, 3*fem),
                                   // depth4frame1YUo (15:2131)
                                   width: 200*fem,
                                   height: 130*fem,
@@ -269,6 +343,34 @@ class team_profile extends StatelessWidget {
                               ],
                             ),
                           ),
+                          // Availability status
+                          FutureBuilder<String>(
+                            future: fetchAvailabilityStatus(),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return CircularProgressIndicator();
+                              } else {
+                                if (snapshot.hasData) {
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 0),
+                                    child: buildAvailabilityText(snapshot.data!),
+                                  );
+                                } else {
+                                  return Text(
+                                    'Error fetching availability status',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.red,
+                                    ),
+                                  );
+                                }
+                              }
+                            },
+                          ),
+
+                          SizedBox(height: 10 * fem),
+
                           Padding(
                             padding: const EdgeInsets.only(left: 25, right: 25, bottom: 25),
                             child: ElevatedButton(
@@ -302,6 +404,79 @@ class team_profile extends StatelessWidget {
                               ),
                             ),
                           ),
+
+                          // Team members section
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 0 * fem),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Our Team',
+                                  style: TextStyle(
+                                    fontSize: 20 * ffem,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xff1c0c11),
+                                  ),
+                                ),
+                                SizedBox(height: 12 * fem),
+                                // List of team members
+                                ListView.builder(
+                                  shrinkWrap: true,
+                                  physics: NeverScrollableScrollPhysics(),
+                                  itemCount: teamMembersFromBackend.length,
+                                  itemBuilder: (context, index) {
+                                    // Fetch team member data
+                                    final member = teamMembersFromBackend[index];
+                                    return Container(
+                                      padding: EdgeInsets.symmetric(vertical: 8 * fem),
+                                      child: Row(
+                                        children: [
+                                          ClipRRect(
+                                            borderRadius: BorderRadius.circular(10 * fem),
+                                            child: Container(
+                                              width: 56 * fem,
+                                              height: 75 * fem,
+                                              color: Colors.grey[200],
+                                              child: Image.network(
+                                                member['image']!,
+                                                fit: BoxFit.cover,
+                                              ),
+                                            ),
+                                          ),
+                                          SizedBox(width: 12 * fem),
+                                          Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                member['name']!,
+                                                style: TextStyle(
+                                                  fontSize: 16 * ffem,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Color(0xff1c0c11),
+                                                ),
+                                              ),
+                                              SizedBox(height: 4 * fem),
+                                              Text(
+                                                member['role']!,
+                                                style: TextStyle(
+                                                  fontSize: 14 * ffem,
+                                                  fontWeight: FontWeight.normal,
+                                                  color: Color(0xff1c0c11),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(height: 15 * fem),
+
 
                           Container(
 

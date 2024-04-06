@@ -1,9 +1,6 @@
- // 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:test1/page-1/page0.dart';
-import 'package:test1/page-1/dmeo.dart';
-import 'package:test1/page-1/bottom_nav.dart';
+
 
 
 
@@ -15,21 +12,18 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Artista',
       theme: ThemeData(
-
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
-        useMaterial3: true,
+        scaffoldBackgroundColor: Colors.white, // Set scaffold background color to white
+        useMaterial3: true, colorScheme: ColorScheme.fromSeed(seedColor: Colors.white).copyWith(background: Colors.white),
       ),
       home: Scene(),
-      // const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }

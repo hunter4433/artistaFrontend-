@@ -2,6 +2,15 @@ import 'package:flutter/material.dart';
 import '../utils.dart';
 
 class booked extends StatelessWidget {
+  // Fetched text from backend
+  final String dateText = 'Sat, Feb 5';
+  final String timeText = '10:00 PM';
+  final String durationText = '3 hours';
+  final String priceText = '\$65.00 USD';
+  final String locationText = 'Venue';
+
+
+
   @override
   Widget build(BuildContext context) {
     double baseWidth = 390;
@@ -82,50 +91,73 @@ class booked extends StatelessWidget {
                     ),
                   ),
                   Container(
-                    // depth1frame3frF (9:1705)
-                    margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 0*fem, 16*fem),
-                    padding: EdgeInsets.fromLTRB(16*fem, 8*fem, 16*fem, 8*fem),
+                    margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 16 * fem),
+                    padding: EdgeInsets.fromLTRB(16 * fem, 8 * fem, 16 * fem, 8 * fem),
                     width: double.infinity,
-                    height: 56*fem,
-                    decoration: BoxDecoration (
+                    height: 56 * fem,
+                    decoration: BoxDecoration(
                       color: Color(0xffffffff),
                     ),
                     child: Container(
-                      // depth2frame0P1Z (9:1706)
-                      padding: EdgeInsets.fromLTRB(0*fem, 0*fem, 185*fem, 0*fem),
+                      padding: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 5 * fem, 0 * fem),
                       width: double.infinity,
                       height: double.infinity,
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Container(
-                            // depth3frame0KR1 (9:1707)
-                            margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 16*fem, 0*fem),
-                            width: 40*fem,
-                            height: 40*fem,
+                            margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 16 * fem, 0 * fem),
+                            width: 40 * fem,
+                            height: 40 * fem,
                             child: ClipRRect(
-                              borderRadius: BorderRadius.circular(20*fem),
-                              child: Image.asset(
-                                'assets/page-1/images/depth-3-frame-0-xxw.png',
-                                fit: BoxFit.cover,
+                              borderRadius: BorderRadius.circular(20 * fem),
+                              child: FutureBuilder<String?>(
+                                future: fetchImage(), // Function to fetch image from backend
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState == ConnectionState.waiting) {
+                                    return Container(color: Colors.grey); // Placeholder until image is loaded
+                                  } else if (snapshot.hasError) {
+                                    return Container(color: Colors.red); // Placeholder for error
+                                  } else {
+                                    return Image.network(snapshot.data ?? ''); // Display the fetched image
+                                  }
+                                },
                               ),
                             ),
                           ),
                           Container(
-                            // depth3frame22aK (9:1708)
-                            margin: EdgeInsets.fromLTRB(0*fem, 8*fem, 0*fem, 8*fem),
-                            width: 117*fem,
+                            width: 217 * fem,
                             height: double.infinity,
                             child: Center(
-                              child: Text(
-                                'The Black Keys',
-                                style: SafeGoogleFont (
-                                  'Be Vietnam Pro',
-                                  fontSize: 16*ffem,
-                                  fontWeight: FontWeight.w400,
-                                  height: 1.5*ffem/fem,
-                                  color: Color(0xff171111),
-                                ),
+                              child: FutureBuilder<String?>(
+                                future: fetchText(), // Function to fetch text from backend
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState == ConnectionState.waiting) {
+                                    return Container(); // Placeholder until text is loaded
+                                  } else if (snapshot.hasError) {
+                                    return Text(
+                                      'Error loading text', // Placeholder for error
+                                      style: SafeGoogleFont(
+                                        'Be Vietnam Pro',
+                                        fontSize: 16 * ffem,
+                                        fontWeight: FontWeight.w400,
+                                        height: 1.5 * ffem / fem,
+                                        color: Color(0xff171111),
+                                      ),
+                                    );
+                                  } else {
+                                    return Text(
+                                      snapshot.data ?? '', // Display the fetched text
+                                      style: SafeGoogleFont(
+                                        'Be Vietnam Pro',
+                                        fontSize: 16 * ffem,
+                                        fontWeight: FontWeight.w400,
+                                        height: 1.5 * ffem / fem,
+                                        color: Color(0xff171111),
+                                      ),
+                                    );
+                                  }
+                                },
                               ),
                             ),
                           ),
@@ -184,7 +216,7 @@ class booked extends StatelessWidget {
                             // depth4frame1b9Z (9:1721)
                             width: double.infinity,
                             child: Text(
-                              'Sat, Feb 5',
+                              dateText,
                               style: SafeGoogleFont (
                                 'Be Vietnam Pro',
                                 fontSize: 14*ffem,
@@ -237,7 +269,7 @@ class booked extends StatelessWidget {
                             height: 21*fem,
 
                               child: Text(
-                                '10:00 PM',
+                                timeText,
                                 style: SafeGoogleFont (
                                   'Be Vietnam Pro',
                                   fontSize: 14*ffem,
@@ -273,7 +305,7 @@ class booked extends StatelessWidget {
                             height: 24*fem,
 
                               child: Text(
-                                'Location',
+                                'Duration',
                                 style: SafeGoogleFont (
                                   'Be Vietnam Pro',
                                   fontSize: 16*ffem,
@@ -286,11 +318,11 @@ class booked extends StatelessWidget {
                           ),
                           Container(
                             // depth4frame1NrT (9:1739)
-                            width: 42*fem,
+                            width: 420*fem,
                             height: 21*fem,
 
                               child: Text(
-                                'Venue',
+                                durationText ,
                                 style: SafeGoogleFont (
                                   'Be Vietnam Pro',
                                   fontSize: 14*ffem,
@@ -339,7 +371,7 @@ class booked extends StatelessWidget {
                             // depth4frame1G4f (9:1748)
                             width: double.infinity,
                             child: Text(
-                              '\$65.00 USD',
+                              priceText,
                               style: SafeGoogleFont (
                                 'Be Vietnam Pro',
                                 fontSize: 14*ffem,
@@ -373,7 +405,7 @@ class booked extends StatelessWidget {
                             width: double.infinity,
                             height: 24*fem,
                             child: Text(
-                              'Duration',
+                              'Location',
                               style: SafeGoogleFont (
                                 'Be Vietnam Pro',
                                 fontSize: 16*ffem,
@@ -388,7 +420,7 @@ class booked extends StatelessWidget {
                             width: 51*fem,
                             height: 21*fem,
                             child: Text(
-                              '3 hours',
+                              'Venue',
                               style: SafeGoogleFont (
                                 'Be Vietnam Pro',
                                 fontSize: 14*ffem,
@@ -497,4 +529,13 @@ class booked extends StatelessWidget {
             ),
     ),);
   }
+}
+Future<String> fetchImage() async {
+  // Function to fetch image from backend, return the URL of the image
+  return 'https://example.com/image.jpg';
+}
+
+Future<String> fetchText() async {
+  // Function to fetch text from backend, return the text
+  return 'Fetched text from backend';
 }
