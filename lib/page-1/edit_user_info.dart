@@ -25,6 +25,9 @@ class _UserInformationState extends State<user_information> {
   Future<String?> _getid() async {
     return await storage.read(key: 'id'); // Assuming you stored the token with key 'token'
   }
+  Future<String?> _getKind() async {
+    return await storage.read(key: 'selected_value'); // Assuming you stored the token with key 'token'
+  }
 
 
 
@@ -39,8 +42,10 @@ class _UserInformationState extends State<user_information> {
 
     String? token = await _getToken();
     String? id = await _getid();
+    String? kind = await _getKind();
     print (token);
     print (id);
+    print (kind);
     // Example URL, replace with your actual API endpoint
     String apiUrl = 'http://127.0.0.1:8000/api/info/$id';
 
@@ -92,6 +97,13 @@ class _UserInformationState extends State<user_information> {
           GestureDetector(
             onTap: () {
               _saveUserInformation(); // Call function to save user information
+              // Show a snackbar to inform the user that their information is updated
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Your information is updated.'),
+                  duration: Duration(seconds: 2), // Adjust the duration as needed
+                ),
+              );
             },
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
