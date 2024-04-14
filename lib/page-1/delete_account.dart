@@ -6,57 +6,93 @@ import 'package:test1/page-1/page0.dart';
 class account_delete extends StatelessWidget {
 
   // Function to delete account
-  Future<void> _deleteAccount() async {
-    // Example URL, replace with your actual API endpoint
-
-
+  Future<bool> _deleteAccount() async {
     final storage = FlutterSecureStorage();
-    // static const String Scene = '/page0';
 
     Future<String?> _getToken() async {
-      return await storage.read(key: 'token'); // Assuming you stored the token with key 'token'
+      return await storage.read(key: 'token');
     }
-    Future<String?> _getid() async {
-      return await storage.read(key: 'id'); // Assuming you stored the token with key 'token'
+
+    Future<String?> _getId() async {
+      return await storage.read(key: 'id');
+    }
+
+    Future<String?> _getKind() async {
+      return await storage.read(key: 'selected_value');
     }
 
     String? token = await _getToken();
-    String? id = await _getid();
-    print (token);
-    print (id);
+    String? id = await _getId();
+    String? kind = await _getKind();
 
-    String apiUrl = 'http://127.0.0.1:8000/api/info/$id';
+    print(token);
+    print(id);
+    print(kind);
+
+    String apiUrlHire = 'http://127.0.0.1:8000/api/info/$id';
+    String apiUrlArtist='http://127.0.0.1:8000/api/artist/info/$id';
+    String apiUrlTeam='http://127.0.0.1:8000/api/artist/team_info/$id';
 
     try {
-      // Make DELETE request to the API
-      var response = await http.delete(
-        Uri.parse(apiUrl),
+      // Make DELETE request to the API based on the value of 'kind'
+      var response;
+      if (kind == 'hire') {
+        // Make API call for kind value 1
+        response = await http.delete(
+          Uri.parse(apiUrlHire),
           headers: <String, String>{
             'Content-Type': 'application/vnd.api+json',
             'Accept': 'application/vnd.api+json',
-            'Authorization': 'Bearer $token', // Include the token in the header
+            'Authorization': 'Bearer $token',
           },
+        );
+      } else if (kind == 'solo_artist') {
+        // Make API call for kind value 2
+        // Update apiUrl if needed
+        response = await http.delete(
+          Uri.parse(apiUrlArtist),
+          headers: <String, String>{
+            'Content-Type': 'application/vnd.api+json',
+            'Accept': 'application/vnd.api+json',
+            'Authorization': 'Bearer $token',
+          },
+        );
+      } else if (kind == 'team') {
+        // Make API call for kind value 3
+        // Update apiUrl if needed
+        response = await http.delete(
+          Uri.parse(apiUrlTeam),
+          headers: <String, String>{
+            'Content-Type': 'application/vnd.api+json',
+            'Accept': 'application/vnd.api+json',
+            'Authorization': 'Bearer $token',
+          },
+        );
+      } else {
+        // Handle other cases if needed
+        print('Invalid value of kind: $kind');
 
-      );
+      }
 
-      // Check if request was successful (status code 200)
+      // Check if request was successful (status code 204)
       if (response.statusCode == 204) {
-        // Account deleted successfully, handle response if needed
+        // Account deleted successfully
         print('Account deleted successfully');
+        return true;
 
-        // Example response handling
-        // print('Response: ${response.body}');
       } else {
         // Request failed, handle error
         print('Failed to delete account. Status code: ${response.statusCode}');
-        // Example error handling
         print('Error response: ${response.body}');
+        return false;
       }
     } catch (e) {
       // Handle network errors
       print('Error deleting account: $e');
     }
+    return false;
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -113,10 +149,23 @@ class account_delete extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.only(left: 45, right: 45),
                       child: ElevatedButton(
-                        onPressed: () {
-                          _deleteAccount();
-                          Navigator.push(context,MaterialPageRoute(builder: (context)=>
-                              Scene()));// Call function to delete account
+                        onPressed: () async {
+                          bool deleted= await _deleteAccount();
+                          // _deleteAccount();
+                          if (deleted) {
+                            Navigator.push(
+                                context, MaterialPageRoute(builder: (context) =>
+                                Scene()));
+                          }
+                          else{
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Logout failed. Please try again.'),
+                                duration: Duration(seconds: 3), // Adjust the duration as needed
+                              ),
+                            );
+                          }
+                          // Call function to delete account
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Color(0xffe5195e),

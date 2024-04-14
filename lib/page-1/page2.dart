@@ -5,7 +5,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:test1/page-1/cred_user.dart';
 import 'package:test1/page-1/page_0.1.dart';
-import 'package:test1/page-1/skills_artist.dart';
+import 'package:test1/page-1/team_info.dart';
+import 'sign_in.dart';
 
 // artist_cred()
 
@@ -336,6 +337,29 @@ class _Scene2State extends State<Scene2> {
                                   ),
                                 ),
                               ),
+                              SizedBox(height: 16 * fem),
+                              // Text Widget for "Already have an account, Sign In"
+                              Center(
+                              child:GestureDetector(
+                                onTap: () {
+                                  // Navigate to sign-in screen
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => Scene ()), // Replace SignInScreen with your actual sign-in screen widget
+                                  );
+                                },
+                                child: Text(
+                                  'Already have an account, Sign In',
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.beVietnamPro(
+                                    fontSize: 16 * ffem,
+                                    fontWeight: FontWeight.w400,
+                                    height: 1.5 * ffem / fem,
+                                    color: Color(0xff1e0a11),
+                                  ),
+                                ),
+                              ),
+                              ),
                             ],
                           ),
                         ),
@@ -345,54 +369,49 @@ class _Scene2State extends State<Scene2> {
                   Padding(
                     padding: const EdgeInsets.only(left: 35, right: 35),
                     child: ElevatedButton(
-                        onPressed: () async {
-                          _handleContinue(context);
-                          if (passwordUser.text.isNotEmpty &&
-                              confirmPassword.text.isNotEmpty &&
-                              emailUser.text.isNotEmpty &&
-                              passwordsMatch) {
-                            var kind = await getSelectedValue();
-                            if (kind != null) {
-                              switch (kind) {
-                                case 'hire':
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          Signup_user(), // Assuming SignupUser is the page for 'hire'
-                                    ),
-                                  );
-                                  break;
-                                case 'solo_artist':
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          artist_cred(), // Page for 'solo_artist'
-                                    ),
-                                  );
-                                  break;
-                                case 'team':
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                      ArtistCredentials2(), // Page for 'team'
-                                    ),
-                                  );
-                                  break;
-                                default:
-                                // Handle invalid kind value
-                                  print('Invalid kind value: $kind');
-                              }
-                            } else {
-                              // Handle kind being null
-                              print('Kind is null');
+                      onPressed: () async {
+                        _handleContinue(context);
+                        if (passwordUser.text.isNotEmpty &&
+                            confirmPassword.text.isNotEmpty &&
+                            emailUser.text.isNotEmpty &&
+                            passwordsMatch) {
+                          var kind = await getSelectedValue();
+                          if (kind != null) {
+                            switch (kind) {
+                              case 'hire':
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => Signup_user(), // Assuming SignupUser is the page for 'hire'
+                                  ),
+                                );
+                                break;
+                              case 'solo_artist':
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => artist_cred(), // Page for 'solo_artist'
+                                  ),
+                                );
+                                break;
+                              case 'team':
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => team_info(), // Page for 'team'
+                                  ),
+                                );
+                                break;
+                              default:
+                              // Handle invalid kind value
+                                print('Invalid kind value: $kind');
                             }
+                          } else {
+                            // Handle kind being null
+                            print('Kind is null');
                           }
-                        },
-
-
+                        }
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color(0xffe5195e),
                         shape: RoundedRectangleBorder(
@@ -426,4 +445,5 @@ class _Scene2State extends State<Scene2> {
       ),
     );
   }
+
 }

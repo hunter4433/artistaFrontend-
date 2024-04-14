@@ -434,6 +434,15 @@ class _Signup_userState extends State<Signup_user> {
                                   (route) => false,
                             );
                           }
+                          else{
+                            print('all field are required to be filled');
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('all field are required to be filled'),
+                                duration: Duration(seconds: 1), // Adjust the duration as needed
+                              ),
+                            );
+                          }
                         });
                       },
                       style: ElevatedButton.styleFrom(

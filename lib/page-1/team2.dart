@@ -5,7 +5,12 @@ import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../utils.dart';
-import 'bottomNav_artist.dart';
+import 'team1.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
 
 class team2signup extends StatefulWidget {
   @override
@@ -18,6 +23,7 @@ class _ArtistCredentials2State extends State<team2signup> {
   TextEditingController _messageController = TextEditingController();
 
   List<String> _skills = ['Musician', 'Comedian', 'Visual Artist', 'Dancer', 'Chef', 'Magician'];
+  String? selectedSkill;
 
   File? _image1;
   File? _image3;
@@ -30,6 +36,19 @@ class _ArtistCredentials2State extends State<team2signup> {
   AudioPlayer _audioPlayer = AudioPlayer();
   File? _audioFile;
   File? _imageForSearchedSection; // Variable to store the selected image for the searched section
+
+  final storage = FlutterSecureStorage();
+  Future<Map<String, String?>> getAllSharedPreferences() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return {
+      'alt_phone_number': prefs.getString('alt_phone_number'),
+      'team_name': prefs.getString('name'),
+      'address': prefs.getString('address'),
+      'phone_number': prefs.getString('phone_number'),
+      'profile_photo': prefs.getString('imageFilePath'),
+    };
+  }
+
 
   // Function to pick an image for the searched section
   Future<void> _pickImageForSearchedSection() async {
@@ -44,6 +63,118 @@ class _ArtistCredentials2State extends State<team2signup> {
       }
     });
   }
+
+  Future<void> _sendDataToBackend() async {
+
+    Future<String?> _getToken() async {
+      return await storage.read(key: 'token'); // Assuming you stored the token with key 'token'
+    }
+    try {
+      // Get shared preferences data
+      Map<String, String?> sharedPreferencesData = await getAllSharedPreferences();
+
+
+      // var profilePhoto=profilePreferencesData['profile_photo'];
+      // File profilePhotoFile = File(profilePhoto!);
+      // print(profilePhotoFile);
+
+      // print(profile_photo);
+
+      // Get authentication token
+      String? token = await _getToken();
+      // Check if token is not null
+      if (token != null) {
+        // Select images from gallery
+        List<File?> imageFiles = [_image1, _image2, _image3, _image4];
+        print(_skills);
+
+
+        // Check if images are selected
+        if (true) {
+          // Prepare data to send to the backend
+          Map<String, dynamic> artistData = {
+            // 'skills': _selectedSubSkill,
+            'about_team': _experienceController.text,
+            'price_per_hour': _hourlyPriceController.text,
+            'skill_category': selectedSkill,
+            'special_message': _messageController.text,
+          };
+
+          // Merge sharedPreferencesData with artistData
+          Map<String, String?> mergedData = {...sharedPreferencesData, ...artistData};
+          // Upload images and store paths
+          print(imageFiles.length);
+          List<String> imagePaths = await _uploadImages(imageFiles);
+          // print(imageFiles.length);
+          //
+          // Ensure imagePaths contains the profile photo path
+          if (imagePaths.length == imageFiles.length) {
+            // If it does, proceed to merge data
+            for (int i = 0; i < imageFiles.length; i++) {
+              // if (i == imageFiles.length - 1) {
+              //   // Last item (profile photo)
+              //   mergedData['profile_photo'] = imagePaths[i];
+              // } else {
+              // Other image files
+              mergedData['image${i + 1}'] = imagePaths[i];
+              // }
+            }
+          } else {
+            print('this side mohit');
+            // Handle the case where imagePaths length doesn't match imageFiles length
+          }
+
+          // Convert data to JSON format
+          String jsonData = json.encode(mergedData);
+          print(jsonData);
+
+          // Example URL, replace with your actual API endpoint
+          String apiUrl = 'http://127.0.0.1:8000/api/artist/team_info';
+          // await Future.delayed(Duration(seconds: 3));
+
+          // Make POST request to the API
+          var response = await http.post(
+            Uri.parse(apiUrl),
+            headers: <String, String>{
+              'Content-Type': 'application/vnd.api+json',
+              'Accept': 'application/vnd.api+json',
+              'Authorization': 'Bearer $token', // Include the token in the header
+            },
+            body: jsonData,
+          );
+
+          // Check if request was successful (status code 200)
+          if (response.statusCode == 201) {
+            // Data sent successfully, handle response if needed
+            print('Data sent successfully');
+            // Example response handling
+            print('Response: ${response.body}');
+
+            Map<String, dynamic> responseData = jsonDecode(response.body);
+            int id = responseData['id']; // Assuming 'id' is of type int in the JSON response
+            await storage.write(key: 'id', value: id.toString()); // Convert int to String before storing
+            print(id.toString()); // Convert int to String before printing
+
+          } else {
+            // Request failed, handle error
+            print('Failed to send data. Status code: ${response.statusCode}');
+            // Example error handling
+            print('Error response: ${response.body}');
+          }
+        } else {
+          print('No images selected');
+        }
+      } else {
+        // Handle the case where token is null, perhaps by showing an error message
+        print("Token is null");
+      }
+    } catch (e) {
+      // Handle network errors
+      print('Error sending data: $e');
+    }
+  }
+
+
 
   @override
   void dispose() {
@@ -228,6 +359,9 @@ class _ArtistCredentials2State extends State<team2signup> {
                                   );
                                 }).toList(),
                                 onChanged: (String? value) {
+                                  setState(() {
+                                    selectedSkill = value; // Update selected skill when it changes
+                                  });
                                   // No need to update sub-skills here
                                 },
                                 decoration: InputDecoration(
@@ -608,9 +742,10 @@ class _ArtistCredentials2State extends State<team2signup> {
                         padding: const EdgeInsets.only(left: 20, right: 20),
                         child: ElevatedButton(
                           onPressed: () {
+                            _sendDataToBackend();
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => BottomNavart()),
+                              MaterialPageRoute(builder: (context) => team1signup()),
                             );
                           },
                           style: ElevatedButton.styleFrom(
@@ -648,5 +783,58 @@ class _ArtistCredentials2State extends State<team2signup> {
         ),
       ),
     );
+  }
+  Future<List<String>> _uploadImages( imageFiles) async {
+    List<String> imagePaths = [];
+    // print(imageFiles.length);
+    for (int i = 0; i < imageFiles.length; i++) {
+      if (imageFiles[i] != null) {
+        // Upload the image and store its path
+        String paths = await uploadImagesAndStorePaths(imageFiles[i]);
+        // for (String imagePath in paths) {
+        imagePaths.add(paths);
+
+      }
+    }
+    return imagePaths;
+  }
+
+
+  Future<String> uploadImagesAndStorePaths(File? imageFile) async {
+    if (imageFile == null) {
+      throw ArgumentError('Image file cannot be null');
+    }
+    String imagePath = '';
+    // Your image upload API endpoint
+    var uploadUrl = Uri.parse('http://127.0.0.1:8000/api/upload-image');
+
+    // Create a multipart request
+    var request = http.MultipartRequest('POST', uploadUrl);
+
+    // Add the image file to the request
+    var image = await http.MultipartFile.fromPath('image', imageFile.path);
+
+    request.files.add(image);
+
+    // Send the request to upload the image
+    var streamedResponse = await request.send();
+    print(streamedResponse);
+
+    // Check if the image upload was successful
+    if (streamedResponse.statusCode == 200) {
+      // Parse the response to get the image URL or file path
+      var response = await streamedResponse.stream.bytesToString();
+
+      imagePath = json.decode(response)['imagePath'];
+    }
+    //   else {
+    //     throw Exception('Failed to upload image');
+    //   }
+    // } catch (e) {
+    //   // Handle errors if needed
+    //   print('Error uploading image: $e');
+    //   throw Exception('Error uploading image: $e');
+    // }
+    return imagePath;
   }
 }

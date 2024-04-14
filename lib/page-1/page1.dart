@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 // import 'package:test1/page-1/page2.1.dart';
-import 'package:test1/page-1/signup_team.dart';
+// import 'package:test1/page-1/signup_team.dart';
 import 'package:test1/page-1/page2.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 

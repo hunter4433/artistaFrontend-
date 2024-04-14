@@ -5,6 +5,7 @@ import 'package:test1/page-1/skills_artist.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 class artist_cred extends StatefulWidget {
@@ -226,7 +227,7 @@ class _artist_credState extends State<artist_cred> {
                         ),
                         SizedBox(height: 16 * fem),
                         ElevatedButton(
-                          onPressed: () {
+                          onPressed: () async {
                             if (_nameController.text.isEmpty ||
                                 _ageController.text.isEmpty ||
                                 _phoneController.text.isEmpty ||
@@ -238,15 +239,23 @@ class _artist_credState extends State<artist_cred> {
                                 ),
                               );
                             } else {
+                              // Store _ageController.text using SharedPreferences
+                              SharedPreferences prefs = await SharedPreferences.getInstance();
+                              prefs.setString('age', _ageController.text);
+                              prefs.setString('name',_nameController.text);
+                              prefs.setString('phone_number',_phoneController.text);
+                              prefs.setString('address',_addressController.text);
+                              // prefs.setString('address',_imageFile);
+                              prefs.setString('profile_photo', _imageFile!.path);
+
 
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(builder: (context) => ArtistCredentials2()),
                               );
-                              String artist_name = _nameController.text;
-                              String age = _ageController.text;
-                              print(age);
-                              print('name of artist:'+artist_name );
+
+
+
                             }
                           },
                           style: ElevatedButton.styleFrom(

@@ -2,9 +2,84 @@
 import 'package:flutter/material.dart';
 import 'package:test1/page-1/account_managment.dart';
 import 'package:test1/page-1/customer_support.dart';
+import 'package:test1/page-1/sign_in.dart';
 import '../utils.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class setting extends StatelessWidget {
+  final storage = FlutterSecureStorage();
+
+  Future<String?> getSelectedValue() async {
+    return await storage.read(key: 'selected_value');
+  }
+
+  final String logoutUrlArtist = 'http://127.0.0.1:8000/api/artist/logout';
+  final String logoutUrlHire = 'http://127.0.0.1:8000/api/logout';
+
+
+  Future<String?> _getToken() async {
+    return await storage.read(key: 'token'); // Assuming you stored the token with key 'token'
+  }
+
+  Future<void> logout() async {
+    try {
+      // Get authentication token
+      String? token = await _getToken();
+      print(token);
+
+      var kind = await getSelectedValue();
+      print(kind);
+
+      // Make the API call to logout
+      if (kind == 'hire') {
+        final response = await http.post(
+          Uri.parse(logoutUrlHire),
+          headers: <String, String>{
+            'Content-Type': 'application/vnd.api+json',
+            'Accept': 'application/vnd.api+json',
+            'Authorization': 'Bearer $token', // Include the token in the header
+          },
+        );
+
+
+        // Check if the request was successful (status code 200)
+        if (response.statusCode == 200) {
+          print('successs: ${response.body}');
+          // Handle successful logout (e.g., navigate to login screen)
+        } else {
+          // Handle errors (e.g., show error message)
+          print('Error: ${response.body}');
+        }
+      }
+      if(kind=='team' || kind=='solo_artist'){
+        final response = await http.post(
+          Uri.parse(logoutUrlArtist),
+          headers: <String, String>{
+            'Content-Type': 'application/vnd.api+json',
+            'Accept': 'application/vnd.api+json',
+            'Authorization': 'Bearer $token', // Include the token in the header
+          },
+        );
+
+
+        // Check if the request was successful (status code 200)
+        if (response.statusCode == 200) {
+          print('successs: ${response.body}');
+          // Handle successful logout (e.g., navigate to login screen)
+        } else {
+          // Handle errors (e.g., show error message)
+          print('Error: ${response.body}');
+        }
+      }
+      } catch (e) {
+      // Handle exceptions (e.g., connection errors)
+      print('Exception: $e');
+    }
+
+  }
+
+
   @override
   Widget build(BuildContext context) {
     double baseWidth = 390;
@@ -385,41 +460,48 @@ class setting extends StatelessWidget {
                     ),
                   ),
                 ),
-                Container(
-                  // depth1frame5N8P (16:2494)
-                  padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 6 * fem, 10 * fem),
-                  width: double.infinity,
-                  height: 56 * fem,
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: Colors.grey, // Specify the border color here
-                        width: 0.25, // Specify the border width here
-                      ),),
-                    // Add decoration as needed
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Container(
+                 GestureDetector(
+                   onTap: () {
+                     // Call the logout function when the container is tapped
+                     logout();
+                     Navigator.push(
+                       context,
+                       MaterialPageRoute(builder: (context) => Scene()),
+                     );
 
-                          // depth3frame02ij (16:2496)
-                          child: Text(
-                            'Logout',
-                            style: SafeGoogleFont(
-                              'Be Vietnam Pro',
-                              fontSize: 17 * ffem,
-                              fontWeight: FontWeight.w400,
-                              height: 1.5 * ffem / fem,
-                              color: Colors.red,
-                            ),
-                          ),
-                        ),
-                      ),
-
-                    ],
+      },
+        child: Container(
+          padding: EdgeInsets.fromLTRB(16, 10, 6, 10),
+          width: double.infinity,
+          height: 56,
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: Colors.grey,
+                width: 0.25,
+              ),
+            ),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Container(
+                  child: Text(
+                    'Logout',
+                    style: TextStyle(
+                      fontFamily: 'Be Vietnam Pro',
+                      fontSize: 17,
+                      fontWeight: FontWeight.w400,
+                      height: 1.5,
+                      color: Colors.red,
+                    ),
                   ),
                 ),
+              ),
+            ],
+          ),
+        ),
+      ),
 
               ],
             ),
