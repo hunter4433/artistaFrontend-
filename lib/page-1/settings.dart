@@ -85,6 +85,51 @@ class setting extends StatelessWidget {
     double baseWidth = 390;
     double fem = MediaQuery.of(context).size.width / baseWidth;
     double ffem = fem * 0.97;
+
+    Future<void> _showLogoutConfirmationDialog() async {
+      return showDialog<void>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            backgroundColor: Colors.white, // Change background color of dialog
+            title: Text('Logout', style: TextStyle(color: Colors.black)), // Change color of dialog title
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text(
+                    'Are you sure you want to log out?',
+                    style: TextStyle(color: Colors.black), // Change color of dialog content text
+                  ),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text(
+                  'Cancel',
+                  style: TextStyle(color: Colors.black), // Change color of "Cancel" button text
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  // Perform logout action
+                  // Navigator.of(context).pop(); // uncomment this line to close the dialog after logout
+                },
+                child: Text(
+                  'Yes',
+                  style: TextStyle(color: Colors.red), // Change color of "Yes" button text
+                ),
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+
     return Scaffold(
       body: SafeArea(
       child: Container(
@@ -460,6 +505,7 @@ class setting extends StatelessWidget {
                     ),
                   ),
                 ),
+mohit
                  GestureDetector(
                    onTap: () {
                      // Call the logout function when the container is tapped
@@ -494,6 +540,43 @@ class setting extends StatelessWidget {
                       fontWeight: FontWeight.w400,
                       height: 1.5,
                       color: Colors.red,
+=======
+                InkWell(
+                  onTap: _showLogoutConfirmationDialog,
+                  child: Container(
+                    // depth1frame5N8P (16:2494)
+                    padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 6 * fem, 10 * fem),
+                    width: double.infinity,
+                    height: 56 * fem,
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: Colors.grey, // Specify the border color here
+                          width: 0.25, // Specify the border width here
+                        ),),
+                      // Add decoration as needed
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+
+                            // depth3frame02ij (16:2496)
+                            child: Text(
+                              'Logout',
+                              style: SafeGoogleFont(
+                                'Be Vietnam Pro',
+                                fontSize: 17 * ffem,
+                                fontWeight: FontWeight.w400,
+                                height: 1.5 * ffem / fem,
+                                color: Colors.red,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                      ],
+ main
                     ),
                   ),
                 ),
