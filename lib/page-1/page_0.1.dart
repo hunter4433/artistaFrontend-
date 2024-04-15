@@ -2,6 +2,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:test1/page-1/skills_artist.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 class artist_cred extends StatefulWidget {
   @override
@@ -14,12 +19,16 @@ class _artist_credState extends State<artist_cred> {
   TextEditingController _phoneController = TextEditingController();
   TextEditingController _addressController = TextEditingController();
 
+
+
   Color _nameBorderColor = Color(0xffeac6d3);
   Color _ageBorderColor = Color(0xffeac6d3);
   Color _phoneBorderColor = Color(0xffeac6d3);
   Color _addressBorderColor = Color(0xffeac6d3);
 
   File? _imageFile;
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -145,11 +154,13 @@ class _artist_credState extends State<artist_cred> {
                           height: 56 * fem,
                           child: TextField(
                             controller: _ageController,
+
                             onChanged: (value) {
                               setState(() {
                                 _ageBorderColor = value.isEmpty ? Colors.red : Color(0xffeac6d3);
                               });
                             },
+
                             decoration: InputDecoration(
                               suffixIcon: Icon(Icons.cake_outlined, color: Color(0xffeac6d3)),
                               hintText: 'Your Age',
@@ -216,7 +227,7 @@ class _artist_credState extends State<artist_cred> {
                         ),
                         SizedBox(height: 16 * fem),
                         ElevatedButton(
-                          onPressed: () {
+                          onPressed: () async {
                             if (_nameController.text.isEmpty ||
                                 _ageController.text.isEmpty ||
                                 _phoneController.text.isEmpty ||
@@ -228,12 +239,23 @@ class _artist_credState extends State<artist_cred> {
                                 ),
                               );
                             } else {
+                              // Store _ageController.text using SharedPreferences
+                              SharedPreferences prefs = await SharedPreferences.getInstance();
+                              prefs.setString('age', _ageController.text);
+                              prefs.setString('name',_nameController.text);
+                              prefs.setString('phone_number',_phoneController.text);
+                              prefs.setString('address',_addressController.text);
+                              // prefs.setString('address',_imageFile);
+                              prefs.setString('profile_photo', _imageFile!.path);
+
+
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(builder: (context) => ArtistCredentials2()),
                               );
-                              String artist_name = _nameController.text;
-                              print('name of artist= $artist_name ');
+
+
+
                             }
                           },
                           style: ElevatedButton.styleFrom(

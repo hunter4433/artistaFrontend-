@@ -1,12 +1,99 @@
-
 import 'package:flutter/material.dart';
-import 'package:test1/page-1/customer_support.dart';
-import 'package:test1/page-1/edit_user_info.dart';
-
-
-import '../utils.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:test1/page-1/page0.dart';
 
 class account_delete extends StatelessWidget {
+
+  // Function to delete account
+  Future<bool> _deleteAccount() async {
+    final storage = FlutterSecureStorage();
+
+    Future<String?> _getToken() async {
+      return await storage.read(key: 'token');
+    }
+
+    Future<String?> _getId() async {
+      return await storage.read(key: 'id');
+    }
+
+    Future<String?> _getKind() async {
+      return await storage.read(key: 'selected_value');
+    }
+
+    String? token = await _getToken();
+    String? id = await _getId();
+    String? kind = await _getKind();
+
+    print(token);
+    print(id);
+    print(kind);
+
+    String apiUrlHire = 'http://127.0.0.1:8000/api/info/$id';
+    String apiUrlArtist='http://127.0.0.1:8000/api/artist/info/$id';
+    String apiUrlTeam='http://127.0.0.1:8000/api/artist/team_info/$id';
+
+    try {
+      // Make DELETE request to the API based on the value of 'kind'
+      var response;
+      if (kind == 'hire') {
+        // Make API call for kind value 1
+        response = await http.delete(
+          Uri.parse(apiUrlHire),
+          headers: <String, String>{
+            'Content-Type': 'application/vnd.api+json',
+            'Accept': 'application/vnd.api+json',
+            'Authorization': 'Bearer $token',
+          },
+        );
+      } else if (kind == 'solo_artist') {
+        // Make API call for kind value 2
+        // Update apiUrl if needed
+        response = await http.delete(
+          Uri.parse(apiUrlArtist),
+          headers: <String, String>{
+            'Content-Type': 'application/vnd.api+json',
+            'Accept': 'application/vnd.api+json',
+            'Authorization': 'Bearer $token',
+          },
+        );
+      } else if (kind == 'team') {
+        // Make API call for kind value 3
+        // Update apiUrl if needed
+        response = await http.delete(
+          Uri.parse(apiUrlTeam),
+          headers: <String, String>{
+            'Content-Type': 'application/vnd.api+json',
+            'Accept': 'application/vnd.api+json',
+            'Authorization': 'Bearer $token',
+          },
+        );
+      } else {
+        // Handle other cases if needed
+        print('Invalid value of kind: $kind');
+
+      }
+
+      // Check if request was successful (status code 204)
+      if (response.statusCode == 204) {
+        // Account deleted successfully
+        print('Account deleted successfully');
+        return true;
+
+      } else {
+        // Request failed, handle error
+        print('Failed to delete account. Status code: ${response.statusCode}');
+        print('Error response: ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      // Handle network errors
+      print('Error deleting account: $e');
+    }
+    return false;
+  }
+
+
   @override
   Widget build(BuildContext context) {
     double baseWidth = 390;
@@ -24,7 +111,6 @@ class account_delete extends StatelessWidget {
               color: Color(0xffffffff),
             ),
             child: Container(
-              // depth0frame0qN7 (16:2431)
               width: double.infinity,
               height: double.infinity,
               decoration: BoxDecoration (
@@ -50,24 +136,36 @@ class account_delete extends StatelessWidget {
                             '\n\nOur dedicated support team is here to assist'
                             ' you every step of the way and address any questions or concerns you may have. '
                             'Your satisfaction and peace of mind are our top priorities, and we\'re '
-                        'committed to ensuring that you have a'
-                        ' positive experience with our service.',
+                            'committed to ensuring that you have a'
+                            ' positive experience with our service.',
                         style: TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w400,
                           color: Color(0xff171111),
                           fontFamily: 'Be Vietnam Pro', // Change font family as needed
-                          // You can add more text styles as needed
                         ),
                       ),
-                
                     ),
                     Padding(
                       padding: const EdgeInsets.only(left: 45, right: 45),
                       child: ElevatedButton(
-                        onPressed: () {
-                          print('hi');
-                          // Handle button press
+                        onPressed: () async {
+                          bool deleted= await _deleteAccount();
+                          // _deleteAccount();
+                          if (deleted) {
+                            Navigator.push(
+                                context, MaterialPageRoute(builder: (context) =>
+                                Scene()));
+                          }
+                          else{
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Logout failed. Please try again.'),
+                                duration: Duration(seconds: 3), // Adjust the duration as needed
+                              ),
+                            );
+                          }
+                          // Call function to delete account
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Color(0xffe5195e),
@@ -83,29 +181,22 @@ class account_delete extends StatelessWidget {
                         child: Center(
                           child: Text(
                             'Delete Account',
-                            style: SafeGoogleFont(
-                              'Be Vietnam Pro',
+                            style: TextStyle(
                               fontSize: 16 * ffem,
                               fontWeight: FontWeight.w700,
-                              height: 1.5 * ffem / fem,
-                              letterSpacing: 0.2399999946 * fem,
                               color: Color(0xffffffff),
                             ),
                           ),
                         ),
                       ),
                     ),
-                
-                
-                
-                
-                
                   ],
                 ),
               ),
             ),
           ),
         ),
-      ),);
+      ),
+    );
   }
 }

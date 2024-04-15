@@ -1,7 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:test1/page-1/team1.dart';
+import 'package:test1/page-1/team2.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class team_info extends StatefulWidget {
   @override
@@ -218,7 +219,7 @@ class _artist_credState extends State<team_info> {
                           ),
                           SizedBox(height: 19 * fem),
                           ElevatedButton(
-                            onPressed: () {
+                            onPressed: () async {
                               if (_nameController.text.isEmpty ||
 
                                   _phoneController.text.isEmpty ||
@@ -233,10 +234,18 @@ class _artist_credState extends State<team_info> {
                               } else {
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (context) => team1signup()),
+                                  MaterialPageRoute(builder: (context) => team2signup() ),
                                 );
-                                String artist_name = _nameController.text;
-                                print('name of artist= $artist_name ');
+                                // Store _ageController.text using SharedPreferences
+                                SharedPreferences prefs = await SharedPreferences.getInstance();
+                                prefs.setString('alt_phone_number', _alternatephoneController.text);
+                                prefs.setString('name',_nameController.text);
+                                prefs.setString('phone_number',_phoneController.text);
+                                prefs.setString('address',_addressController.text);
+                                prefs.setString('profile_photo', _imageFile!.path);
+
+                                // String artist_name = _nameController.text;
+                                // print('name of artist= $artist_name ');
                               }
                             },
                             style: ElevatedButton.styleFrom(

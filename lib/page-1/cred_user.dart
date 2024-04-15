@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:test1/page-1/bottom_nav.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:test1/page-1/page0.dart';
 
 class Signup_user extends StatefulWidget {
   @override
@@ -35,6 +36,7 @@ class _Signup_userState extends State<Signup_user> {
 
   Future<void> _sendDataToBackend() async {
     String? token = await _getToken();
+    print (token);
 
     // Check if token is not null
     if (token != null) {
@@ -68,11 +70,16 @@ class _Signup_userState extends State<Signup_user> {
         );
 
         // Check if request was successful (status code 200)
-        if (response.statusCode == 200) {
+        if (response.statusCode == 201) {
           // Data sent successfully, handle response if needed
           print('Data sent successfully');
           // Example response handling
           print('Response: ${response.body}');
+
+          Map<String, dynamic> responseData = jsonDecode(response.body);
+          String id = responseData['data']['id'];
+          await storage.write(key: 'id', value: id);
+          print(id);
         } else {
           // Request failed, handle error
           print('Failed to send data. Status code: ${response.statusCode}');
@@ -425,6 +432,15 @@ class _Signup_userState extends State<Signup_user> {
                               context,
                               MaterialPageRoute(builder: (context) => BottomNav()),
                                   (route) => false,
+                            );
+                          }
+                          else{
+                            print('all field are required to be filled');
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('all field are required to be filled'),
+                                duration: Duration(seconds: 1), // Adjust the duration as needed
+                              ),
                             );
                           }
                         });
