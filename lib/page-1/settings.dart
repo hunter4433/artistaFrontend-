@@ -505,7 +505,7 @@ class setting extends StatelessWidget {
                     ),
                   ),
                 ),
-mohit
+
                  GestureDetector(
                    onTap: () {
                      // Call the logout function when the container is tapped
@@ -540,43 +540,8 @@ mohit
                       fontWeight: FontWeight.w400,
                       height: 1.5,
                       color: Colors.red,
-=======
-                InkWell(
-                  onTap: _showLogoutConfirmationDialog,
-                  child: Container(
-                    // depth1frame5N8P (16:2494)
-                    padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 6 * fem, 10 * fem),
-                    width: double.infinity,
-                    height: 56 * fem,
-                    decoration: BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(
-                          color: Colors.grey, // Specify the border color here
-                          width: 0.25, // Specify the border width here
-                        ),),
-                      // Add decoration as needed
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Container(
 
-                            // depth3frame02ij (16:2496)
-                            child: Text(
-                              'Logout',
-                              style: SafeGoogleFont(
-                                'Be Vietnam Pro',
-                                fontSize: 17 * ffem,
-                                fontWeight: FontWeight.w400,
-                                height: 1.5 * ffem / fem,
-                                color: Colors.red,
-                              ),
-                            ),
-                          ),
-                        ),
 
-                      ],
- main
                     ),
                   ),
                 ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:test1/page-1/bottom_nav.dart';
 import '../utils.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
@@ -6,6 +7,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'bottomNav_artist.dart';
 import 'page1.dart';
+import 'dmeo.dart';
 
 
 
@@ -19,15 +21,16 @@ class _SceneState extends State<Scene> {
   final TextEditingController passwordController = TextEditingController();
   bool _isObscure = true;
   final storage = FlutterSecureStorage();
+  Future<String?> getSelectedValue() async {
+    return await storage.read(key: 'selected_value');
+  }
 
   Future<bool> _login() async {
     Future<String?> _getToken() async {
       return await storage.read(key: 'token');
     }
 
-    Future<String?> getSelectedValue() async {
-      return await storage.read(key: 'selected_value');
-    }
+
 
     // Get authentication token
     String? token = await _getToken();
@@ -245,30 +248,48 @@ class _SceneState extends State<Scene> {
                             padding: const EdgeInsets.symmetric(horizontal: 25),
                             child: ElevatedButton(
                                 onPressed: () async {
-                                  try {
-                                    bool loggedIn = await _login();
-                                    // Navigate only if login is successful
-                                    if (loggedIn) {
-                                      Navigator.pushReplacement(
-                                        context,
-                                        MaterialPageRoute(builder: (context) => BottomNavart()),
-                                      );
-                                    } else {
-                                      // Optionally, you can show a snackbar or toast to inform the user about the login failure
-                                      // Optionally, you can show a toast to inform the user about the login failure
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: Text('Login failed. Please try again.'),
-                                          duration: Duration(seconds: 3), // Adjust the duration as needed
-                                        ),
-                                      );
+                                  var kind = await getSelectedValue();
+                                  bool loggedIn = await _login();
+                                  if (loggedIn) {
+                                    switch (kind) {
+                                      case 'hire':
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => BottomNav(), // Assuming SignupUser is the page for 'hire'
+                                          ),
+                                        );
+                                        break;
+                                      case 'solo_artist':
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => BottomNavart(), // Page for 'solo_artist'
+                                          ),
+                                        );
+                                        break;
+                                      case 'team':
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => BottomNavart(), // Page for 'team'
+                                          ),
+                                        );
+                                        break;
+                                      default:
+                                      // Handle invalid kind value
+                                        print('error:');
                                     }
-                                  } catch (error) {
-                                    // Handle error if login fails
-                                    print('Error during login: $error');
-
-                                    // Optionally, you can show a snackbar or toast to inform the user about the login failure
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Login failed. Please try again.'),
+                                        duration: Duration(seconds: 3), // Adjust the duration as needed
+                                      ),
+                                    );
                                   }
+
+
                                 },
 
                                 style: ElevatedButton.styleFrom(
