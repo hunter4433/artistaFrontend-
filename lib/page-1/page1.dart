@@ -67,7 +67,7 @@ class Scene1 extends StatelessWidget {
             ),
             Container(
               margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 340 * fem),
-              padding: EdgeInsets.fromLTRB(16 * fem, 20 * fem, 16 * fem, 12 * fem),
+              padding: EdgeInsets.fromLTRB(16 * fem, 0 * fem, 16 * fem, 12 * fem),
               width: double.infinity,
               color: Color(0xffffffff),
               child: Column(
@@ -75,7 +75,7 @@ class Scene1 extends StatelessWidget {
                 children: [
                   Container(
                     color: Color(0xffffffff),
-                    margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 24 * fem),
+                    margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 29 * fem),
                     child: Text(
                       'Start Your Journey With Us.',
                       textAlign: TextAlign.center,

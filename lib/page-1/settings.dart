@@ -569,6 +569,7 @@ class setting extends StatelessWidget {
                       height: 1.5,
                       color: Colors.red,
 
+
                     ),
                   ),
                 ),
