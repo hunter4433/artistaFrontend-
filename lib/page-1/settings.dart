@@ -1,10 +1,32 @@
 
 import 'package:flutter/material.dart';
 import 'package:test1/page-1/account_managment.dart';
+import 'package:test1/page-1/artist_info_edit.dart';
 import 'package:test1/page-1/customer_support.dart';
+import 'package:test1/page-1/edit_team_members.dart';
 import '../utils.dart';
 
 class setting extends StatelessWidget {
+  List<TeamMember> TeamMembers = [
+    TeamMember(
+      name: 'John Doe',
+      email: 'john.doe@example.com',
+      role: 'Designer',
+      profilePictureUrl: 'https://via.placeholder.com/150', // Dummy profile picture URL
+    ),
+    TeamMember(
+      name: 'Jane Smith',
+      email: 'jane.smith@example.com',
+      role: 'Developer',
+      profilePictureUrl: 'https://via.placeholder.com/150', // Dummy profile picture URL
+    ),
+    TeamMember(
+      name: 'Alice Johnson',
+      email: 'alice.johnson@example.com',
+      role: 'Marketing Manager',
+      profilePictureUrl: 'https://via.placeholder.com/150', // Dummy profile picture URL
+    ),
+  ];
   @override
   Widget build(BuildContext context) {
     double baseWidth = 390;
@@ -266,7 +288,7 @@ class setting extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => customer_support()),
+                      MaterialPageRoute(builder: (context) => EditTeamMembersPage(teamMembers: TeamMembers)),
                     );
                   },
                   child: Container(
