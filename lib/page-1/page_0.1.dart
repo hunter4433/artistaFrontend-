@@ -251,7 +251,15 @@ class _artist_credState extends State<artist_cred> {
 
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (context) => ArtistCredentials2()),
+                                MaterialPageRoute(
+                                  builder: (context) => ArtistCredentials2(
+                                    // name: _nameController.text,
+                                    // age: _ageController.text,
+                                    // phoneNumber: _phoneController.text,
+                                    // address: _addressController.text,
+                                    profilePhoto: _imageFile,
+                                  ),
+                                ),
                               );
 
 
@@ -293,7 +301,6 @@ class _artist_credState extends State<artist_cred> {
       ),
     );
   }
-
   Future<void> _getImage() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
@@ -307,3 +314,4 @@ class _artist_credState extends State<artist_cred> {
     });
   }
 }
+

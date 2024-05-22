@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:test1/page-1/artist_info_edit.dart';
 import 'package:test1/page-1/artsit_skills_edit.dart';
 import 'package:test1/page-1/customer_support.dart';
@@ -6,14 +7,18 @@ import 'package:test1/page-1/delete_account.dart';
 import 'package:test1/page-1/edit_user_info.dart';
 import 'package:test1/page-1/worksamples_edit.dart';
 
-import '../utils.dart';
+
+
 
 class account_managment extends StatelessWidget {
+  final storage = FlutterSecureStorage();
+
+  Future<String?> _getKind() async {
+    return await storage.read(key: 'selected_value');
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Assuming isLoggedInArtist is a boolean variable indicating whether the user is logged in as an artist
-    bool isLoggedInArtist = true; // Set it based on your authentication logic
-
     double baseWidth = 390;
     double fem = MediaQuery.of(context).size.width / baseWidth;
     double ffem = fem * 0.97;
@@ -23,23 +28,30 @@ class account_managment extends StatelessWidget {
         title: const Text('Account'),
       ),
       body: SafeArea(
-        child: Container(
-          width: double.infinity,
-          child: Container(
-            width: double.infinity,
-            height: 844 * fem,
-            decoration: BoxDecoration(
-              color: Color(0xffffffff),
-            ),
-            child: Container(
+        child: FutureBuilder<String?>(
+          future: _getKind(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return CircularProgressIndicator();
+            }
+            if (snapshot.hasError) {
+              return Text('Error: ${snapshot.error}');
+            }
+
+            String? kind = snapshot.data;
+
+            // Check the value of 'kind' and set boolean flags accordingly
+            bool isHire = kind == 'hire';
+            bool isSoloArtist = kind == 'solo_artist';
+            bool isTeam = kind == 'team';
+
+            return Container(
               width: double.infinity,
-              height: double.infinity,
-              decoration: BoxDecoration(
-                color: Color(0xffffffff),
-              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  // Edit Profile
+                  if (isHire)
                   InkWell(
                     onTap: () {
                       Navigator.push(
@@ -65,8 +77,7 @@ class account_managment extends StatelessWidget {
                             child: Container(
                               child: Text(
                                 'Edit Profile',
-                                style: SafeGoogleFont(
-                                  'Be Vietnam Pro',
+                                style: TextStyle(
                                   fontSize: 17 * ffem,
                                   fontWeight: FontWeight.w400,
                                   height: 1.5 * ffem / fem,
@@ -86,8 +97,8 @@ class account_managment extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // Only show these options if the user is logged in as an artist
-                  if (isLoggedInArtist)
+                  // Edit Artist Profile (based on conditions)
+                  if (isSoloArtist || isTeam)
                     InkWell(
                       onTap: () {
                         Navigator.push(
@@ -113,8 +124,7 @@ class account_managment extends StatelessWidget {
                               child: Container(
                                 child: Text(
                                   'Edit Artist Profile',
-                                  style: SafeGoogleFont(
-                                    'Be Vietnam Pro',
+                                  style: TextStyle(
                                     fontSize: 17 * ffem,
                                     fontWeight: FontWeight.w400,
                                     height: 1.5 * ffem / fem,
@@ -134,7 +144,8 @@ class account_managment extends StatelessWidget {
                         ),
                       ),
                     ),
-                  if (isLoggedInArtist)
+                  // Edit Skills (based on conditions)
+                  if (isSoloArtist || isTeam)
                     InkWell(
                       onTap: () {
                         Navigator.push(
@@ -160,8 +171,7 @@ class account_managment extends StatelessWidget {
                               child: Container(
                                 child: Text(
                                   'Edit Skills',
-                                  style: SafeGoogleFont(
-                                    'Be Vietnam Pro',
+                                  style: TextStyle(
                                     fontSize: 17 * ffem,
                                     fontWeight: FontWeight.w400,
                                     height: 1.5 * ffem / fem,
@@ -181,7 +191,8 @@ class account_managment extends StatelessWidget {
                         ),
                       ),
                     ),
-                  if (isLoggedInArtist)
+                  // Edit Work Samples (based on conditions)
+                  if (isSoloArtist || isTeam)
                     InkWell(
                       onTap: () {
                         Navigator.push(
@@ -207,8 +218,7 @@ class account_managment extends StatelessWidget {
                               child: Container(
                                 child: Text(
                                   'Edit Work Samples',
-                                  style: SafeGoogleFont(
-                                    'Be Vietnam Pro',
+                                  style: TextStyle(
                                     fontSize: 17 * ffem,
                                     fontWeight: FontWeight.w400,
                                     height: 1.5 * ffem / fem,
@@ -228,7 +238,7 @@ class account_managment extends StatelessWidget {
                         ),
                       ),
                     ),
-
+                  // Report a Problem
                   InkWell(
                     onTap: () {
                       Navigator.push(
@@ -254,8 +264,7 @@ class account_managment extends StatelessWidget {
                             child: Container(
                               child: Text(
                                 'Report a Problem',
-                                style: SafeGoogleFont(
-                                  'Be Vietnam Pro',
+                                style: TextStyle(
                                   fontSize: 17 * ffem,
                                   fontWeight: FontWeight.w400,
                                   height: 1.5 * ffem / fem,
@@ -275,6 +284,7 @@ class account_managment extends StatelessWidget {
                       ),
                     ),
                   ),
+                  // Delete Account
                   InkWell(
                     onTap: () {
                       Navigator.push(
@@ -300,8 +310,7 @@ class account_managment extends StatelessWidget {
                             child: Container(
                               child: Text(
                                 'Delete Account',
-                                style: SafeGoogleFont(
-                                  'Be Vietnam Pro',
+                                style: TextStyle(
                                   fontSize: 17 * ffem,
                                   fontWeight: FontWeight.w400,
                                   height: 1.5 * ffem / fem,
@@ -323,8 +332,8 @@ class account_managment extends StatelessWidget {
                   ),
                 ],
               ),
-            ),
-          ),
+            );
+          },
         ),
       ),
     );

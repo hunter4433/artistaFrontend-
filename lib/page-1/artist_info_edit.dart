@@ -2,6 +2,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:test1/page-1/artsit_skills_edit.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'dart:convert';
+
+
 
 import '../utils.dart';
 
@@ -11,42 +16,101 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
+  TextEditingController _nameController = TextEditingController();
+  TextEditingController _phoneController = TextEditingController();
+  TextEditingController _ageController = TextEditingController();
+  TextEditingController _addressController= TextEditingController();
+  TextEditingController _altPhoneController=TextEditingController();
+  TextEditingController _teamNameController=TextEditingController();
+
   // Variables to hold profile data
-  String _name = '';
-  int _age = 0;
-  String _phoneNo = '';
-  String _address = '';
+  // String _name = '';
+  // int _age = 0;
+  // String _phoneNo = '';
+  // String _address = '';
   File? _image;
 
-  // Function to fetch profile data from backend
-  void fetchProfileData() {
-    // Call your backend API to fetch data
-    // Update the state variables with fetched data
-    setState(() {
-      _name = 'John Doe'; // Example data
-      _age = 30; // Example data
-      _phoneNo = '1234567890'; // Example data
-      _address = '123 Main St, City'; // Example data
-    });
+  final storage = FlutterSecureStorage();
+
+  Future<String?> _getToken() async {
+    return await storage.read(key: 'token'); // Assuming you stored the token with key 'token'
+  }
+  Future<String?> _getid() async {
+    return await storage.read(key: 'id'); // Assuming you stored the token with key 'token'
+  }
+  Future<String?> _getKind() async {
+    return await storage.read(key: 'selected_value'); // Assuming you stored the token with key 'token'
+  }
+
+  Future<void> fetchArtistInformation() async {
+    String? token = await _getToken();
+    String? id = await _getid();
+    String? kind = await _getKind();
+    // print(token);
+    print(id);
+    print(kind);
+
+    // Initialize API URLs for different kinds
+    String apiUrl;
+      if (kind == 'solo_artist') {
+      apiUrl = 'http://127.0.0.1:8000/api/artist/info/$id';
+    } else if (kind == 'team') {
+      apiUrl = 'http://127.0.0.1:8000/api/artist/team_info/$id';
+    } else {
+      // Handle the case where kind is not recognized
+      return;
+    }
+
+    try {
+      var response = await http.get(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/vnd.api+json',
+          'Accept': 'application/vnd.api+json',
+          'Authorization': 'Bearer $token', // Include the token in the header
+        },
+      );
+      if (response.statusCode == 200) {
+        // Parse the response JSON
+        Map<String, dynamic> userData = json.decode(response.body);
+        print(userData);
+
+        // Update text controllers with fetched data
+        setState(() {
+          _nameController.text = userData['data']['attributes']['name'] ?? '';
+          _teamNameController.text=userData['data']['attributes']['team_name'] ?? '';
+          _phoneController.text = userData['data']['attributes']['phone_number'] ?? '';
+          _ageController.text = userData['data']['attributes']['age']?.toString() ?? '';
+          _addressController.text = userData['data']['attributes']['address'] ?? '';
+          _altPhoneController.text=userData['data']['attributes']['alt_phone_number'];
+          // _sController.text = userData['data']['attributes']['state'] ?? '';
+          // _pinCodeController.text = userData['data']['attributes']['pin'] ?? '';
+        });
+      } else {
+        print('Failed to fetch user information. Status code: ${response.body}');
+      }
+    } catch (e) {
+      print('Error fetching user information: $e');
+    }
   }
 
   @override
   void initState() {
     super.initState();
-    fetchProfileData(); // Fetch profile data when screen initializes
+    fetchArtistInformation(); // Fetch profile data when screen initializes
   }
 
-  // Function to update profile data to backend
-  void updateProfileData() {
-    // Call your backend API to update data
-    // Display success or error message accordingly
-    // For simplicity, we'll just print the data here
-    print('Updated Profile:');
-    print('Name: $_name');
-    print('Age: $_age');
-    print('Phone No: $_phoneNo');
-    print('Address: $_address');
-  }
+  // // Function to update profile data to backend
+  // void updateProfileData() {
+  //   // Call your backend API to update data
+  //   // Display success or error message accordingly
+  //   // For simplicity, we'll just print the data here
+  //   print('Updated Profile:');
+  //   print('Name: $_name');
+  //   print('Age: $_age');
+  //   print('Phone No: $_phoneNo');
+  //   print('Address: $_address');
+  // }
 
   // Function to pick an image from gallery
   Future<void> _pickImage() async {
@@ -66,15 +130,26 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     double baseWidth = 390;
     double fem = MediaQuery.of(context).size.width / baseWidth;
     double ffem = fem * 0.97;
+
+    // Condition to determine which controller to use
+    bool useTeamController = _teamNameController.text.isNotEmpty;
+    bool useAltPhoneController=_altPhoneController.text.isNotEmpty;
+
+    // Dynamically select the controller based on the condition
+    TextEditingController? selectedController =
+    useTeamController ? _teamNameController : _nameController;
+
+    TextEditingController? newSelectedController=
+        useAltPhoneController? _altPhoneController:_ageController;
     return Scaffold(
       appBar: AppBar(
         title: Text('Edit Profile'),
         actions: [
           IconButton(
             icon: Icon(Icons.done),
-            color:Color(0xffe5195e), // Change icon button color
+            color: Color(0xffe5195e), // Change icon button color
             onPressed: () {
-              updateProfileData(); // Call function to update profile data
+              _saveUserInformation(); // Call function to update profile data
               Navigator.pop(context); // Go back to previous screen
             },
           ),
@@ -120,53 +195,45 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
             // Name
             TextFormField(
-              initialValue: _name,
+              controller: selectedController, // Use the defined text controller
               decoration: InputDecoration(
-                labelText: 'Name',
+                labelText: useTeamController? 'Team Name': 'Name',
                 border: OutlineInputBorder(
                   borderSide: BorderSide(color: Colors.grey),
                   borderRadius: BorderRadius.circular(15.0), // Round the container
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Color(0xffe5195e),), // Change focused border color
+                  borderSide: BorderSide(
+                    color: Color(0xffe5195e),
+                  ), // Change focused border color
                   borderRadius: BorderRadius.circular(15.0), // Round the container
                 ),
               ),
-              onChanged: (value) {
-                setState(() {
-                  _name = value;
-                });
-              },
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 20), // Add space between Name and Age fields
 
-            // Age
-            TextFormField(
-              initialValue: _age.toString(),
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'Age',
-                border: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(15.0), // Round the container
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color:Color(0xffe5195e),), // Change focused border color
-                  borderRadius: BorderRadius.circular(15.0), // Round the container
-                ),
-              ),
-              onChanged: (value) {
-                setState(() {
-                  _age = int.tryParse(value) ?? 0;
-                });
-              },
-            ),
-            SizedBox(height: 20),
-
-            // Phone Number
-            TextFormField(
-              initialValue: _phoneNo,
+            // Conditional rendering for Age or Alternate Phone Number
+            _getKind() == 'team'
+                ? TextFormField(
+              controller: _altPhoneController,
               keyboardType: TextInputType.phone,
+              decoration: InputDecoration(
+                labelText: 'Alternate Phone Number',
+                border: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(15.0), // Round the container
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Color(0xffe5195e),
+                  ), // Change focused border color
+                  borderRadius: BorderRadius.circular(15.0), // Round the container
+                ),
+              ),
+            )
+                : TextFormField(
+              controller: _phoneController, // Use the defined text controller
+              keyboardType: TextInputType.number,
               decoration: InputDecoration(
                 labelText: 'Phone Number',
                 border: OutlineInputBorder(
@@ -174,21 +241,38 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   borderRadius: BorderRadius.circular(15.0), // Round the container
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Color(0xffe5195e),), // Change focused border color
+                  borderSide: BorderSide(
+                    color: Color(0xffe5195e),
+                  ), // Change focused border color
                   borderRadius: BorderRadius.circular(15.0), // Round the container
                 ),
               ),
-              onChanged: (value) {
-                setState(() {
-                  _phoneNo = value;
-                });
-              },
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 20), // Add space between Age/Phone Number and Address fields
+
+            // Phone Number
+            TextFormField(
+              controller: newSelectedController, // Use the defined text controller
+              keyboardType: TextInputType.phone,
+              decoration: InputDecoration(
+                labelText: useAltPhoneController ? 'Alternate Phone Number' : 'Age',
+                border: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(15.0), // Round the container
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Color(0xffe5195e),
+                  ), // Change focused border color
+                  borderRadius: BorderRadius.circular(15.0), // Round the container
+                ),
+              ),
+            ),
+            SizedBox(height: 20), // Add space between Phone Number and Address fields
 
             // Address
             TextFormField(
-              initialValue: _address,
+              controller: _addressController, // Use the defined text controller
               maxLines: null,
               keyboardType: TextInputType.multiline,
               decoration: InputDecoration(
@@ -198,23 +282,99 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   borderRadius: BorderRadius.circular(15.0), // Round the container
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Color(0xffe5195e),), // Change focused border color
+                  borderSide: BorderSide(
+                    color: Color(0xffe5195e),
+                  ), // Change focused border color
                   borderRadius: BorderRadius.circular(15.0), // Round the container
                 ),
               ),
-              onChanged: (value) {
-                setState(() {
-                  _address = value;
-                });
-              },
             ),
-            SizedBox(height: 20),
 
+            SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
+
+
+  void _saveUserInformation() async {
+    final storage = FlutterSecureStorage();
+
+    Future<String?> _getToken() async {
+      return await storage.read(key: 'token'); // Assuming you stored the token with key 'token'
+    }
+
+    Future<String?> _getid() async {
+      return await storage.read(key: 'id'); // Assuming you stored the token with key 'token'
+    }
+    Future<String?> _getKind() async {
+      return await storage.read(key: 'selected_value'); // Assuming you stored the token with key 'token'
+    }
+
+
+    String? token = await _getToken();
+    String? id = await _getid();
+    String? kind = await _getKind();
+    print(kind);
+    print (token);
+
+
+    // Initialize API URLs for different kinds
+    String apiUrl;
+    if (kind == 'solo_artist') {
+      apiUrl = 'http://127.0.0.1:8000/api/artist/info/$id';
+    } else if (kind == 'team') {
+      apiUrl = 'http://127.0.0.1:8000/api/artist/team_info/$id';
+    } else {
+      // Handle the case where kind is not recognized
+      return;
+    }
+
+    // Prepare data to send to the backend
+    Map<String, dynamic> userData = {
+      'name': _nameController.text,
+      'phone_number': _phoneController.text,
+      'address': _addressController.text,
+      'age': _ageController.text,
+      'team_name':_teamNameController.text,
+      'alt_phone_number': _altPhoneController.text,
+      // 'state': _stateController.text,
+      // 'pin': _pinCodeController.text,
+    };
+
+    try {
+      // Make PUT request to the API
+      var response = await http.patch(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/vnd.api+json',
+          'Accept': 'application/vnd.api+json',
+          'Authorization': 'Bearer $token', // Include the token in the header
+        },
+        body: jsonEncode(userData),
+      );
+
+      // Check if request was successful (status code 200)
+      if (response.statusCode == 200) {
+        // User information saved successfully, handle response if needed
+        print('User information saved successfully');
+        // Example response handling
+        print('Response: ${response.body}');
+      } else {
+        // Request failed, handle error
+        print('Failed to save user information. Status code: ${response
+            .statusCode}');
+        // Example error handling
+        print('Error response: ${response.body}');
+      }
+    } catch (e) {
+      // Handle network errors
+      print('Error saving user information: $e');
+    }
+  }
+
+
 }
 
 void main() {

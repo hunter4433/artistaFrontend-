@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:test1/page-1/booking_history.dart';
 import '../utils.dart';
+import 'package:intl/intl.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class booking_artist extends StatefulWidget {
   @override
@@ -12,23 +16,97 @@ class _BookingArtistState extends State<booking_artist> {
   DateTime? selectedDate; // Define selectedDate variable here
   bool isContainerTapped = false;
   String? selectedFromTime;
-  // Define selectedFromTime variable to hold the selected time
-  // Simulated backend function to fetch artist image URL
-  Future<String> fetchArtistImage() async {
-    await Future.delayed(Duration(seconds: 2));
-    return 'https://example.com/artist_image.jpg';
+  String? selectedFromTimeBack;
+  String? selectedToTimeBack;
+  String? name;
+  String? price;
+  String? image;
+  // Define TextEditingController instances
+  TextEditingController durationController = TextEditingController();
+  TextEditingController locationController = TextEditingController();
+  TextEditingController specialRequestController = TextEditingController();
+
+
+
+  final storage = FlutterSecureStorage();
+
+  Future<String?> _getToken() async {
+    return await storage.read(key: 'token'); // Assuming you stored the token with key 'token'
+  }
+  Future<String?> _getid() async {
+    return await storage.read(key: 'id'); // Assuming you stored the token with key 'token'
+  }
+  Future<String?> _getKind() async {
+    return await storage.read(key: 'selected_value'); // Assuming you stored the token with key 'token'
+  }
+  // Simulated backend function to fetch artist name and price
+  @override
+  void initState() {
+    super.initState();
+    fetchArtistInformation();
+    // // Set the initial value of the "From" controller to selectedFromTime if it's not null
+    // fromTimeController.text = selectedFromTime ?? '';
+    // // Set the initial value of the "To" controller to selectedToTime if it's not null
+    // toTimeController.text = selectedToTime ?? '';
+  }
+  Future<void> fetchArtistInformation() async {
+    String? token = await _getToken();
+    String? id = await _getid();
+    String? kind = await _getKind();
+    // print(token);
+    print(id);
+    print(kind);
+
+    // Initialize API URLs for different kinds
+    String apiUrl;
+    // if (kind == 'solo_artist') {
+      apiUrl = 'http://127.0.0.1:8000/api/featured/artist_info/$id';
+
+    // } else if (kind == 'team') {
+    //   apiUrl = 'http://127.0.0.1:8000/api/artist/team_info/$id';
+    // } else {
+    //   // Handle the case where kind is not recognized
+    //   return;
+    // }
+
+    try {
+      var response = await http.get(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/vnd.api+json',
+          'Accept': 'application/vnd.api+json',
+          // 'Authorization': 'Bearer $token', // Include the token in the header
+        },
+      );
+      if (response.statusCode == 200) {
+        // Parse the response JSON
+        // Parse the response JSON
+        List<dynamic> userDataList = json.decode(response.body);
+
+
+        // Assuming the response is a list, iterate over each user's data
+        for (var userData in userDataList) {
+          // Update text controllers with fetched data for each user
+          setState(() {
+            name = userData['name'] ?? ''; // Assign String to name
+            price = userData['price_per_hour'] ?? ''; // Assign String to price
+            image = 'http://127.0.0.1:8000/storage/${userData['profile_photo']}' ;
+          });
+
+        }
+      } else {
+        print('Failed to fetch user information. Status code: ${response.body}');
+      }
+    } catch (e) {
+      print('Error fetching user information: $e');
+    }
   }
 
-  // Simulated backend function to fetch artist name and price
-  Future<Map<String, dynamic>> fetchArtistData() async {
-    await Future.delayed(Duration(seconds: 2));
-    return {
-      'name': 'DJ Khaled',
-      'price': 1500,
-    };
-  }
+
+
 
   Future<void> _selectDate(BuildContext context) async {
+
     final DateTime? pickedDate = await showDatePicker(
       context: context,
       initialDate: selectedDate ?? DateTime.now(),
@@ -57,6 +135,7 @@ class _BookingArtistState extends State<booking_artist> {
     if (pickedDate != null && pickedDate != selectedDate) {
       setState(() {
         selectedDate = pickedDate;
+        print(selectedDate);
       });
     }
   }
@@ -66,23 +145,16 @@ class _BookingArtistState extends State<booking_artist> {
   // Define a TextEditingController for the "To" TextField
   TextEditingController toTimeController = TextEditingController();
 
-  @override
-  void dispose() {
-    // Dispose both controllers to avoid memory leaks
-    fromTimeController.dispose();
-    toTimeController.dispose();
-    super.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   // Dispose both controllers to avoid memory leaks
+  //   fromTimeController.dispose();
+  //   toTimeController.dispose();
+  //   super.dispose();
+  // }
   String? selectedToTime; // Define selectedToTime variable here
 
-  @override
-  void initState() {
-    super.initState();
-    // Set the initial value of the "From" controller to selectedFromTime if it's not null
-    fromTimeController.text = selectedFromTime ?? '';
-    // Set the initial value of the "To" controller to selectedToTime if it's not null
-    toTimeController.text = selectedToTime ?? '';
-  }
+
   @override
   Widget build(BuildContext context) {
     double baseWidth = 390;
@@ -143,26 +215,23 @@ class _BookingArtistState extends State<booking_artist> {
                                 decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                   ),
-                                child: FutureBuilder<String>(
-                                  future: fetchArtistImage(), // Function to fetch artist image URL from backend
-                                  builder: (context, snapshot) {
-                                    if (snapshot.connectionState == ConnectionState.waiting) {
-                                      return CircularProgressIndicator(); // Placeholder while loading
-                                    } else {
-                                      return Container(
-                                        margin: EdgeInsets.fromLTRB(10 * fem, 0 * fem, 10 * fem, 0 * fem),
-                                        width: 128 * fem,
-                                        height: 128 * fem,
-                                        decoration: BoxDecoration(color: Colors.grey,
-                                          shape: BoxShape.circle,
-                                          image: DecorationImage(
-                                            image: NetworkImage(snapshot.data!), // Use fetched image URL
-                                            fit: BoxFit.cover,
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                  },
+                                child: Container(
+                                  margin: EdgeInsets.fromLTRB(10 * fem, 0 * fem, 10 * fem, 0 * fem),
+                                  width: 128 * fem,
+                                  height: 128 * fem,
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(64 * fem),
+                                    child: Image.network(
+                                      image ?? '',
+                                      width: 128 * fem,
+                                      height: 128 * fem,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
                                 ),
                               ),
                               Container(
@@ -173,44 +242,26 @@ class _BookingArtistState extends State<booking_artist> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    FutureBuilder<Map<String, dynamic>>(
-                                      future: fetchArtistData(), // Function to fetch artist data from backend
-                                      builder: (context, snapshot) {
-                                        if (snapshot.connectionState == ConnectionState.waiting) {
-                                          return CircularProgressIndicator(); // Placeholder while loading
-                                        } else {
-                                          return Text(
-                                            snapshot.data!['name'], // Use fetched name
-                                            style: SafeGoogleFont(
-                                              'Be Vietnam Pro',
-                                              fontSize: 16 * ffem,
-                                              fontWeight: FontWeight.w500,
-                                              height: 1.5 * ffem / fem,
-                                              color: Color(0xff1e0a11),
-                                            ),
-                                          );
-                                        }
-                                      },
+                                    Text(
+                                      name ?? '', // Use fetched name
+                                      style: SafeGoogleFont(
+                                        'Be Vietnam Pro',
+                                        fontSize: 16 * ffem,
+                                        fontWeight: FontWeight.w500,
+                                        height: 1.5 * ffem / fem,
+                                        color: Color(0xff1e0a11),
+                                      ),
                                     ),
                                     SizedBox(height: 4),
-                                    FutureBuilder<Map<String, dynamic>>(
-                                      future: fetchArtistData(), // Function to fetch artist data from backend
-                                      builder: (context, snapshot) {
-                                        if (snapshot.connectionState == ConnectionState.waiting) {
-                                          return CircularProgressIndicator(); // Placeholder while loading
-                                        } else {
-                                          return Text(
-                                            '₹${snapshot.data!['price']}   Per Hour\n(Includes all the Charges)', // Use fetched price
-                                            style: SafeGoogleFont(
-                                              'Be Vietnam Pro',
-                                              fontSize: 16 * ffem,
-                                              fontWeight: FontWeight.w400,
-                                              height: 1.5 * ffem / fem,
-                                              color: Color(0xffa53a5e),
-                                            ),
-                                          );
-                                        }
-                                      },
+                                    Text(
+                                      '₹${price ?? ''}   Per Hour\n(Includes all the Charges)', // Use fetched price
+                                      style: SafeGoogleFont(
+                                        'Be Vietnam Pro',
+                                        fontSize: 16 * ffem,
+                                        fontWeight: FontWeight.w400,
+                                        height: 1.5 * ffem / fem,
+                                        color: Color(0xffa53a5e),
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -325,47 +376,50 @@ class _BookingArtistState extends State<booking_artist> {
                               Row(
                                 children:[
                                   Container(
-                                  width: 175,
-                                  height: 56 * fem,
-                                     child: TextField(
-                                       controller: fromTimeController, // Connect the controller here
-                                       onTap: () async {
-                                         final TimeOfDay? pickedTime = await showTimePicker(
-                                           context: context,
-                                           initialTime: TimeOfDay.now(),
-                                         );
+                                    width: 175,
+                                    height: 56 * fem,
+                                    child: TextField(
+                                      controller: fromTimeController,
+                                      onTap: () async {
+                                        final TimeOfDay? pickedTime = await showTimePicker(
+                                          context: context,
+                                          initialTime: TimeOfDay.now(),
+                                        );
 
-                                         if (pickedTime != null) {
-                                           setState(() {
-                                             // Store the selected time in selectedFromTime variable
-                                             selectedFromTime = pickedTime.format(context);
-                                             fromTimeController.text = selectedFromTime ?? ''; // Update the text field
-                                           });
-                                         }
-                                       },
-                                       decoration: InputDecoration(
-                                         suffixIcon: Icon(Icons.access_time, color: Color(0xffeac6d3)),
-                                         hintText: 'From',
-                                         enabledBorder: OutlineInputBorder(
-                                           borderRadius: BorderRadius.circular(12 * fem),
-                                           borderSide: BorderSide(width: 1.25, color: Color(0xffeac6d3)),
-                                         ),
-                                         focusedBorder: OutlineInputBorder(
-                                           borderRadius: BorderRadius.circular(12 * fem),
-                                           borderSide: BorderSide(width: 1.25, color: Color(0xffe5195e)),
-                                         ),
-                                       ),
-                                     ),
+                                        if (pickedTime != null) {
+                                          setState(() {
+                                            // Store the selected time in selectedFromTime variable
+                                            selectedFromTime = pickedTime.format(context);
+                                            String formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate!);
+                                            selectedFromTimeBack = '$formattedDate ${pickedTime.hour}:${pickedTime.minute}:00';
+                                            print(selectedFromTimeBack);
+                                            fromTimeController.text = selectedFromTime ?? ''; // Update the text field
+                                            // fromTimeController.text = selectedFromTime ?? ''; // Update the text field
+                                          });
+                                        }
+                                      },
+                                      decoration: InputDecoration(
+                                        suffixIcon: Icon(Icons.access_time, color: Color(0xffeac6d3)),
+                                        hintText: 'From',
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12 * fem),
+                                          borderSide: BorderSide(width: 1.25, color: Color(0xffeac6d3)),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12 * fem),
+                                          borderSide: BorderSide(width: 1.25, color: Color(0xffe5195e)),
+                                        ),
+                                      ),
+                                    ),
                                   ),
                                   SizedBox(
                                     width: 10,
                                   ),
-
                                   Container(
                                     width: 175,
                                     height: 56 * fem,
                                     child: TextField(
-                                      controller: toTimeController, // Connect the controller here
+                                      controller: toTimeController,
                                       onTap: () async {
                                         final TimeOfDay? pickedTime = await showTimePicker(
                                           context: context,
@@ -376,6 +430,10 @@ class _BookingArtistState extends State<booking_artist> {
                                           setState(() {
                                             // Store the selected time in selectedToTime variable
                                             selectedToTime = pickedTime.format(context);
+                                            // Format the selected date and time
+                                            String formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate!);
+                                            selectedToTimeBack = '$formattedDate ${pickedTime.hour}:${pickedTime.minute}:00';
+                                            print(selectedToTimeBack);
                                             toTimeController.text = selectedToTime ?? ''; // Update the text field
                                           });
                                         }
@@ -394,13 +452,14 @@ class _BookingArtistState extends State<booking_artist> {
                                       ),
                                     ),
                                   ),
-                              ]
+                                ],
                               ),
 
                             ],
                           ),
                         ),
 
+                        // Widgets using the text controllers to store inserted data
                         Container(
                           margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 8 * fem),
                           child: Text(
@@ -414,15 +473,13 @@ class _BookingArtistState extends State<booking_artist> {
                             ),
                           ),
                         ),
-
-
-
                         Container(
                           width: double.infinity,
                           height: 56 * fem,
                           child: TextField(
+                            controller: durationController, // Connect the controller here
                             decoration: InputDecoration(
-
+                              hintText: 'Event Duration',
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12 * fem),
                                 borderSide: BorderSide(width: 1.25, color: Color(0xffeac6d3)),
@@ -434,32 +491,28 @@ class _BookingArtistState extends State<booking_artist> {
                             ),
                           ),
                         ),
-                        SizedBox(
-                          height: 18*fem,
-                        ),
-
+                        SizedBox(height: 18 * fem),
                         Container(
-                          // durationPc3 (9:1652)
-                          margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 0*fem, 16*fem),
+                          margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 16 * fem),
                           child: Text(
                             'Event Location',
-                            style: SafeGoogleFont (
+                            style: SafeGoogleFont(
                               'Be Vietnam Pro',
-                              fontSize: 22*ffem,
+                              fontSize: 22 * ffem,
                               fontWeight: FontWeight.w700,
-                              height: 1.25*ffem/fem,
-                              letterSpacing: -0.3300000131*fem,
+                              height: 1.25 * ffem / fem,
+                              letterSpacing: -0.3300000131 * fem,
                               color: Color(0xff1e0a11),
                             ),
                           ),
                         ),
-
                         Container(
                           width: double.infinity,
                           height: 156 * fem,
-                          child: TextField( maxLines: null,
+                          child: TextField(
+                            controller: locationController, // Connect the controller here
+                            maxLines: null,
                             decoration: InputDecoration(
-
                               hintText: 'Full Address',
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12 * fem),
@@ -472,47 +525,39 @@ class _BookingArtistState extends State<booking_artist> {
                             ),
                           ),
                         ),
-                        SizedBox(
-                          height: 18*fem,
-                        ),
-
-
-
+                        SizedBox(height: 18 * fem),
                         Container(
-                          // specialrequestssp3 (9:1666)
-                          margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 0*fem, 6.5*fem),
+                          margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 6.5 * fem),
                           child: Text(
                             'Special requests',
-                            style: SafeGoogleFont (
+                            style: SafeGoogleFont(
                               'Be Vietnam Pro',
-                              fontSize: 22*ffem,
+                              fontSize: 22 * ffem,
                               fontWeight: FontWeight.w700,
-                              height: 1.25*ffem/fem,
-                              letterSpacing: -0.3300000131*fem,
+                              height: 1.25 * ffem / fem,
+                              letterSpacing: -0.3300000131 * fem,
                               color: Color(0xff1e0a11),
                             ),
                           ),
                         ),
                         Container(
-                          // depth3frame0y6P (9:1669)
-                          margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 0*fem, 24*fem),
+                          margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 24 * fem),
                           width: double.infinity,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Container(
-                                // pleaseprovideanyspecialrequest (9:1671)
-                                margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 0*fem, 8*fem),
-                                constraints: BoxConstraints (
-                                  maxWidth: 325*fem,
+                                margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 8 * fem),
+                                constraints: BoxConstraints(
+                                  maxWidth: 325 * fem,
                                 ),
                                 child: Text(
                                   'Any Special Message For the Booked Artist.',
-                                  style: SafeGoogleFont (
+                                  style: SafeGoogleFont(
                                     'Be Vietnam Pro',
-                                    fontSize: 16*ffem,
+                                    fontSize: 16 * ffem,
                                     fontWeight: FontWeight.w500,
-                                    height: 1.5*ffem/fem,
+                                    height: 1.5 * ffem / fem,
                                     color: Color(0xff1e0a11),
                                   ),
                                 ),
@@ -521,8 +566,8 @@ class _BookingArtistState extends State<booking_artist> {
                                 width: double.infinity,
                                 height: 56 * fem,
                                 child: TextField(
+                                  controller: specialRequestController, // Connect the controller here
                                   decoration: InputDecoration(
-
                                     hintText: 'Optional',
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12 * fem),
@@ -543,6 +588,7 @@ class _BookingArtistState extends State<booking_artist> {
                           child: ElevatedButton(
                             onPressed: () {
                               print('hi');
+                              _saveBookingInformation();
                               // Handle button press
                             },
                             style: ElevatedButton.styleFrom(
@@ -589,6 +635,73 @@ class _BookingArtistState extends State<booking_artist> {
         ),
             ),
     ),);
+  }
+
+  Future<bool> _saveBookingInformation() async {
+    final storage = FlutterSecureStorage();
+
+    Future<String?> _getArtist_id() async {
+      return await storage.read(key: 'artist_id'); // Assuming you stored the token with key 'token'
+    }
+
+    Future<String?> _getToken() async {
+      return await storage.read(key: 'token');
+    }
+
+    String? token = await _getToken();
+    String? artist_id = await _getArtist_id();
+    String? apiUrl='http://127.0.0.1:8000/api/booking';
+
+    Map<String, dynamic> bookingData = {
+      'artist_id':'$artist_id',
+      'booking_date': selectedDate != null ? selectedDate.toString() : null,
+      'booked_from':  selectedFromTimeBack ?? '',
+      'booked_to':  selectedToTimeBack ?? '',
+      'duration': durationController.text,
+      'location': locationController.text,
+      'special_request': specialRequestController.text,
+    };
+
+
+
+    try {
+      // Make PATCH request to the API
+      var response = await http.post(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/vnd.api+json',
+          'Accept': 'application/vnd.api+json',
+          'Authorization': 'Bearer $token', // Include the token in the header
+        },
+        body: jsonEncode(bookingData),
+      );
+
+      // Check if request was successful (status code 200)
+      if (response.statusCode == 201) {
+        // User information saved successfully, handle response if needed
+        print('User information saved successfully');
+
+        Map<String, dynamic> responseData = jsonDecode(response.body);
+        int id = responseData['id'];
+
+// Store the token securely
+        await storage.write(key: 'booking_id', value: id.toString());
+        print(id);
+        // Example response handling
+        print('Response: ${response.body}');
+        return true;
+      } else {
+        // Request failed, handle error
+        print('Failed to save user information. Status code: ${response.statusCode}');
+        // Example error handling
+        print('Error response: ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      // Handle network errors
+      print('Error saving user information: $e');
+    }
+    return false;
   }
 
     Future<void> selectDate(BuildContext context) async {

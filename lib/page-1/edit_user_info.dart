@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+
 class user_information extends StatefulWidget {
   @override
   _UserInformationState createState() => _UserInformationState();
@@ -75,7 +76,7 @@ class _UserInformationState extends State<user_information> {
         });
       } else {
         print('Failed to fetch user information. Status code: ${response
-            .statusCode}');
+            .body}');
       }
     } catch (e) {
       print('Error fetching user information: $e');

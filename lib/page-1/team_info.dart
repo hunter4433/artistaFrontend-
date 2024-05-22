@@ -234,7 +234,8 @@ class _artist_credState extends State<team_info> {
                               } else {
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (context) => team2signup() ),
+                                  MaterialPageRoute(builder: (context) => team2signup(
+                                    profilePhoto: _imageFile,) ),
                                 );
                                 // Store _ageController.text using SharedPreferences
                                 SharedPreferences prefs = await SharedPreferences.getInstance();
