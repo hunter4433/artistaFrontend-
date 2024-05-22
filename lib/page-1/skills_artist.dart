@@ -13,9 +13,17 @@ import 'package:http/http.dart' as http;
 
 
 class ArtistCredentials2 extends StatefulWidget {
+  final File? profilePhoto;
+
+  ArtistCredentials2({
+    this.profilePhoto,
+  });
   @override
   _ArtistCredentials2State createState() => _ArtistCredentials2State();
 }
+
+
+
 
 class _ArtistCredentials2State extends State<ArtistCredentials2> {
   TextEditingController _subskillController = TextEditingController();
@@ -48,7 +56,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
       'name': prefs.getString('name'),
       'address': prefs.getString('address'),
       'phone_number': prefs.getString('phone_number'),
-      'profile_photo': prefs.getString('imageFilePath'),
+      // 'profile_photo': prefs.getString('imageFilePath'),
     };
   }
 
@@ -59,14 +67,20 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
   }
 
   Future<void> _sendDataToBackend() async {
+    String? profilePhotoPath = widget.profilePhoto?.path;
+    print("hi");
+    print(profilePhotoPath);
+    print('bye');
     try {
       // Get shared preferences data
       Map<String, String?> sharedPreferencesData = await getAllSharedPreferences();
       Map<String, String?> profilePreferencesData = await profileSharedPreferences();
 
-      var profilePhoto=profilePreferencesData['profile_photo'];
-      File profilePhotoFile = File(profilePhoto!);
-      print(profilePhotoFile);
+      // var profilePhoto=profilePreferencesData['profile_photo'];
+      File profilePhotoFile = File(profilePhotoPath!);
+      // print(profilePhotoFile);
+      // print(_image1);
+      // print(_image2);
 
       // print(profile_photo);
 
@@ -75,7 +89,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
       // Check if token is not null
       if (token != null) {
         // Select images from gallery
-        List<File?> imageFiles = [_image1, _image2, _image3, _image4];
+        List<File?> imageFiles = [_image1, _image2, _image3, _image4,profilePhotoFile];
 
 
         // Check if images are selected
@@ -100,13 +114,13 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
           if (imagePaths.length == imageFiles.length) {
             // If it does, proceed to merge data
             for (int i = 0; i < imageFiles.length; i++) {
-              // if (i == imageFiles.length - 1) {
-              //   // Last item (profile photo)
-              //   mergedData['profile_photo'] = imagePaths[i];
-              // } else {
+              if (i == imageFiles.length - 1) {
+                // Last item (profile photo)
+                mergedData['profile_photo'] = imagePaths[i];
+              } else {
                 // Other image files
                 mergedData['image${i + 1}'] = imagePaths[i];
-              // }
+              }
             }
           } else {
              print('this side mohit');
@@ -142,7 +156,10 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
             Map<String, dynamic> responseData = jsonDecode(response.body);
             String id = responseData['data']['id'];
             await storage.write(key: 'id', value: id);
+
+            String skill = responseData['data']['skill_category'];
             print(id);
+            print(skill);
           } else {
             // Request failed, handle error
             print('Failed to send data. Status code: ${response.statusCode}');
@@ -209,6 +226,9 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
           break;
         case 'Visual Artist':
           _subSkills.addAll(['Painting', 'Sculpture', 'Drawing']);
+          break;
+        case 'Magician':
+          _subSkills.addAll(['Magician', 'Sculpture', 'Drawing']);
           break;
       }
       _selectedSubSkill = _subSkills.first; // Initialize selected sub-skill with the first item in the list

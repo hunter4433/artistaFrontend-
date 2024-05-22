@@ -1,13 +1,140 @@
 import 'package:flutter/material.dart';
 import '../utils.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'dart:convert';
 
-class booked extends StatelessWidget {
+class Booked extends StatefulWidget {
+  @override
+  _BookedState createState() => _BookedState();
+}
+
+class _BookedState extends State<Booked> {
   // Fetched text from backend
-  final String dateText = 'Sat, Feb 5';
-  final String timeText = '10:00 PM';
-  final String durationText = '3 hours';
-  final String priceText = '\$65.00 USD';
-  final String locationText = 'Venue';
+
+  String? name;
+  String? price;
+  String? image;
+   String? dateText ;
+  String? timeText ;
+   String? durationText ;
+ String? priceText;
+String? locationText ;
+
+  final storage = FlutterSecureStorage();
+
+  Future<String?> _getToken() async {
+    return await storage.read(key: 'token'); // Assuming you stored the token with key 'token'
+  }
+  Future<String?> _getid() async {
+    return await storage.read(key: 'id'); // Assuming you stored the token with key 'token'
+  }
+  Future<String?> _getbookingid() async {
+    return await storage.read(key: 'booking_id'); // Assuming you stored the token with key 'token'
+  }
+  Future<String?> _getKind() async {
+    return await storage.read(key: 'selected_value'); // Assuming you stored the token with key 'token'
+  }
+  @override
+  void initState() {
+    super.initState();
+    fetchArtistBooking();
+    fetchBookingDetails();
+    // // Set the initial value of the "From" controller to selectedFromTime if it's not null
+    // fromTimeController.text = selectedFromTime ?? '';
+    // // Set the initial value of the "To" controller to selectedToTime if it's not null
+    // toTimeController.text = selectedToTime ?? '';
+  }
+
+  Future<String?> fetchBookingDetails()async{
+  String? token = await _getToken();
+  String? booking_id = await _getbookingid();
+
+  String apiUrl= 'http://127.0.0.1:8000/api/booking/$booking_id';
+
+  try {
+    var response = await http.get(
+      Uri.parse(apiUrl),
+      headers: <String, String>{
+        'Content-Type': 'application/vnd.api+json',
+        'Accept': 'application/vnd.api+json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+    if (response.statusCode == 200) {
+      Map<String, dynamic> userData = json.decode(response.body);
+      print(userData);
+
+      // Check if the widget is mounted before calling setState
+
+      setState(() {
+      durationText = userData['duration'] ?? '';
+      locationText = userData['location'] ?? '';
+      dateText = userData['booking_date'] ?? '';
+      timeText = userData['booked_from'] ?? '';
+      });
+    }
+
+   else {
+      print('Failed to fetch user information. Status code: ${response.body}');
+    }
+  } catch (e) {
+    print('Error fetching user information: $e');
+  }
+}
+  Future<void> fetchArtistBooking() async {
+    // String? token = await _getToken();
+    String? id = await _getid();
+    // String? kind = await _getKind();
+    print(id);
+
+
+    String apiUrl = 'http://127.0.0.1:8000/api/featured/artist_info/$id';
+
+    try {
+      var response = await http.get(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/vnd.api+json',
+          'Accept': 'application/vnd.api+json',
+        },
+      );
+      if (response.statusCode == 200) {
+        List<dynamic> userDataList = json.decode(response.body);
+
+        // Check if the widget is mounted before calling setState
+        if (mounted) {
+          for (var userData in userDataList) {
+            // setState(() {
+            name = userData['name'] ?? '';
+            price = userData['price_per_hour'] ?? '';
+            image = 'http://127.0.0.1:8000/storage/${userData['profile_photo']}' ;
+            // });
+          }
+        }
+      } else {
+        print('Failed to fetch user information. Status code: ${response.body}');
+      }
+    } catch (e) {
+      print('Error fetching user information: $e');
+    }
+  }
+
+
+
+  // @override
+  // Widget build(BuildContext context) {
+  //   // TODO: implement build
+  //   throw UnimplementedError();
+  // }
+  // }
+
+
+
+
+
+
+
 
 
 
@@ -111,26 +238,27 @@ class booked extends StatelessWidget {
                             height: 40 * fem,
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(20 * fem),
-                              child: FutureBuilder<String?>(
-                                future: fetchImage(), // Function to fetch image from backend
+                              child: FutureBuilder<void>(
+                                future: fetchArtistBooking(), // Call fetchArtistBooking instead of fetchImage
                                 builder: (context, snapshot) {
                                   if (snapshot.connectionState == ConnectionState.waiting) {
                                     return Container(color: Colors.grey); // Placeholder until image is loaded
                                   } else if (snapshot.hasError) {
                                     return Container(color: Colors.red); // Placeholder for error
                                   } else {
-                                    return Image.network(snapshot.data ?? ''); // Display the fetched image
+                                    return Image.network(image ?? ''); // Display the fetched image
                                   }
                                 },
                               ),
                             ),
                           ),
+
                           Container(
                             width: 217 * fem,
                             height: double.infinity,
                             child: Center(
-                              child: FutureBuilder<String?>(
-                                future: fetchText(), // Function to fetch text from backend
+                              child: FutureBuilder<void>(
+                                future:fetchArtistBooking() , // Function to fetch text from backend
                                 builder: (context, snapshot) {
                                   if (snapshot.connectionState == ConnectionState.waiting) {
                                     return Container(); // Placeholder until text is loaded
@@ -147,7 +275,8 @@ class booked extends StatelessWidget {
                                     );
                                   } else {
                                     return Text(
-                                      snapshot.data ?? '', // Display the fetched text
+                                       name ?? '',
+                                      // Display the fetched text
                                       style: SafeGoogleFont(
                                         'Be Vietnam Pro',
                                         fontSize: 16 * ffem,
@@ -216,7 +345,7 @@ class booked extends StatelessWidget {
                             // depth4frame1b9Z (9:1721)
                             width: double.infinity,
                             child: Text(
-                              dateText,
+                              dateText ?? '',
                               style: SafeGoogleFont (
                                 'Be Vietnam Pro',
                                 fontSize: 14*ffem,
@@ -269,7 +398,7 @@ class booked extends StatelessWidget {
                             height: 21*fem,
 
                               child: Text(
-                                timeText,
+                                timeText ?? '',
                                 style: SafeGoogleFont (
                                   'Be Vietnam Pro',
                                   fontSize: 14*ffem,
@@ -322,7 +451,7 @@ class booked extends StatelessWidget {
                             height: 21*fem,
 
                               child: Text(
-                                durationText ,
+                                durationText ?? '' ,
                                 style: SafeGoogleFont (
                                   'Be Vietnam Pro',
                                   fontSize: 14*ffem,
@@ -371,7 +500,7 @@ class booked extends StatelessWidget {
                             // depth4frame1G4f (9:1748)
                             width: double.infinity,
                             child: Text(
-                              priceText,
+                              price ?? '',
                               style: SafeGoogleFont (
                                 'Be Vietnam Pro',
                                 fontSize: 14*ffem,
@@ -420,7 +549,7 @@ class booked extends StatelessWidget {
                             width: 51*fem,
                             height: 21*fem,
                             child: Text(
-                              'Venue',
+                              locationText ?? 'Venue',
                               style: SafeGoogleFont (
                                 'Be Vietnam Pro',
                                 fontSize: 14*ffem,
@@ -530,6 +659,7 @@ class booked extends StatelessWidget {
     ),);
   }
 }
+
 Future<String> fetchImage() async {
   // Function to fetch image from backend, return the URL of the image
   return 'https://example.com/image.jpg';

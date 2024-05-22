@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:test1/page-1/team2.dart';
@@ -85,6 +86,7 @@ class _team1signupState extends State<team1signup> {
       );
       // print(response);
 
+      print(_imageFiles);
       // Check if request is successful
       if(response.statusCode == 200) {
         print('Data sent successfully');
@@ -100,6 +102,25 @@ class _team1signupState extends State<team1signup> {
     }
   }
 
+  // // Function to pick image from gallery
+  // Future<void> _getImage(int index) async {
+  //   final picker = ImagePicker();
+  //   final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+  //
+  //   setState(() {
+  //     if (pickedFile != null) {
+  //       _imageFiles[index] = File(pickedFile.path);
+  //       print(_imageFiles[index]);
+  //       teamMembersData[index].imageFile = _imageFiles[index];
+  //     } else {
+  //       _imageFiles[index] = null; // Set to null if no image is selected
+  //       teamMembersData[index].imageFile = null;
+  //       print('No image selected.');
+  //     }
+  //   });
+  // }
+
+
 
   @override
   void dispose() {
@@ -112,8 +133,10 @@ class _team1signupState extends State<team1signup> {
     double baseWidth = 390;
     double fem = MediaQuery.of(context).size.width / baseWidth;
     double ffem = fem * 0.97;
+    // void buildTeamMemberFields();
 
     // Function to pick image from gallery
+// Function to pick image from gallery
     Future<void> _getImage(int index) async {
       final picker = ImagePicker();
       final pickedFile = await picker.pickImage(source: ImageSource.gallery);
@@ -122,10 +145,13 @@ class _team1signupState extends State<team1signup> {
         if (pickedFile != null) {
           _imageFiles[index] = File(pickedFile.path);
           teamMembersData[index].imageFile = _imageFiles[index];
+          print(_imageFiles[index]);
+          // buildTeamMemberFields(); // Rebuild fields dynamically when image is picked
         } else {
+          _imageFiles[index] = null;
+          teamMembersData[index].imageFile = null;
           print('No image selected.');
-        }
-      });
+        } });
     }
 
     // Function to build team member fields dynamically
@@ -134,7 +160,9 @@ class _team1signupState extends State<team1signup> {
       teamMembersData.clear(); // Clear existing team member data
       _imageFiles.clear(); // Clear existing image files
       for (int i = 0; i < selectedTeamMembers; i++) {
-        _imageFiles.add(null); // Initialize with null
+        _imageFiles.add(null);
+        print('hi');// Initialize with null
+        print(_imageFiles[i]);
         teamMembersData.add(TeamMember()); // Add a new TeamMember object
         teamMemberFields.add(
           Column(
@@ -152,16 +180,16 @@ class _team1signupState extends State<team1signup> {
               SizedBox(height: 16 * fem),
               Row(
                 children: [
-                  InkWell(
+                      GestureDetector(
                     onTap: () {
                       _getImage(i); // Function to pick image
                     },
                     child: Container(
-                      width: 180 * fem,
-                      height: 200 * fem,
+                      width: 190 * fem,
+                      height: 220 * fem,
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.grey),
-                        borderRadius: BorderRadius.circular(20 * fem),
+                        borderRadius: BorderRadius.circular(12 * fem),
                       ),
                       child: _imageFiles[i] != null
                           ? Image.file(
@@ -241,6 +269,7 @@ class _team1signupState extends State<team1signup> {
     }
 
 
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -305,7 +334,8 @@ class _team1signupState extends State<team1signup> {
                   ),
                 ),
                 SizedBox(height: 24 * fem),
-                ...teamMemberFields, // Spread operator to add all fields from the list
+                ...teamMemberFields,
+                // Spread operator to add all fields from the list
                 SizedBox(height: 24 * fem),
                 ElevatedButton(
                   onPressed: () {

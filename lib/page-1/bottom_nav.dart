@@ -17,7 +17,7 @@ class _BottomNavState extends State<BottomNav> {
     // Replace with your actual pages/widgets
     Home_user(), // Example, replace with your Home page
     Search(),
-    booked(),
+    Booked(),
     setting(),// Example, replace with your Search page
     // Add more pages for Bookings and Profile
   ];

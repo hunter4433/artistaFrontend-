@@ -2,29 +2,131 @@ import 'package:flutter/material.dart';
 import 'package:test1/page-1/booking_history.dart';
 import 'package:test1/page-1/payment_history.dart';
 import '../utils.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'dart:convert';
 
 class artist_home extends StatefulWidget {
   @override
   State<artist_home> createState() => _artist_home();
 }
+
+final storage = FlutterSecureStorage();
+
+Future<String?> _getToken() async {
+  return await storage.read(key: 'token'); // Assuming you stored the token with key 'token'
+}
+Future<String?> _getid() async {
+  return await storage.read(key: 'id'); // Assuming you stored the token with key 'token'
+}
+Future<String?> _getKind() async {
+  return await storage.read(key: 'selected_value'); // Assuming you stored the token with key 'token'
+}
 class _artist_home extends State<artist_home> {
   bool isAvailable = true;
-  // Function to fetch image URL from backend
+
+  Future<String> getNameFromBackend() async {
+    String? token = await _getToken();
+    String? id = await _getid();
+    String? kind = await _getKind();
+    // Assuming the API endpoint returns the name
+    String apiUrl;
+    if (kind == 'solo_artist') {
+      apiUrl = 'http://127.0.0.1:8000/api/artist/info/$id';
+    } else if (kind == 'team') {
+      apiUrl = 'http://127.0.0.1:8000/api/artist/team_info/$id';
+    } else {
+      // Handle the case where kind is not recognized
+      return
+        ('hi');
+    }
+
+    try {
+      var response = await http.get(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/vnd.api+json',
+          'Accept': 'application/vnd.api+json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (response.statusCode == 200) {
+        // Parse the response JSON
+        Map<String, dynamic> responseData = json.decode(response.body);
+        // Assuming the name is in the 'name' field of the response
+        if (kind == 'solo_artist') {
+          return responseData['data']['attributes']['name'];
+        } else if (kind == 'team') {
+          return responseData['data']['attributes']['team_name'];
+        }
+      } else {
+        print('Failed to fetch name. Status code: ${response.statusCode}');
+        return ('hi');
+      }
+    } catch (e) {
+      print('Error fetching name: $e');
+      return ("hi");
+    }
+    return ('hi');
+  }
+
   Future<String> getImageUrlFromBackend() async {
-    // Simulated delay to mimic network request
-    await Future.delayed(Duration(seconds: 1));
-    // Replace this with actual logic to fetch image URL from backend
-    return 'https://example.com/your-image-url.jpg';
+    String baseUrl = 'http://127.0.0.1:8000/storage/';
+    String? token = await _getToken();
+    String? id = await _getid();
+    String? kind = await _getKind();
+
+
+
+    // Assuming the API endpoint returns the name
+
+
+    String apiUrl;
+    if (kind == 'solo_artist') {
+      apiUrl = 'http://127.0.0.1:8000/api/artist/info/$id';
+    } else if (kind == 'team') {
+      apiUrl = 'http://127.0.0.1:8000/api/artist/team_info/$id';
+    } else {
+      // Handle the case where kind is not recognized
+      return
+        ('hi');
+    }
+    try {
+      var response = await http.get(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/vnd.api+json',
+          'Accept': 'application/vnd.api+json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (response.statusCode == 200) {
+        Map<String, dynamic> userData = json.decode(response.body);
+
+        // Construct complete URLs for image// Replace with your actual base URL
+
+        String profile_photo = '$baseUrl/${userData['data']['attributes']['profile_photo']}';
+        // Update the state with the fetched image URL
+        // setState(() {
+        //   // Assuming imageUrl is a variable in your stateful widget
+        // });
+        return profile_photo;
+      } else {
+        print('Failed to fetch image URL. Status code: ${response.statusCode}');
+        return ('bi');
+      }
+    } catch (e) {
+      print('Error fetching image URL: $e');
+      return ('bi');
+    }
 
   }
-  // Function to fetch name from the backend
-  Future<String> getNameFromBackend() async {
-    // Simulated delay to mimic network request
-    await Future.delayed(Duration(seconds: 1));
-    // Replace this with actual logic to fetch name from backend
-    return 'Artist';
-  }
   @override
+  void initState() {
+    super.initState();
+    getImageUrlFromBackend();
+    getNameFromBackend();// Fetch profile data when screen initializes
+  }
 
   Widget build(BuildContext context) {
     double baseWidth = 390;
@@ -76,15 +178,14 @@ class _artist_home extends State<artist_home> {
                         shape: BoxShape.circle,
                         color: Colors.grey, // Placeholder color until the image is loaded
                       ),
-                      child: FutureBuilder<String>(
-                        future: getImageUrlFromBackend(), // Function to fetch image URL from backend
+                      child:FutureBuilder<String>(
+                        future: getImageUrlFromBackend(),
                         builder: (context, AsyncSnapshot<String> snapshot) {
                           if (snapshot.connectionState == ConnectionState.waiting) {
                             return Center(child: CircularProgressIndicator());
                           } else if (snapshot.hasError) {
                             return Center(child: Text('Error: ${snapshot.error}'));
                           } else if (snapshot.data != null) {
-                            // Assuming snapshot.data contains the image URL
                             String imageUrl = snapshot.data!;
                             return ClipRRect(
                               borderRadius: BorderRadius.circular(64 * fem),

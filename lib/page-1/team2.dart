@@ -5,14 +5,23 @@ import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../utils.dart';
-import 'team1.dart';
+// import 'team1.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+// import 'team1.dart';
+import 'package:test1/page-1/team1.dart';
+
+
 
 
 class team2signup extends StatefulWidget {
+  final File? profilePhoto;
+
+  team2signup ({
+    this.profilePhoto,
+  });
   @override
   _ArtistCredentials2State createState() => _ArtistCredentials2State();
 }
@@ -66,6 +75,9 @@ class _ArtistCredentials2State extends State<team2signup> {
 
   Future<void> _sendDataToBackend() async {
 
+    String? profilePhotoPath = widget.profilePhoto?.path;
+
+    File profilePhotoFile = File(profilePhotoPath!);
     Future<String?> _getToken() async {
       return await storage.read(key: 'token'); // Assuming you stored the token with key 'token'
     }
@@ -85,7 +97,7 @@ class _ArtistCredentials2State extends State<team2signup> {
       // Check if token is not null
       if (token != null) {
         // Select images from gallery
-        List<File?> imageFiles = [_image1, _image2, _image3, _image4];
+        List<File?> imageFiles = [_image1, _image2, _image3, _image4,profilePhotoFile];
         print(_skills);
 
 
@@ -111,13 +123,13 @@ class _ArtistCredentials2State extends State<team2signup> {
           if (imagePaths.length == imageFiles.length) {
             // If it does, proceed to merge data
             for (int i = 0; i < imageFiles.length; i++) {
-              // if (i == imageFiles.length - 1) {
-              //   // Last item (profile photo)
-              //   mergedData['profile_photo'] = imagePaths[i];
-              // } else {
-              // Other image files
-              mergedData['image${i + 1}'] = imagePaths[i];
-              // }
+              if (i == imageFiles.length - 1) {
+                // Last item (profile photo)
+                mergedData['profile_photo'] = imagePaths[i];
+              } else {
+                // Other image files
+                mergedData['image${i + 1}'] = imagePaths[i];
+              }
             }
           } else {
             print('this side mohit');

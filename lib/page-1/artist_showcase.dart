@@ -1,28 +1,136 @@
 import 'package:flutter/material.dart';
 import 'package:test1/page-1/booking_artis.dart';
 import '../utils.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'dart:convert';
 
 
-class artist_profile extends StatelessWidget {
+class ArtistProfile extends StatefulWidget {
+  @override
+  _ArtistProfileState createState() => _ArtistProfileState();
+}
+
+class _ArtistProfileState extends State<ArtistProfile> {
+
+  final storage = FlutterSecureStorage();
+  String? artistName;
+  String? artistRole;
+  String? artistPrice;
+  String? artistRatings;
+  String? artistAboutText;
+  String? artistSpecialMessage;
+  String? artist_id;
+  late String profilePhoto='';
+  String? image1;
+  String? image2;
+  String? image3;
+  String? image4;
+  List<String> imagePathsFromBackend = []; // List to store image URLs
+
+
+  Future<String?> _getToken() async {
+    return await storage.read(key: 'token'); // Assuming you stored the token with key 'token'
+  }
+
+  Future<String?> _getId() async {
+    return await storage.read(key: 'id'); // Assuming you stored the token with key 'id'
+  }
+
+  Future<String?> _getKind() async {
+    return await storage.read(key: 'selected_value'); // Assuming you stored the token with key 'selected_value'
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchArtistWorkInformation(); // Fetch profile data when screen initializes
+  }
+
+  Future<void> fetchArtistWorkInformation() async {
+    // String baseUrl = 'http://127.0.0.1:8000/storage/';
+    String? token = await _getToken();
+    String? id = await _getId();
+    String? kind = await _getKind();
+
+    print(token);
+    print(id);
+    print(kind);
+
+    // Initialize API URLs for different kinds
+    String apiUrl;
+
+      apiUrl = 'http://127.0.0.1:8000/api/featured/artist_info/$id';
+
+// Declare a variable to store the name outside the loop
+
+    try {
+      var response = await http.get(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/vnd.api+json',
+          'Accept': 'application/vnd.api+json',
+          // 'Authorization': 'Bearer $token',
+        },
+      );
+// Declare a variable to store the name outside the loop
+String baseUrl='http://127.0.0.1:8000/storage';
+
+      if (response.statusCode == 200) {
+        // Map<String, dynamic> userData = json.decode(response.body);
+        List<dynamic> artistDataList = json.decode(response.body);
+        // print(artistDataList);
+
+        // Inside fetchArtistWorkInformation method
+        for (var artistData in artistDataList) {
+          artist_id = artistData['artist_id'].toString();
+          artistName = artistData['name'];
+          artistRole=artistData['skills'];
+          artistPrice=artistData['price_per_hour'];
+          artistAboutText=artistData['about_yourself'];
+          artistSpecialMessage=artistData['special_message'];
+          profilePhoto = '$baseUrl/${artistData['profile_photo']}';
+          image1 = '$baseUrl/${artistData['image1']}';
+          image2 = '$baseUrl/${artistData['image2']}';
+          image3 = '$baseUrl/${artistData['image3']}';
+          image4 = '$baseUrl/${artistData['image4']}';
+
+          // Add non-null image URLs to the list
+          if (image1 != null) imagePathsFromBackend.add(image1!);
+          if (image2 != null) imagePathsFromBackend.add(image2!);
+          if (image3 != null) imagePathsFromBackend.add(image3!);
+          if (image4 != null) imagePathsFromBackend.add(image4!);
+        }
+        await storage.write(key: 'artist_id', value: artist_id);
+        // print(imagePathsFromBackend);
+
+        // String profilePhoto = 'http://127.0.0.1:8000/storage/${userData['data']['attributes']['profile_photo']}';
+        //
+        // setState(() {
+        //   _profileUrl = profilePhoto;
+        // });
+        // print( _profileUrl);
+        setState(() {});
+        print(artistRole);
+      } else {
+        print('Failed to fetch user information. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching user information: $e');
+    }
+    // Now you can access the artistName variable outside the loop
+    // print('Artist name: $artistName');
+    // print(profilePhoto);
+  }
+
+
+
+
   @override
   Widget build(BuildContext context) {
     double baseWidth = 390;
     double fem = MediaQuery.of(context).size.width / baseWidth;
     double ffem = fem * 0.97;
-
-
-    // Simulated list of image paths from backend
-    List<String> imagePathsFromBackend = [
-      'assets/page-1/images/depth-4-frame-0-c8F.png',
-      'image2_url_from_backend',
-      'image2_url_from_backend',
-      'image2_url_from_backend',
-
-      // Add more image paths as needed
-    ];
-
-    // Simulated list of image paths from backend
-    String profileImagePathFromBackend = 'profile_image_url_from_backend';
 
     // Simulated data fetched from backend
     Future<String> fetchName() async {
@@ -178,7 +286,7 @@ class artist_profile extends StatelessWidget {
                                   height: 128 * fem,
                                   color: Colors.grey[200], // Placeholder color
                                   child: Image.network(
-                                    profileImagePathFromBackend,
+                                    profilePhoto,
                                     fit: BoxFit.cover,
                                   ),
                                 ),
@@ -191,130 +299,75 @@ class artist_profile extends StatelessWidget {
                                 child: Column(  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     // FutureBuilder to fetch and display name
-                                    FutureBuilder<String>(
-                                      future: fetchName(),
-                                      builder: (context, snapshot) {
-                                        if (snapshot.connectionState == ConnectionState.waiting) {
-                                          return CircularProgressIndicator();
-                                        } else {
-                                          return Text(
-                                            snapshot.data!,
-                                            style: TextStyle(
-                                              fontSize: 22 * ffem,
-                                              fontWeight: FontWeight.w700,
-                                              color: Color(0xff1c0c11),
-                                            ),
-                                          );
-                                        }
-                                      },
+                                    Text(
+                                      artistName ?? '', // Use the artistName variable directly
+                                      style: TextStyle(
+                                        fontSize: 22 * ffem,
+                                        fontWeight: FontWeight.w700,
+                                        color: Color(0xff1c0c11),
+                                      ),
                                     ),
 
 
                                     // FutureBuilder to fetch and display role (e.g., Artist)
-                                    FutureBuilder<String>(
-                                      future: fetchRole(),
-                                      builder: (context, snapshot) {
-                                        if (snapshot.connectionState == ConnectionState.waiting) {
-                                          return CircularProgressIndicator();
-                                        } else {
-                                          return Text(
-                                            snapshot.data!,
-                                            style: TextStyle(
-                                              fontSize: 16 * ffem,
-                                              fontWeight: FontWeight.w400,
-                                              color: Color(0xff964f66),
-                                            ),
-                                          );
-                                        }
-                                      },
+                                    Text(
+                                      artistRole ?? '', // Use the artistRole variable directly
+                                      style: TextStyle(
+                                        fontSize: 16 * ffem,
+                                        fontWeight: FontWeight.w400,
+                                        color: Color(0xff964f66),
+                                      ),
                                     ),
                                     SizedBox(
                                       height: 4,
                                     ),
 
                                     // FutureBuilder to fetch and display ratings
-                                    FutureBuilder<String>(
-                                      future: fetchRatings(),
-                                      builder: (context, snapshot) {
-                                        if (snapshot.hasData) {
-                                          return Row(
-                                            children: [
-                                              Text(
-                                                'Rating: ', // Static text
-                                                style: TextStyle(
-                                                  fontSize: 16 * ffem,
-                                                  fontWeight: FontWeight.w500,
-                                                  color: Color(0xff1c0c11),
-                                                ),
-                                              ),
-                                              Text(
-                                                snapshot.data!,
-                                                style: TextStyle(
-                                                  fontSize: 16 * ffem,
-                                                  fontWeight: FontWeight.w500,
-                                                  color: Color(0xff1c0c11),
-                                                ),
-                                              ),
-                                            ],
-                                          );
-                                        } else if (snapshot.hasError) {
-                                          return Text(
-                                            'Error fetching ratings data',
-                                            style: TextStyle(
-                                              fontSize: 16 * ffem,
-                                              fontWeight: FontWeight.w500,
-                                              color: Colors.red, // Error text color
-                                            ),
-                                          );
-                                        } else {
-                                          return SizedBox(); // Return an empty container if there's no data or error
-                                        }
-                                      },
+                                    Row(
+                                      children: [
+                                        Text(
+                                          'Rating: 4.57/5', // Static text
+                                          style: TextStyle(
+                                            fontSize: 16 * ffem,
+                                            fontWeight: FontWeight.w500,
+                                            color: Color(0xff1c0c11),
+                                          ),
+                                        ),
+                                        Text(
+                                          artistRatings ?? '', // Use the artistRatings variable directly
+                                          style: TextStyle(
+                                            fontSize: 16 * ffem,
+                                            fontWeight: FontWeight.w500,
+                                            color: Color(0xff1c0c11),
+                                          ),
+                                        ),
+                                      ],
                                     ),
-
                                     SizedBox(
                                       height: 4,
                                     ),
 
 
                                     // FutureBuilder to fetch and display price per hour
-                                    FutureBuilder<String>(
-                                      future: fetchPrice(),
-                                      builder: (context, snapshot) {
-                                        if (snapshot.hasData) {
-                                          return Row(
-                                            children: [
-                                              Text(
-                                                'Price Per Hour:₹', // Static text
-                                                style: TextStyle(
-                                                  fontSize: 16 * ffem,
-                                                  fontWeight: FontWeight.w500,
-                                                  color: Color(0xff1c0c11),
-                                                ),
-                                              ),
-                                              Text(
-                                                snapshot.data!,
-                                                style: TextStyle(
-                                                  fontSize: 16 * ffem,
-                                                  fontWeight: FontWeight.w500,
-                                                  color: Color(0xff1c0c11),
-                                                ),
-                                              ),
-                                            ],
-                                          );
-                                        } else if (snapshot.hasError) {
-                                          return Text(
-                                            'Error fetching price data',
-                                            style: TextStyle(
-                                              fontSize: 16 * ffem,
-                                              fontWeight: FontWeight.w500,
-                                              color: Colors.red, // Error text color
-                                            ),
-                                          );
-                                        } else {
-                                          return SizedBox(); // Return an empty container if there's no data or error
-                                        }
-                                      },
+                                    Row(
+                                      children: [
+                                        Text(
+                                          'Price Per Hour:₹', // Static text
+                                          style: TextStyle(
+                                            fontSize: 16 * ffem,
+                                            fontWeight: FontWeight.w500,
+                                            color: Color(0xff1c0c11),
+                                          ),
+                                        ),
+                                        Text(
+                                          artistPrice ?? '', // Use the artistPrice variable directly
+                                          style: TextStyle(
+                                            fontSize: 16 * ffem,
+                                            fontWeight: FontWeight.w500,
+                                            color: Color(0xff1c0c11),
+                                          ),
+                                        ),
+                                      ],
                                     ),
 
 
@@ -404,41 +457,24 @@ class artist_profile extends StatelessWidget {
                           margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 0*fem, 28*fem),
                           width: 2222*fem,
                           height: 100,
-                          child: FutureBuilder<String>(
-                            future: fetchAboutText(),
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState == ConnectionState.waiting) {
-                                return SizedBox(); // Return an empty container while waiting for data
-                              } else if (snapshot.hasData) {
-                                return Container(
-                                  margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 0*fem, 28*fem),
-                                  width: 2222*fem,
-                                  height: 100,
-                                  child: Text(
-                                    snapshot.data!,
-                                    style: TextStyle(
-                                      fontSize: 16*ffem,
-                                      fontWeight: FontWeight.w400,
-                                      height: 1.5*ffem/fem,
-                                      color: Color(0xff1c0c11),
-                                    ),
-                                  ),
-                                );
-                              } else if (snapshot.hasError) {
-                                return Text(
-                                  'Error fetching about data',
-                                  style: TextStyle(
-                                    fontSize: 16 * ffem,
-                                    fontWeight: FontWeight.w400,
-                                    color: Colors.red, // Error text color
-                                  ),
-                                );
-                              } else {
-                                return SizedBox(); // Return an empty container if there's no data or error
-                              }
-                            },
+                          child: artistAboutText != null
+                              ? Text(
+                            artistAboutText!,
+                            style: TextStyle(
+                              fontSize: 16 * ffem,
+                              fontWeight: FontWeight.w400,
+                              height: 1.5 * ffem / fem,
+                              color: Color(0xff1c0c11),
+                            ),
+                          )
+                              : Text(
+                            'Error fetching about data',
+                            style: TextStyle(
+                              fontSize: 16 * ffem,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.red,
+                            ),
                           ),
-
 
                         ),
                         Text(
@@ -576,13 +612,12 @@ class artist_profile extends StatelessWidget {
                                     ),
                                   );
                                 },
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(12 * fem),
-                                    color: Colors.grey[200], // Placeholder color
-                                  ),
+                                child: Image.network(
+                                  imagePathsFromBackend[index], // Network image path
+                                  fit: BoxFit.cover, // Fit the image within the container
                                 ),
                               );
+
                             } else {
                               // If index exceeds actual images, return empty containers
                               return Container(
@@ -600,6 +635,8 @@ class artist_profile extends StatelessWidget {
 
 
 
+
+
                   Container(
                     // autogroupcvhmtnB (JkS2cgAzEk6pkAMGDjcvHm)
                     padding: EdgeInsets.fromLTRB(16*fem, 40*fem, 16*fem, 11.5*fem),
@@ -609,81 +646,51 @@ class artist_profile extends StatelessWidget {
                       children: [
                         Container(
                           // specialmessageforthehost2dV (15:2210)
-                          margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 0*fem, 23.5*fem),
+                          margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 23.5 * fem),
                           child: Text(
                             'Special Message for the Host',
-                            style: SafeGoogleFont (
+                            style: SafeGoogleFont(
                               'Epilogue',
-                              fontSize: 22*ffem,
+                              fontSize: 22 * ffem,
                               fontWeight: FontWeight.w700,
-                              height: 1.25*ffem/fem,
-                              letterSpacing: -0.3300000131*fem,
+                              height: 1.25 * ffem / fem,
+                              letterSpacing: -0.3300000131 * fem,
                               color: Color(0xff1c0c11),
                             ),
                           ),
                         ),
                         Container(
                           // depth5frame06dM (15:2215)
-                          margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 0*fem, 32*fem),
-
+                          margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 32 * fem),
                           width: double.infinity,
-                          height: 144*fem,
-
-                          child:FutureBuilder<String>(
-                            future: fetchSpecialMessage(),
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState == ConnectionState.waiting) {
-                                // While waiting for data, return an empty container with the same styling
-                                return Container(
-                                  // Same dimensions and border color as the original container
-                                  width: double.infinity,
-                                  height: 144 * fem,
-                                  decoration: BoxDecoration(
-                                    border: Border.all(color: Color(0xffe8d1d6)),
-                                    color: Color(0xffffffff),
-                                    borderRadius: BorderRadius.circular(12 * fem),
-                                  ),
-                                );
-                              } else if (snapshot.hasData) {
-                                // If data is available, display the fetched text inside the container
-                                return Container(
-                                  // Same dimensions and border color as the original container
-                                  width: double.infinity,
-                                  height: 144 * fem,
-                                  decoration: BoxDecoration(
-                                    border: Border.all(color: Color(0xffe8d1d6)),
-                                    color: Color(0xffffffff),
-                                    borderRadius: BorderRadius.circular(12 * fem),
-                                  ),
-                                  child: Padding(
-                                    padding: EdgeInsets.all(16 * fem), // Adjust padding as needed
-                                    child: Text(
-                                      snapshot.data!,
-                                      style: TextStyle(
-                                        fontSize: 16 * ffem,
-                                        fontWeight: FontWeight.w400,
-                                        color: Color(0xff964f66),
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              } else if (snapshot.hasError) {
-                                // If there's an error, display an error message
-                                return Text(
-                                  'Error fetching special message',
-                                  style: TextStyle(
-                                    fontSize: 16 * ffem,
-                                    fontWeight: FontWeight.w400,
-                                    color: Colors.red, // Error text color
-                                  ),
-                                );
-                              } else {
-                                return SizedBox(); // Return an empty container if there's no data or error
-                              }
-                            },
+                          height: 144 * fem,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Color(0xffe8d1d6)),
+                            color: Color(0xffffffff),
+                            borderRadius: BorderRadius.circular(12 * fem),
+                          ),
+                          child: artistSpecialMessage != null
+                              ? Padding(
+                            padding: EdgeInsets.all(16 * fem), // Adjust padding as needed
+                            child: Text(
+                              artistSpecialMessage!,
+                              style: TextStyle(
+                                fontSize: 16 * ffem,
+                                fontWeight: FontWeight.w400,
+                                color: Color(0xff964f66),
+                              ),
+                            ),
                           )
-
+                              : Text(
+                            'Error fetching special message',
+                            style: TextStyle(
+                              fontSize: 16 * ffem,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.red,
+                            ),
+                          ),
                         ),
+
                         Text(
                           // reviewsZ19 (15:2222)
                           'Reviews',
