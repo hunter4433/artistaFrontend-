@@ -3,13 +3,12 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-
-class user_information extends StatefulWidget {
+class UserInformation extends StatefulWidget {
   @override
   _UserInformationState createState() => _UserInformationState();
 }
 
-class _UserInformationState extends State<user_information> {
+class _UserInformationState extends State<UserInformation> {
   TextEditingController _nameController = TextEditingController();
   TextEditingController _lastNameController = TextEditingController();
   TextEditingController _phoneController = TextEditingController();
@@ -23,14 +22,14 @@ class _UserInformationState extends State<user_information> {
   Future<String?> _getToken() async {
     return await storage.read(key: 'token'); // Assuming you stored the token with key 'token'
   }
-  Future<String?> _getid() async {
-    return await storage.read(key: 'id'); // Assuming you stored the token with key 'token'
+
+  Future<String?> _getId() async {
+    return await storage.read(key: 'id'); // Assuming you stored the token with key 'id'
   }
+
   Future<String?> _getKind() async {
-    return await storage.read(key: 'selected_value'); // Assuming you stored the token with key 'token'
+    return await storage.read(key: 'selected_value'); // Assuming you stored the kind with key 'selected_value'
   }
-
-
 
   @override
   void initState() {
@@ -40,13 +39,12 @@ class _UserInformationState extends State<user_information> {
   }
 
   Future<void> fetchUserInformation() async {
-
     String? token = await _getToken();
-    String? id = await _getid();
+    String? id = await _getId();
     String? kind = await _getKind();
-    print (token);
-    print (id);
-    print (kind);
+    print(token);
+    print(id);
+    print(kind);
     // Example URL, replace with your actual API endpoint
     String apiUrl = 'http://127.0.0.1:8000/api/info/$id';
 
@@ -75,8 +73,7 @@ class _UserInformationState extends State<user_information> {
           _pinCodeController.text = userData['data']['attributes']['pin'] ?? '';
         });
       } else {
-        print('Failed to fetch user information. Status code: ${response
-            .body}');
+        print('Failed to fetch user information. Status code: ${response.statusCode}');
       }
     } catch (e) {
       print('Error fetching user information: $e');
@@ -86,14 +83,13 @@ class _UserInformationState extends State<user_information> {
   @override
   Widget build(BuildContext context) {
     double baseWidth = 390;
-    double fem = MediaQuery
-        .of(context)
-        .size
-        .width / baseWidth;
+    double fem = MediaQuery.of(context).size.width / baseWidth;
     double ffem = fem * 0.97;
     return Scaffold(
+      backgroundColor: Color(0xFF121217),
       appBar: AppBar(
-        title: Text('Account'),
+        backgroundColor: Color(0xFF121217),
+        title: Text('Account', style: TextStyle(color: Colors.white)),
         actions: [
           GestureDetector(
             onTap: () {
@@ -112,7 +108,7 @@ class _UserInformationState extends State<user_information> {
                 child: Text(
                   'Done',
                   style: TextStyle(
-                    color: Colors.red, // Change the text color as needed
+                    color: Color(0xFF388FE5), // Change the text color as needed
                     fontSize: 16, // Change the font size as needed
                   ),
                 ),
@@ -127,14 +123,12 @@ class _UserInformationState extends State<user_information> {
           child: SingleChildScrollView(
             child: Container(
               width: double.infinity,
-              height: 844 * fem,
               padding: EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   buildEditableRow("Name:", _nameController, fem, ffem),
-                  buildEditableRow(
-                      "Last Name:", _lastNameController, fem, ffem),
+                  buildEditableRow("Last Name:", _lastNameController, fem, ffem),
                   buildEditableRow("Phone No:", _phoneController, fem, ffem),
                   buildEditableRow("Building:", _buildingController, fem, ffem),
                   buildEditableRow("City:", _cityController, fem, ffem),
@@ -149,8 +143,7 @@ class _UserInformationState extends State<user_information> {
     );
   }
 
-  Widget buildEditableRow(String label, TextEditingController controller,
-      double fem, double ffem) {
+  Widget buildEditableRow(String label, TextEditingController controller, double fem, double ffem) {
     return Container(
       margin: EdgeInsets.only(bottom: 16),
       child: Column(
@@ -161,6 +154,7 @@ class _UserInformationState extends State<user_information> {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
+              color: Colors.white, // Change the label color as needed
             ),
           ),
           SizedBox(height: 8),
@@ -168,13 +162,17 @@ class _UserInformationState extends State<user_information> {
             controller: controller,
             style: TextStyle(
               fontSize: 16,
+              color: Colors.white, // Change the text color inside the boxes
             ),
             decoration: InputDecoration(
-              border: OutlineInputBorder(),
+              filled: true,
+              fillColor: Color(0xFF292938), // Background color of the text field
+              border: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.white), // Border color
+              ),
               focusedBorder: OutlineInputBorder(
                 borderSide: BorderSide(
-                  color: Color(0xffe5195e),
-                  // Change the focused border color as needed
+                  color: Color(0xFF9E9EB8), // Change the focused border color as needed
                   width: 1.0,
                 ),
               ),
@@ -186,21 +184,10 @@ class _UserInformationState extends State<user_information> {
   }
 
   void _saveUserInformation() async {
-    final storage = FlutterSecureStorage();
-
-    Future<String?> _getToken() async {
-      return await storage.read(key: 'token'); // Assuming you stored the token with key 'token'
-    }
-
-    Future<String?> _getid() async {
-      return await storage.read(key: 'id'); // Assuming you stored the token with key 'token'
-    }
-
-
     String? token = await _getToken();
-    String? id = await _getid();
-    print (token);
-    print (id);
+    String? id = await _getId();
+    print(token);
+    print(id);
     // Example URL, replace with your actual API endpoint
     String apiUrl = 'http://127.0.0.1:8000/api/info/$id';
 
@@ -216,7 +203,7 @@ class _UserInformationState extends State<user_information> {
     };
 
     try {
-      // Make PUT request to the API
+      // Make PATCH request to the API
       var response = await http.patch(
         Uri.parse(apiUrl),
         headers: <String, String>{
@@ -235,8 +222,7 @@ class _UserInformationState extends State<user_information> {
         print('Response: ${response.body}');
       } else {
         // Request failed, handle error
-        print('Failed to save user information. Status code: ${response
-            .statusCode}');
+        print('Failed to save user information. Status code: ${response.statusCode}');
         // Example error handling
         print('Error response: ${response.body}');
       }
@@ -245,5 +231,10 @@ class _UserInformationState extends State<user_information> {
       print('Error saving user information: $e');
     }
   }
+}
 
+void main() {
+  runApp(MaterialApp(
+    home: UserInformation(),
+  ));
 }

@@ -143,7 +143,8 @@ String? locationText ;
     double baseWidth = 390;
     double fem = MediaQuery.of(context).size.width / baseWidth;
     double ffem = fem * 0.97;
-    return Scaffold(
+    return Scaffold(backgroundColor: Color(0xFF121217)
+      ,
       body: SafeArea(
       child: Container(
         width: double.infinity,
@@ -151,14 +152,16 @@ String? locationText ;
           width: double.infinity,
           height: 960*fem,
           decoration: BoxDecoration (
-            color: Color(0xffffffff),
+            color: Color(0xFF121217)
+            ,
           ),
           child: Container(
 
             width: double.infinity,
             height: double.infinity,
             decoration: BoxDecoration (
-              color: Color(0xffffffff),
+              color: Color(0xFF121217)
+              ,
             ),
             child: SingleChildScrollView(
               child: Column(
@@ -169,7 +172,8 @@ String? locationText ;
                     width: double.infinity,
                     height: 72*fem,
                     decoration: BoxDecoration (
-                      color: Color(0xffffffff),
+                      color:Color(0xFF121217)
+                      ,
                     ),
                     child: Container(
                       padding: EdgeInsets.fromLTRB(0*fem, 2*fem, 0*fem, 1*fem),
@@ -192,7 +196,7 @@ String? locationText ;
                                   fontWeight: FontWeight.w700,
                                   height: 1.25*ffem/fem,
                                   letterSpacing: -0.2700000107*fem,
-                                  color: Color(0xff171111),
+                                  color: Colors.white,
                                 ),
                               ),
                             ),
@@ -213,7 +217,7 @@ String? locationText ;
                         fontWeight: FontWeight.w700,
                         height: 1.25*ffem/fem,
                         letterSpacing: -0.3300000131*fem,
-                        color: Color(0xff171111),
+                        color: Colors.white,
                       ),
                     ),
                   ),
@@ -223,7 +227,7 @@ String? locationText ;
                     width: double.infinity,
                     height: 56 * fem,
                     decoration: BoxDecoration(
-                      color: Color(0xffffffff),
+                      color: Color(0xFF121217),
                     ),
                     child: Container(
                       padding: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 5 * fem, 0 * fem),
@@ -270,7 +274,7 @@ String? locationText ;
                                         fontSize: 16 * ffem,
                                         fontWeight: FontWeight.w400,
                                         height: 1.5 * ffem / fem,
-                                        color: Color(0xff171111),
+                                        color: Colors.white,
                                       ),
                                     );
                                   } else {
@@ -305,7 +309,7 @@ String? locationText ;
                         fontWeight: FontWeight.w700,
                         height: 1.25*ffem/fem,
                         letterSpacing: -0.2700000107*fem,
-                        color: Color(0xff171111),
+                        color: Colors.white,
                       ),
                     ),
                   ),
@@ -315,7 +319,7 @@ String? locationText ;
                     width: double.infinity,
                     height: 72*fem,
                     decoration: BoxDecoration (
-                      color: Color(0xffffffff),
+                      color: Color(0xFF121217),
                     ),
                     child: Container(
                       // depth3frame0YBH (9:1717)
@@ -336,7 +340,7 @@ String? locationText ;
                                   fontSize: 16*ffem,
                                   fontWeight: FontWeight.w500,
                                   height: 1.5*ffem/fem,
-                                  color: Color(0xff171111),
+                                  color: Colors.white,
                                 ),
                               ),
                             ),
@@ -365,7 +369,8 @@ String? locationText ;
                     width: double.infinity,
                     height: 72*fem,
                     decoration: BoxDecoration (
-                      color: Color(0xffffffff),
+                      color: Color(0xFF121217)
+                      ,
                     ),
                     child: Container(
                       // depth3frame0qpb (9:1726)
@@ -386,7 +391,7 @@ String? locationText ;
                                   fontSize: 16*ffem,
                                   fontWeight: FontWeight.w500,
                                   height: 1.5*ffem/fem,
-                                  color: Color(0xff171111),
+                                  color: Colors.white,
                                 ),
                               ),
                             ),
@@ -419,7 +424,7 @@ String? locationText ;
                     width: double.infinity,
                     height: 72*fem,
                     decoration: BoxDecoration (
-                      color: Color(0xffffffff),
+                      color:Color(0xFF121217),
                     ),
                     child: Container(
                       // depth3frame0uxs (9:1735)
@@ -440,7 +445,7 @@ String? locationText ;
                                   fontSize: 16*ffem,
                                   fontWeight: FontWeight.w500,
                                   height: 1.5*ffem/fem,
-                                  color: Color(0xff171111),
+                                  color: Colors.white,
 
                               ),
                             ),
@@ -472,7 +477,8 @@ String? locationText ;
                     width: double.infinity,
                     height: 72*fem,
                     decoration: BoxDecoration (
-                      color: Color(0xffffffff),
+                      color: Color(0xFF121217)
+                      ,
                     ),
                     child: Container(
                       // depth3frame018j (9:1744)
@@ -492,7 +498,7 @@ String? locationText ;
                                 fontSize: 16*ffem,
                                 fontWeight: FontWeight.w500,
                                 height: 1.5*ffem/fem,
-                                color: Color(0xff171111),
+                                color: Colors.white,
                               ),
                             ),
                           ),
@@ -520,7 +526,8 @@ String? locationText ;
                     width: double.infinity,
                     height: 72*fem,
                     decoration: BoxDecoration (
-                      color: Color(0xffffffff),
+                      color: Color(0xFF121217)
+                      ,
                     ),
                     child: Container(
                       // depth3frame0ihM (9:1753)
@@ -540,7 +547,7 @@ String? locationText ;
                                 fontSize: 16*ffem,
                                 fontWeight: FontWeight.w500,
                                 height: 1.5*ffem/fem,
-                                color: Color(0xff171111),
+                                color: Colors.white,
                               ),
                             ),
                           ),
@@ -614,7 +621,8 @@ String? locationText ;
                               // Handle button press
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Color(0xfff4eff2),
+                              backgroundColor: Color(0xFF9E9EB8)
+                              ,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12 * fem),
                               ),
@@ -642,14 +650,7 @@ String? locationText ;
                       ],
                     ),
                   ),
-                  Container(
-                    // depth1frame126NT (9:1770)
-                    width: double.infinity,
-                    height: 20*fem,
-                    decoration: BoxDecoration (
-                      color: Color(0xffffffff),
-                    ),
-                  ),
+
                 ],
               ),
             ),

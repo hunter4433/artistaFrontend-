@@ -1,20 +1,11 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:test1/page-1/artist_showcase.dart';
-import 'package:test1/page-1/booking_artis.dart';
 import 'package:test1/page-1/team_showcase.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
-import 'package:video_player/video_player.dart';
-
-
-import 'package:flutter/services.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-
 import 'package:video_player/video_player.dart';
 
 class Home_user extends StatefulWidget {
@@ -27,7 +18,6 @@ class _Home_userState extends State<Home_user> {
 
   // Dummy data for testing. Replace it with actual data from your backend.
   final List<Map<String, dynamic>> categories = [
-
     {
       'name': 'Musician',
       'type': 'image',
@@ -55,24 +45,21 @@ class _Home_userState extends State<Home_user> {
     },
     {
       'name': 'Dancer',
-      'type': 'image', // indicating it's a video
-      'source': 'assets/page-1/images/50ae5f0488eec597224d33e1c944b203.jpg' // path to the video asset
+      'type': 'image',
+      'source': 'assets/page-1/images/50ae5f0488eec597224d33e1c944b203.jpg'
     },
     {
       'name': 'Chef',
-      'type': 'image', // indicating it's a video
-      'source': 'assets/page-1/images/a348ad2eb041aba8f0fe461e5023b0cb.jpg' // path to the video asset
+      'type': 'image',
+      'source': 'assets/page-1/images/a348ad2eb041aba8f0fe461e5023b0cb.jpg'
     },
     {
       'name': 'Magician',
       'type': 'image',
       'source': 'assets/page-1/images/2715fd5e2b75cf7ac53ba44d6abc4124.jpg'
     },
-
     // Add more data as needed
   ];
-
-  //videoplayer
 
   final List<Map<String, dynamic>> featuredArtists = [
     // Add more data as needed
@@ -83,126 +70,98 @@ class _Home_userState extends State<Home_user> {
   @override
   void initState() {
     super.initState();
-    // Call the function to fetch data when the widget is initialized
     fetchFeaturedArtists();
     fetchFeaturedTeams();
   }
 
-  // Function to make the API call
   Future<void> fetchFeaturedArtists() async {
     for (int index = 0; index < categories.length; index++) {
       String? source = categories[index]['source'] as String?;
       if (source != null) {
-        // Here you can use the 'source' variable
         print('Source at index $index: $source');
       } else {
-        // Handle cases where 'source' is null
         print('Source at index $index is null');
       }
     }
 
     try {
       String apiUrl = 'http://127.0.0.1:8000/api/home/featured';
-      // Make the HTTP GET request
       var response = await http.get(
         Uri.parse(apiUrl),
         headers: <String, String>{
           'Content-Type': 'application/vnd.api+json',
           'Accept': 'application/vnd.api+json',
-          // 'Authorization': 'Bearer $token', // Include the token in the header
         },
       );
 
-      // Check if the request was successful (status code 200)
       if (response.statusCode == 200) {
-        // Decode the JSON response
         List<dynamic> data = jsonDecode(response.body);
 
-        // Clear the existing list
         setState(() {
           featuredArtists.clear();
           String baseUrl = 'http://127.0.0.1:8000/storage/';
 
-          // Populate the featuredArtists list with the response data
           for (var item in data) {
             featuredArtists.add({
               'id': item['id'],
               'name': item['name'],
               'image': 'http://127.0.0.1:8000/storage/${item['profile_photo']}',
-              // 'rating': item['rating'].toString(),
               'skill': item['skills'],
             });
           }
         });
 
-        // Map<String, dynamic> responseData = jsonDecode(response.body);
-
         print(featuredArtists);
       } else {
-        // Handle the error
         print('Failed to load data: ${response.body}');
       }
     } catch (error) {
-      // Handle any exceptions
       print('Error fetching data: $error');
     }
   }
 
-  //apicall for team
   Future<void> fetchFeaturedTeams() async {
     try {
       String apiUrl = 'http://127.0.0.1:8000/api/home/featured/team';
-      // Make the HTTP GET request
       var response = await http.get(
         Uri.parse(apiUrl),
         headers: <String, String>{
           'Content-Type': 'application/vnd.api+json',
           'Accept': 'application/vnd.api+json',
-          // 'Authorization': 'Bearer $token', // Include the token in the header
         },
       );
 
-      // Check if the request was successful (status code 200)
       if (response.statusCode == 200) {
-        // Decode the JSON response
         List<dynamic> data = jsonDecode(response.body);
 
-        // Clear the existing list
         setState(() {
           bestArtists.clear();
           String baseUrl = 'http://127.0.0.1:8000/storage/';
 
-          // Populate the featuredArtists list with the response data
           for (var item in data) {
-            // Check if item is not null before accessing its properties
             if (item != null) {
               String? name = item['team_name'];
               String? profilePhoto = item['profile_photo'];
               String? skills = item['skill_category'];
 
-              // Check if name and profilePhoto are not null before adding to bestArtists
               if (name != null && profilePhoto != null && item['id'] != null) {
-                String id = item['id'].toString(); // Convert id to String
+                String id = item['id'].toString();
                 bestArtists.add({
                   'id': id,
                   'name': name,
                   'image': 'http://127.0.0.1:8000/storage/$profilePhoto',
                   'skill': skills,
                 });
-
               }
-
             }
           }
         });
 
         print(bestArtists);
       } else {
-        // Handle the error
         print('Failed to load data: ${response.body}');
       }
     } catch (error) {
-      // Handle any exceptions
       print('Error fetching data: $error');
     }
   }
@@ -210,7 +169,7 @@ class _Home_userState extends State<Home_user> {
   final List<Map<String, dynamic>> seasonal = [
     {
       'name': 'Alpin Band',
-      'image': 'assets/page-1/images/music-of-dhwani-1.jpg'
+      'image': 'assets/page-1/images/2d51a82294e0fd051de11eaa0b0c0678.jpg'
     },
     {
       'name': 'Tech House',
@@ -220,7 +179,52 @@ class _Home_userState extends State<Home_user> {
       'name': 'Trance',
       'image': 'assets/page-1/images/music-of-dhwani-1.jpg'
     },
-    // Add more data as needed
+  ];
+
+  final List<Map<String, dynamic>> recommended = [
+    {
+      'subheading': 'Feel the Air',
+      'name':'Infuse your gathering with the vocals of a premier singer.',
+      'type': 'image',
+      'url': 'assets/page-1/images/music-of-dhwani-1.jpg'
+    },
+    {
+    'subheading': 'Let the aroma flow',
+    'name': 'Treat your elite guests to culinary perfection.',
+    'type': 'video',
+    'url': 'assets/videos/df4a85b2902ddaa7e688b63d4d1c60ba.mp4'
+
+    },
+    {
+      'subheading': 'Magical touch',
+      'name': 'Make your little one’s birthday magical.',
+      'type': 'image',
+      'url': 'assets/page-1/images/Oxygen-Band-1024x768.jpg'
+
+    },
+  ];
+
+  final List<Map<String, dynamic>> best = [
+    {
+      'subheading': 'Feel the Air',
+      'name':'Infuse your gathering with the vocals of a premier singer.',
+      'type': 'image',
+      'url': 'assets/page-1/images/2d51a82294e0fd051de11eaa0b0c0678.jpg'
+    },
+    {
+      'subheading': 'Let the aroma flow',
+      'name': 'Treat your elite guests to culinary perfection.',
+      'type': 'video',
+      'url': 'assets/videos/df4a85b2902ddaa7e688b63d4d1c60ba.mp4'
+
+    },
+    {
+      'subheading': 'Magical touch',
+      'name': 'Make your little one’s birthday magical.',
+      'type': 'image',
+      'url': 'assets/page-1/images/Oxygen-Band-1024x768.jpg'
+
+    },
   ];
 
   @override
@@ -235,76 +239,316 @@ class _Home_userState extends State<Home_user> {
         title: Padding(
           padding: const EdgeInsets.fromLTRB(0, 0, 8, 0),
           child: Text(
-            'HomeStage',
-            style: TextStyle(
+            'Home',
+            style: TextStyle(fontSize: 18*fem,
               fontWeight: FontWeight.w600,
-              color: Color(0xff1c0c11),
+              color: Colors.white,
             ),
           ),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: Color(0xFF121217)
+        ,
         // You can change the app bar background color if needed
         // You can change the app bar text color if needed
       ),
-      body: Container(
-        color: Colors.white,
+      body:
+
+
+      Container(
+        color: Color(0xFF121217),
         child: SafeArea(
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Categories List
                 Container(
-                  padding: EdgeInsets.fromLTRB(15 * fem, 10 * fem, 0 * fem, 12 * fem),
+                  padding: EdgeInsets.fromLTRB(15 * fem, 10 * fem, 0 * fem, 18 * fem),
                   child: Text(
                     'Categories',
                     style: TextStyle(
-                      fontSize: 24 * ffem,
+                      fontSize: 18 * ffem,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xff1c0c11),
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container( margin: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                      height: 83.0, // Specify the exact height to match the first container
+                      width: 180.0,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          gradient: LinearGradient(
+                            begin: Alignment(0, 1),
+                            end: Alignment(0, -1),
+                            colors: <Color>[
+                              Color(0x66000000),
+                              Color(0x00000000),
+                              Color(0x1A000000),
+                              Color(0x00000000)
+                            ],
+                            stops: <double>[0, 1, 1, 1],
+                          ),
+                          image: DecorationImage(
+                            fit: BoxFit.cover,
+                            image: AssetImage('assets/page-1/images/3bca549aee2c634c84076c3a1f5944d9 2.jpg'),
+                          ),
+                        ),
+                        height: 97.3,
+                        child: Align(
+                          alignment: Alignment.bottomLeft,
+                          child: Container(
+                            margin: EdgeInsets.all(16),
+                            child: Text(
+                              'Musician',
+                              style: GoogleFonts.getFont(
+                                'Be Vietnam Pro',
+                                fontWeight: FontWeight.w700,
+                                fontSize: 16,
+                                height: 1.3,
+                                color: Color(0xFFFFFFFF),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Container( margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
+                      height: 83.0, // Specify the exact height to match the first container
+                      width: 180.0,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        gradient: LinearGradient(
+                          begin: Alignment(0, 1),
+                          end: Alignment(0, -1),
+                          colors: <Color>[
+                            Color(0x66000000),
+                            Color(0x00000000),
+                            Color(0x1A000000),
+                            Color(0x00000000)
+                          ],
+                          stops: <double>[0, 1, 1, 1],
+                        ),
+                        image: DecorationImage(
+                          fit: BoxFit.cover,
+                          image: AssetImage('assets/page-1/images/2311a65bd19841a7b43287a3bceb3ba7.jpg'),
+                        ),
+                      ),
+
+                      child: Align(
+                        alignment: Alignment.bottomLeft,
+                        child: Container(
+                          margin: EdgeInsets.all(16),
+                          child: Text(
+                            'Chef',
+                            style: GoogleFonts.getFont(
+                              'Be Vietnam Pro',
+                              fontWeight: FontWeight.w700,
+                              fontSize: 16,
+                              height: 1.3,
+                              color: Color(0xFFFFFFFF),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 11.7),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container( margin: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                      height: 83.0, // Specify the exact height to match the first container
+                      width: 180.0,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          gradient: LinearGradient(
+                            begin: Alignment(0, 1),
+                            end: Alignment(0, -1),
+                            colors: <Color>[
+                              Color(0x66000000),
+                              Color(0x00000000),
+                              Color(0x1A000000),
+                              Color(0x00000000)
+                            ],
+                            stops: <double>[0, 1, 1, 1],
+                          ),
+                          image: DecorationImage(
+                            fit: BoxFit.cover,
+                            image: AssetImage('assets/page-1/images/d8571702a0022c1c6eb3797303031b36.jpg'),
+                          ),
+                        ),
+                        height: 97.3,
+                        child: Align(
+                          alignment: Alignment.bottomLeft,
+                          child: Container(
+                            margin: EdgeInsets.all(16),
+                            child: Text(
+                              'Comedian',
+                              style: GoogleFonts.getFont(
+                                'Be Vietnam Pro',
+                                fontWeight: FontWeight.w700,
+                                fontSize: 16,
+                                height: 1.3,
+                                color: Color(0xFFFFFFFF),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Container( margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
+                      height: 83.0, // Specify the exact height to match the first container
+                      width: 180.0,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        gradient: LinearGradient(
+                          begin: Alignment(0, 1),
+                          end: Alignment(0, -1),
+                          colors: <Color>[
+                            Color(0x66000000),
+                            Color(0x00000000),
+                            Color(0x1A000000),
+                            Color(0x00000000)
+                          ],
+                          stops: <double>[0, 1, 1, 1],
+                        ),
+                        image: DecorationImage(
+                          fit: BoxFit.cover,
+                          image: AssetImage('assets/page-1/images/3e713ef0834aece14d6d0a9e76012120.jpg'),
+                        ),
+                      ),
+
+                      child: Align(
+                        alignment: Alignment.bottomLeft,
+                        child: Container(
+                          margin: EdgeInsets.all(16),
+                          child: Text(
+                            'Dancer',
+                            style: GoogleFonts.getFont(
+                              'Be Vietnam Pro',
+                              fontWeight: FontWeight.w700,
+                              fontSize: 16,
+                              height: 1.3,
+                              color: Color(0xFFFFFFFF),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+          SizedBox(height: 11.7),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container( margin: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                height: 83.0, // Specify the exact height to match the first container
+                width: 180.0,
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    gradient: LinearGradient(
+                      begin: Alignment(0, 1),
+                      end: Alignment(0, -1),
+                      colors: <Color>[
+                        Color(0x66000000),
+                        Color(0x00000000),
+                        Color(0x1A000000),
+                        Color(0x00000000)
+                      ],
+                      stops: <double>[0, 1, 1, 1],
+                    ),
+                    image: DecorationImage(
+                      fit: BoxFit.cover,
+                      image: AssetImage('assets/page-1/images/afa961efda24e49580cfe2cc7af69508.jpg'),
+                    ),
+                  ),
+                  height: 97.3,
+                  child: Align(
+                    alignment: Alignment.bottomLeft,
+                    child: Container(
+                      margin: EdgeInsets.all(16),
+                      child: Text(
+                        'Singer',
+                        style: GoogleFonts.getFont(
+                          'Be Vietnam Pro',
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                          height: 1.3,
+                          color: Color(0xFFFFFFFF),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),],),
+
+                Container(
+                  padding: EdgeInsets.fromLTRB(12 * fem, 50 * fem, 0 * fem, 0 * fem),
+                  child: Text(
+                    'Recommended',
+                    style: TextStyle(
+                      fontSize: 22 * ffem,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.white,
                     ),
                   ),
                 ),
                 Container(
-                  height: 320,
+                  height: 430 * fem,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
-                    itemCount: categories.length,
+                    itemCount: recommended.length,
                     itemBuilder: (context, index) {
                       return Container(
-                        width: 240 * fem,
-                        padding: EdgeInsets.fromLTRB(16 * fem, 16 * fem, 0 * fem, 0 * fem),
+                        width: 305 * fem,
+                        padding: EdgeInsets.fromLTRB(12 * fem, 16 * fem, 0 * fem, 16 * fem),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
                               margin: EdgeInsets.only(bottom: 12 * fem),
-                              width: 240 * fem,
-                              height: 240 * fem,
-                              child: categories[index]['type'] == 'image'
-                                  ? ClipRRect(
-                                borderRadius: BorderRadius.circular(12 * fem),
-                                child: Image.asset(
-                                  categories[index]['source'],
+                              width: 305 * fem,
+                              height: 313 * fem,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8 * fem),
+                                child: recommended[index]['type'] == 'image'
+                                    ? Image.asset(
+                                  recommended[index]['url'],
                                   fit: BoxFit.cover,
-                                ),
-                              )
-                                  : categories[index]['type'] == 'video' && categories[index]['source'] != null
-                                  ? AspectRatio(
-                                aspectRatio: 1.0,
-                                child: VideoPlayerWidget(
-                                  videoSource: categories[index]['source']!,
-                                ),
-                              )
-                                  : SizedBox(), // Placeholder for cases where 'type' is not 'image' or 'video' or 'source' is null
+                                )
+                                    : VideoWidget(url: recommended[index]['url']),
+                              ),
                             ),
                             Text(
-                              categories[index]['name'],
+                              recommended[index]['subheading'],
                               style: TextStyle(
-                                fontSize: 17 * ffem,
+                                fontSize: 14 * ffem,
                                 fontWeight: FontWeight.w500,
                                 height: 1.5 * ffem / fem,
-                                color: Color(0xff1c0c11),
+                                color: Color(0xFF9E9EB8),
+                              ),
+                            ),
+                            SizedBox(height: 5),
+                            Container(
+                              width: 260 * fem, // Set the desired width here
+                              child: Text(
+                                recommended[index]['name'],
+                                style: TextStyle(
+                                  fontSize: 18 * ffem,
+                                  fontWeight: FontWeight.w400,
+                                  height: 1.3625 * ffem / fem,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
                           ],
@@ -314,28 +558,28 @@ class _Home_userState extends State<Home_user> {
                   ),
                 ),
 
-                // Featured Artists List
+
                 Container(
-                  padding: EdgeInsets.fromLTRB(15 * fem, 22 * fem, 0 * fem, 12 * fem),
+                  padding: EdgeInsets.fromLTRB(15 * fem, 38 * fem, 0 * fem, 0 * fem),
                   child: Text(
                     'Featured Artists',
                     style: TextStyle(
-                      fontSize: 24 * ffem,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xff1c0c11),
+                      fontSize: 22 * ffem,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.white,
                     ),
                   ),
                 ),
                 Container(
-                  height: 350, // Set a specific height for the Container
+                  height: 340, // Set a specific height for the Container
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     itemCount: featuredArtists.length,
                     itemBuilder: (context, index) {
                       return Container(
                         margin: EdgeInsets.only(right: 0 * fem),
-                        width: 179 * fem,
-                        padding: EdgeInsets.fromLTRB(16 * fem, 16 * fem, 0 * fem, 10 * fem),
+                        width: 160 * fem,
+                        padding: EdgeInsets.fromLTRB(12 * fem, 16 * fem, 0 * fem, 10 * fem),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -371,21 +615,21 @@ class _Home_userState extends State<Home_user> {
                             Text(
                               featuredArtists[index]['name'],
                               style: TextStyle(
-                                fontSize: 17 * ffem,
+                                fontSize: 16 * ffem,
                                 fontWeight: FontWeight.w600,
                                 height: 1.5 * ffem / fem,
-                                color: Color(0xff1c0c11),
+                                color: Colors.white,
                               ),
                             ),
-                            SizedBox(height: 6),
+                            SizedBox(height: 3),
                             Row(
                               children: [
                                 Text(
                                   ' ${featuredArtists[index]['skill']}',
                                   style: TextStyle(
-                                    fontSize: 16 * ffem,
+                                    fontSize: 14 * ffem,
                                     fontWeight: FontWeight.w500,
-                                    color: Color(0xff1c0c11),
+                                    color: Color(0xFF9E9EB8),
                                   ),
                                 ),
                                 Spacer(),
@@ -394,9 +638,9 @@ class _Home_userState extends State<Home_user> {
                                   child: Text(
                                     ' ${featuredArtists[index]['rating']}/5',
                                     style: TextStyle(
-                                      fontSize: 16 * ffem,
+                                      fontSize: 14 * ffem,
                                       fontWeight: FontWeight.w500,
-                                      color: Color(0xff1c0c11),
+                                      color: Color(0xFF9E9EB8),
                                     ),
                                   ),
                                 ),
@@ -408,33 +652,36 @@ class _Home_userState extends State<Home_user> {
                     },
                   ),
                 ),
+
+
                 Container(
-                  padding: EdgeInsets.fromLTRB(15 * fem, 0 * fem, 0 * fem, 12 * fem),
+                  padding: EdgeInsets.fromLTRB(15 * fem, 0 * fem, 0 * fem, 0 * fem),
                   child: Text(
-                    'Recommended',
+                    'Seasonal',
                     style: TextStyle(
-                      fontSize: 24 * ffem,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xff1c0c11),
+                      fontSize: 22 * ffem,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.white,
                     ),
                   ),
                 ),
                 Container(
-                  height: 320, // Set a specific height for the Container
+                  height: 330*fem, // Set a specific height for the Container
+
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     itemCount: seasonal.length,
                     itemBuilder: (context, index) {
                       return Container(
-                        width: 240 * fem,
-                        padding: EdgeInsets.fromLTRB(16 * fem, 16 * fem, 0 * fem, 16 * fem),
+                        width: 160 * fem,
+                        padding: EdgeInsets.fromLTRB(12 * fem, 16 * fem, 0 * fem, 0 * fem),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
                               margin: EdgeInsets.only(bottom: 12 * fem),
-                              width: 240 * fem,
-                              height: 240 * fem,
+                              width: 160 * fem,
+                              height: 213 * fem,
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(12 * fem),
                                 child: Image.asset(
@@ -449,7 +696,7 @@ class _Home_userState extends State<Home_user> {
                                 fontSize: 17 * ffem,
                                 fontWeight: FontWeight.w500,
                                 height: 1.5 * ffem / fem,
-                                color: Color(0xff1c0c11),
+                                color: Colors.white,
                               ),
                             ),
                           ],
@@ -459,49 +706,47 @@ class _Home_userState extends State<Home_user> {
                   ),
                 ),
                 Container(
-                  padding: EdgeInsets.fromLTRB(15 * fem, 30 * fem, 0 * fem, 12 * fem),
+                  padding: EdgeInsets.fromLTRB(25 * fem, 0 * fem, 25 * fem, 18 * fem),
                   child: Text(
                     'Best Teams',
                     style: TextStyle(
-                      fontSize: 24 * ffem,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xff1c0c11),
+                      fontSize: 22 * ffem,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.white,
                     ),
                   ),
                 ),
                 Container(
-                  height: 350, // Set a specific height for the Container
-                  child: ListView.builder(
+                  height: 495, 
+                  margin: EdgeInsets.fromLTRB(20, 0, 0, 0),
+                  child: PageView.builder(
+                    controller: PageController(viewportFraction: 0.99), // Set viewport fraction for partial visibility of side images
                     scrollDirection: Axis.horizontal,
-                    itemCount: bestArtists.length,
+                    itemCount: best.length,
                     itemBuilder: (context, index) {
-                      final artist = bestArtists[index];
+                      final artist = best[index];
                       if (artist == null) {
                         return SizedBox(); // Return an empty SizedBox if the artist is null
                       }
                       return Container(
-                        margin: EdgeInsets.only(right: 0 * fem),
-                        width: 179 * fem,
-                        padding: EdgeInsets.fromLTRB(16 * fem, 16 * fem, 0 * fem, 16 * fem),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            GestureDetector(
-                              onTap: () async {
-                                String id = artist['id'];
-                                // Write the id to storage
-                                await  storage.write(key: 'id', value: id);
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => TeamProfile(),
-                                  ),
-                                );
-                              },
-                              child: Container(
-                                margin: EdgeInsets.only(bottom: 12 * fem),
-                                width: 160 * fem,
-                                height: 213 * fem,
+                        margin: EdgeInsets.symmetric(horizontal: 6 * fem), // Add margin for spacing between items
+                        child: GestureDetector(
+                          onTap: () async {
+                            String id = artist['id'];
+                            // Write the id to storage
+                            await storage.write(key: 'id', value: id);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => TeamProfile(),
+                              ),
+                            );
+                          },
+                          child: Stack(
+                            children: [
+                              Container(
+                                width: 330 * fem, // Set the desired width for the image container
+                                height: 495 * fem,
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(12 * fem),
                                   child: Image.network(
@@ -511,43 +756,75 @@ class _Home_userState extends State<Home_user> {
                                   ),
                                 ),
                               ),
-                            ),
-                            Text(
-                              artist['name'] ?? '',
-                              // Provide a default value if name is null
-                              style: TextStyle(
-                                fontSize: 17 * ffem,
-                                fontWeight: FontWeight.w600,
-                                height: 1.5 * ffem / fem,
-                                color: Color(0xff1c0c11),
+                              Positioned(
+                                bottom: 30 * fem,
+                                left: 16 * fem,
+                                right: 34 * fem,
+                                child: Text(
+                                  artist['name'] ?? '',
+                                  // Provide a default value if name is null
+                                  style: TextStyle(
+                                    fontSize: 18 * ffem,
+                                    fontWeight: FontWeight.w400,
+                                    height: 1.3625 * ffem / fem,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+
+
+
+                Container(
+                  padding: EdgeInsets.fromLTRB(15 * fem, 40 * fem, 0 * fem, 0 * fem),
+                  child: Text(
+                    'Seasonal',
+                    style: TextStyle(
+                      fontSize: 22 * ffem,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                Container(
+                  height: 310*fem, // Set a specific height for the Container
+
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: seasonal.length,
+                    itemBuilder: (context, index) {
+                      return Container(
+                        width: 160 * fem,
+                        padding: EdgeInsets.fromLTRB(12 * fem, 16 * fem, 0 * fem, 0 * fem),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              margin: EdgeInsets.only(bottom: 12 * fem),
+                              width: 160 * fem,
+                              height: 213 * fem,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(12 * fem),
+                                child: Image.asset(
+                                  seasonal[index]['image'],
+                                  fit: BoxFit.cover,
+                                ),
                               ),
                             ),
-                            SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Text(
-                                  artist['skill'] ?? '',
-                                  // Provide a default value if skill is null
-                                  style: TextStyle(
-                                    fontSize: 16 * ffem,
-                                    fontWeight: FontWeight.w500,
-                                    color: Color(0xff1c0c11),
-                                  ),
-                                ),
-                                Spacer(),
-                                Padding(
-                                  padding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
-                                  child: Text(
-                                    '${artist['rating'] ?? '4.3'}/5',
-                                    // Provide a default value if rating is null
-                                    style: TextStyle(
-                                      fontSize: 16 * ffem,
-                                      fontWeight: FontWeight.w500,
-                                      color: Color(0xff1c0c11),
-                                    ),
-                                  ),
-                                ),
-                              ],
+                            Text(
+                              seasonal[index]['name'],
+                              style: TextStyle(
+                                fontSize: 17 * ffem,
+                                fontWeight: FontWeight.w500,
+                                height: 1.5 * ffem / fem,
+                                color: Colors.white,
+                              ),
                             ),
                           ],
                         ),
@@ -555,6 +832,146 @@ class _Home_userState extends State<Home_user> {
                     },
                   ),
                 ),
+                Container(
+                  padding: EdgeInsets.fromLTRB(15 * fem, 0 * fem, 0 * fem, 0 * fem),
+                  child: Text(
+                    'Seasonal',
+                    style: TextStyle(
+                      fontSize: 22 * ffem,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                Container(
+                  height: 330*fem, // Set a specific height for the Container
+
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: seasonal.length,
+                    itemBuilder: (context, index) {
+                      return Container(
+                        width: 160 * fem,
+                        padding: EdgeInsets.fromLTRB(12 * fem, 16 * fem, 0 * fem, 0 * fem),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              margin: EdgeInsets.only(bottom: 12 * fem),
+                              width: 160 * fem,
+                              height: 213 * fem,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(12 * fem),
+                                child: Image.asset(
+                                  seasonal[index]['image'],
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                            Text(
+                              seasonal[index]['name'],
+                              style: TextStyle(
+                                fontSize: 17 * ffem,
+                                fontWeight: FontWeight.w500,
+                                height: 1.5 * ffem / fem,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+
+
+
+
+
+
+                Container(
+                  padding: EdgeInsets.fromLTRB(25 * fem, 0 * fem, 0 * fem, 18 * fem),
+                  child: Text(
+                    'Best Teams',
+                    style: TextStyle(
+                      fontSize: 22 * ffem,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                Container(
+                  height: 495, // Set a specific height for the Container
+                  child: PageView.builder(
+                    controller: PageController(viewportFraction: 0.87), // Set viewport fraction for partial visibility of side images
+                    scrollDirection: Axis.horizontal,
+                    itemCount: best.length,
+                    itemBuilder: (context, index) {
+                      final artist = best[index];
+                      if (artist == null) {
+                        return SizedBox(); // Return an empty SizedBox if the artist is null
+                      }
+                      return Container(
+                        margin: EdgeInsets.symmetric(horizontal: 6 * fem), // Add margin for spacing between items
+                        child: GestureDetector(
+                          onTap: () async {
+                            String id = artist['id'];
+                            // Write the id to storage
+                            await storage.write(key: 'id', value: id);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => TeamProfile(),
+                              ),
+                            );
+                          },
+                          child: Stack(
+                            children: [
+                              Container(
+                                width: 350 * fem, // Set the desired width for the image container
+                                height: 495 * fem,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12 * fem),
+                                  child: Image.network(
+                                    artist['image'] ?? '',
+                                    // Provide a default value if image is null
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                bottom: 30 * fem,
+                                left: 16 * fem,
+                                right: 24 * fem,
+                                child: Text(
+                                  artist['name'] ?? '',
+                                  // Provide a default value if name is null
+                                  style: TextStyle(
+                                    fontSize: 18 * ffem,
+                                    fontWeight: FontWeight.w400,
+                                    height: 1.3625 * ffem / fem,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                Container(padding: EdgeInsets.fromLTRB(0, 80, 0, 80),
+                  child:
+                  Center(
+                    child: Text('HomeStage',
+                    style: TextStyle(
+                      color:Colors.white,
+                      fontWeight: FontWeight.w400,
+                      fontSize: 38
+                    ),),
+                  ),
+                )
               ],
             ),
           ),
@@ -563,23 +980,37 @@ class _Home_userState extends State<Home_user> {
     );
   }
 }
+class VideoWidget extends StatefulWidget {
+  final String url;
 
-class VideoPlayerWidget extends StatefulWidget {
-  final String videoSource;
-
-  const VideoPlayerWidget({Key? key, required this.videoSource}) : super(key: key);
+  VideoWidget({required this.url});
 
   @override
-  _VideoPlayerWidgetState createState() => _VideoPlayerWidgetState();
+  _VideoWidgetState createState() => _VideoWidgetState();
 }
 
-class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
+class _VideoWidgetState extends State<VideoWidget> {
   late VideoPlayerController _controller;
+  bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    _initializeVideoPlayer();
+    _initializeVideo();
+  }
+
+  Future<void> _initializeVideo() async {
+    try {
+      _controller = VideoPlayerController.asset(widget.url);
+      await _controller.initialize();
+      setState(() {
+        _isInitialized = true;
+      });
+      _controller.setLooping(true);
+      _controller.play();
+    } catch (e) {
+      print("Error initializing video: $e");
+    }
   }
 
   @override
@@ -588,44 +1019,13 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     super.dispose();
   }
 
-  void _initializeVideoPlayer() {
-    _controller = VideoPlayerController.asset(widget.videoSource);
-    print(_controller);
-    _controller.addListener(() {
-      if (!_controller.value.isPlaying && !_controller.value.isBuffering) {
-        throw VideoPlayerFailedToPlayException('Video failed to play');
-      }
-    });
-    _controller.initialize().then((_) {
-      setState(() {});
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    if (_controller.value.isInitialized) {
-      return Container(
-        color: Colors.black,
-        child: AspectRatio(
-          aspectRatio: _controller.value.aspectRatio,
-          child: VideoPlayer(_controller),
-        ),
-      );
-    } else {
-      return Center(
-        child: CircularProgressIndicator(),
-      );
-    }
-  }
-}
-
-class VideoPlayerFailedToPlayException implements Exception {
-  final String message;
-
-  VideoPlayerFailedToPlayException(this.message);
-
-  @override
-  String toString() {
-    return 'VideoPlayerFailedToPlayException: $message';
+    return _isInitialized
+        ? AspectRatio(
+      aspectRatio: _controller.value.aspectRatio,
+      child: VideoPlayer(_controller),
+    )
+        : Center(child: CircularProgressIndicator());
   }
 }

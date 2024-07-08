@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-// import 'package:test1/page-1/page2.1.dart';
-// import 'package:test1/page-1/signup_team.dart';
 import 'package:test1/page-1/page2.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -24,58 +22,21 @@ class Scene1 extends StatelessWidget {
 
 
 
-    return Scaffold(
+    return Scaffold(backgroundColor: Color(0xFF121217),
       body: SafeArea(
         child: Column(
           children: [
+
             Container(
-              padding: EdgeInsets.fromLTRB(16 * fem, 16 * fem, 16 * fem, 8 * fem),
-              width: double.infinity,
-              height: 72 * fem,
-              decoration: BoxDecoration(
-                color: Color(0xffffffff),
-                // color : Colors.yellow,
-              ),
-              child: Container(
-                color: Color(0xffffffff),
-                padding: EdgeInsets.fromLTRB(0 * fem, 12 * fem, 0 * fem, 12 * fem),
-                width: 310 * fem,
-                height: double.infinity,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-
-                    Container(color: Color(0xffffffff),
-                      margin: EdgeInsets.fromLTRB(145 * fem, 0.75 * fem, 10 * fem, 0.75 * fem),
-                      height: double.infinity,
-
-                        child: Text(
-                          'Sign Up',
-                          style: GoogleFonts.beVietnamPro(
-                            fontSize: 18 * ffem,
-                            fontWeight: FontWeight.w700,
-                            height: 1.25 * ffem / fem,
-                            letterSpacing: -0.2700000107 * fem,
-                            color: Color(0xff171111),
-
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Container(
-              margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 340 * fem),
               padding: EdgeInsets.fromLTRB(16 * fem, 0 * fem, 16 * fem, 12 * fem),
               width: double.infinity,
-              color: Color(0xffffffff),
+              color: Color(0xFF121217),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Container(
-                    color: Color(0xffffffff),
-                    margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 29 * fem),
+                    color: Color(0xFF121217),
+                    margin: EdgeInsets.fromLTRB(0 * fem, 170 * fem, 0 * fem, 50 * fem),
                     child: Text(
                       'Start Your Journey With Us.',
                       textAlign: TextAlign.center,
@@ -84,12 +45,12 @@ class Scene1 extends StatelessWidget {
                         fontWeight: FontWeight.w700,
                         height: 1.25 * ffem / fem,
                         letterSpacing: -0.6999999881 * fem,
-                        color: Color(0xff171111),
+                        color: Colors.white
                       ),
                     ),
                   ),
                   Container(
-                    color: Color(0xffffffff),
+                    color: Color(0xFF121217),
                     width: double.infinity,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -212,23 +173,7 @@ class Scene1 extends StatelessWidget {
                 ],
               ),
             ),
-            Container(
-              color: Color(0xffffffff),
-              margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 12 * fem),
-              constraints: BoxConstraints(
-                maxWidth: 339 * fem,
-              ),
-              child: Text(
-                'By continuing you agree to our privacy policy and terms and conditions.',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.beVietnamPro(
-                  fontSize: 15 * ffem,
-                  fontWeight: FontWeight.w400,
-                  height: 1.5 * ffem / fem,
-                  color: Color(0xff876370),
-                ),
-              ),
-            ),
+
 
           ],
         ),

@@ -8,7 +8,6 @@ class Search extends StatefulWidget {
 }
 
 class _SearchState extends State<Search> {
-  // Dummy artist data for testing. Replace it with actual data from your backend.
   final List<Map<String, dynamic>> artistData = [
     {'name': 'Sophia', 'skill': 'Classical Piano', 'rating': 4.5, 'image': 'assets/page-1/images/depth-3-frame-0-4tP.png'},
     {'name': 'John', 'skill': 'Pop Singer', 'rating': 4.2, 'image': 'assets/page-1/images/depth-3-frame-0-4tP.png'},
@@ -39,16 +38,13 @@ class _SearchState extends State<Search> {
 
   @override
   Widget build(BuildContext context) {
-    // Dummy data for testing. Replace it with actual data from your backend.
     final List<String> skills = ['Classical Piano', 'Pop', 'Hip-hop', 'R&B', 'Stand-Up', 'Guitarist', 'Chef'];
 
     double baseWidth = 390;
     double fem = MediaQuery.of(context).size.width / baseWidth;
     double ffem = fem * 0.97;
 
-    // Function to filter artistData based on search criteria
     List<Map<String, dynamic>> filterArtistData(String searchTerm) {
-      // Filter the artist data based on the search term
       List<Map<String, dynamic>> filteredData = [];
       for (var artist in artistData) {
         bool nameContainsTerm = artist['name'].toLowerCase().contains(searchTerm.toLowerCase());
@@ -60,13 +56,8 @@ class _SearchState extends State<Search> {
       return filteredData;
     }
 
-    // Function to perform search when a skill container is clicked
     void searchBySkill(String skill) {
-      // Perform search action based on the clicked skill text
-      // You can implement your search logic here
       List<Map<String, dynamic>> filteredData = filterArtistData(skill);
-
-      // Navigate to SearchedArtist screen with filtered results
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => SearchedArtist(filteredArtistData: filteredData)),
@@ -74,6 +65,7 @@ class _SearchState extends State<Search> {
     }
 
     return Scaffold(
+      backgroundColor: Color(0xFF121217),
       appBar: AppBar(
         title: Text(
           'Search',
@@ -84,10 +76,10 @@ class _SearchState extends State<Search> {
             fontWeight: FontWeight.w700,
             height: 1.25 * ffem / fem,
             letterSpacing: -0.8000000119 * fem,
-            color: Color(0xff1e0a11),
+            color: Colors.white,
           ),
         ),
-        backgroundColor: Color(0xffffffff),
+        backgroundColor: Color(0xFF121217),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -98,22 +90,25 @@ class _SearchState extends State<Search> {
               child: TextFormField(
                 focusNode: _searchFocusNode,
                 decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Color(0xFF292938),
                   hintText: 'Search',
-                  prefixIcon: Icon(Icons.search),
+                  hintStyle: TextStyle(color: Color(0xFF9E9EB8)), // Change hint text color
+                  prefixIcon: Icon(Icons.search, color: Color(0xFF9E9EB8)), // Change icon color
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30 * fem),
-                    borderSide: BorderSide(color: _isSearchBarSelected ? Color(0xffe5195e) :  Color(0xFFA63B5E),), // Change border color
+                    borderRadius: BorderRadius.circular(16 * fem),
+                    borderSide: BorderSide(
+                      color: _isSearchBarSelected ? Color(0xffe5195e) : Color(0xFFA63B5E),
+                    ),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30 * fem),
-                    borderSide: BorderSide(color: Color(0xffe5195e)), // Change focused border color
+                    borderRadius: BorderRadius.circular(16 * fem),
+                    borderSide: BorderSide(color: Color(0xFF9E9EB8)),
                   ),
                 ),
+                style: TextStyle(color: Colors.white), // Change search text color
                 onFieldSubmitted: (value) {
-                  // Filter artist data based on the search term
                   List<Map<String, dynamic>> filteredData = filterArtistData(value);
-
-                  // Navigate to SearchedArtist screen with filtered results
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => SearchedArtist(filteredArtistData: filteredData)),
@@ -127,18 +122,16 @@ class _SearchState extends State<Search> {
               child: Wrap(
                 spacing: 12 * fem,
                 runSpacing: 12 * fem,
-                children: skills
-                    .map(
-                      (skill) => GestureDetector(
+                children: skills.map((skill) {
+                  return GestureDetector(
                     onTap: () {
-                      // Perform search action based on the clicked skill text
                       searchBySkill(skill);
                     },
                     child: Container(
                       padding: EdgeInsets.symmetric(horizontal: 16 * fem, vertical: 8 * fem),
                       decoration: BoxDecoration(
-                        color: Color(0xfff5f0f2),
-                        borderRadius: BorderRadius.circular(20 * fem),
+                        color: Color(0xFF292938),
+                        borderRadius: BorderRadius.circular(12 * fem),
                       ),
                       child: Text(
                         skill,
@@ -147,13 +140,12 @@ class _SearchState extends State<Search> {
                           fontSize: 14 * ffem,
                           fontWeight: FontWeight.w500,
                           height: 1.5 * ffem / fem,
-                          color: Color(0xff1e0a11),
+                          color: Color(0xFF9E9EB8),
                         ),
                       ),
                     ),
-                  ),
-                )
-                    .toList(),
+                  );
+                }).toList(),
               ),
             ),
             SizedBox(height: 20 * fem),
@@ -164,37 +156,32 @@ class _SearchState extends State<Search> {
                 children: [
                   GestureDetector(
                     onTap: () {
-                      // Perform action when first clickable text is tapped
                       print('Nearby text tapped');
-                      // You can implement your search logic here
                     },
                     child: Text(
-                      'Nearby', // First clickable text
+                      'Nearby',
                       style: TextStyle(
-                        color: Colors.black, // Change text color
-                        fontSize: 18 * ffem, // Change font size
+                        color: Colors.white,
+                        fontSize: 18 * ffem,
                       ),
                     ),
                   ),
-                  SizedBox(height: 8 * fem), // Add spacing between clickable texts
+                  SizedBox(height: 8 * fem),
                   GestureDetector(
                     onTap: () {
-                      // Perform action when second clickable text is tapped
                       print('Top Rated text tapped');
-                      // You can implement your search logic here
                     },
                     child: Text(
-                      'Top Rated', // Second clickable text
+                      'Top Rated',
                       style: TextStyle(
-                        color: Colors.black, // Change text color
-                        fontSize: 18 * ffem, // Change font size
+                        color: Colors.white,
+                        fontSize: 18 * ffem,
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-            // Add your other content here
           ],
         ),
       ),

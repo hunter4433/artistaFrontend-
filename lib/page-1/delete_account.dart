@@ -99,8 +99,12 @@ class account_delete extends StatelessWidget {
     double baseWidth = 390;
     double fem = MediaQuery.of(context).size.width / baseWidth;
     double ffem = fem * 0.97;
-    return Scaffold(
-      appBar: AppBar(title: const Text('Account'),),
+    return Scaffold(backgroundColor:Color(0xFF121217),
+      appBar:
+      AppBar(title: const Text('Account', style: TextStyle(color: Colors.white),),
+      backgroundColor: Color(0xFF121217)
+        ,
+      ),
       body: SafeArea(
         child: Container(
           width: double.infinity,
@@ -108,13 +112,14 @@ class account_delete extends StatelessWidget {
             width: double.infinity,
             height: 844*fem,
             decoration: BoxDecoration (
-              color: Color(0xffffffff),
+              color: Color(0xFF121217)
+              ,
             ),
             child: Container(
               width: double.infinity,
               height: double.infinity,
               decoration: BoxDecoration (
-                color: Color(0xffffffff),
+                color: Color(0xFF121217),
               ),
               child: SingleChildScrollView(
                 child: Column(
@@ -141,7 +146,7 @@ class account_delete extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w400,
-                          color: Color(0xff171111),
+                          color: Colors.white,
                           fontFamily: 'Be Vietnam Pro', // Change font family as needed
                         ),
                       ),

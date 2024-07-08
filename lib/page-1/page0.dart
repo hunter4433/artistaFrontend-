@@ -11,13 +11,14 @@ class Scene extends StatelessWidget {
     double baseWidth = 390;
     double fem = MediaQuery.of(context).size.width / baseWidth;
     double ffem = fem * 0.97;
-    return Scaffold(
+    return Scaffold(backgroundColor: Color(0xFF121217),
       body: SafeArea(
         child: Container(
           width: double.infinity,
           height: double.infinity,
           decoration: BoxDecoration(
-            color: Color(0xffffffff),
+            color: Color(0xFF121217)
+            ,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -26,7 +27,8 @@ class Scene extends StatelessWidget {
                 margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 20 * fem),
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: Color(0xffffffff),
+                  color:Color(0xFF121217)
+                  ,
                 ),
                 child: Center(
                   child: SizedBox(
@@ -62,7 +64,7 @@ class Scene extends StatelessWidget {
                               fontWeight: FontWeight.w700,
                               height: 1.25 * ffem / fem,
                               letterSpacing: -0.6999999881 * fem,
-                              color: Color(0xff1c0c11),
+                              color: Colors.white,
                             ),
                           ),
                         ),
@@ -83,7 +85,7 @@ class Scene extends StatelessWidget {
                             fontSize: 17 * ffem,
                             fontWeight: FontWeight.w400,
                             height: 1.5 * ffem / fem,
-                            color: Color(0xff1c0c11),
+                            color: Colors.white,
                           ),
                         ),
                       ),

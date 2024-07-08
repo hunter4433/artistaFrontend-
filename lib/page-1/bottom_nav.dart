@@ -4,7 +4,6 @@ import 'package:test1/page-1/dmeo.dart';
 import 'package:test1/page-1/search.dart';
 import 'package:test1/page-1/settings.dart';
 
-
 class BottomNav extends StatefulWidget {
   @override
   State<BottomNav> createState() => _BottomNavState();
@@ -14,17 +13,16 @@ class _BottomNavState extends State<BottomNav> {
   int _currentIndex = 0;
 
   final List<Widget> _pages = [
-    // Replace with your actual pages/widgets
-    Home_user(), // Example, replace with your Home page
+    Home_user(),
     Search(),
     Booked(),
-    setting(),// Example, replace with your Search page
-    // Add more pages for Bookings and Profile
+    setting(),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color(0xFF292938),
       body: _pages[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
@@ -33,15 +31,16 @@ class _BottomNavState extends State<BottomNav> {
             _currentIndex = index;
           });
         },
-        selectedItemColor: Colors.black, // Set the color for the selected item
-        unselectedItemColor: Color(0xFFA63B5E), // Set the color for unselected items
-        showSelectedLabels: true, // Show labels for the selected item
-        showUnselectedLabels: true, // Show labels for unselected items
-        type: BottomNavigationBarType.fixed, // Disable animation and keep the spacing even
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Color(0xFF9E9EB8),
+        showSelectedLabels: true,
+        showUnselectedLabels: true,
+        type: BottomNavigationBarType.fixed,
+        backgroundColor:Color(0xFF292938), // Set your desired background color here
         items: [
           BottomNavigationBarItem(
-            icon: Image.asset('assets/page-1/images/depth-4-frame-0-btb.png', width: 24, height: 24), // Replace 'assets/home_icon.png' with your actual asset path
-            activeIcon: Icon(Icons.home_filled), // Replace 'assets/home_icon_active.png' with your actual asset path
+            icon: Icon(Icons.home_filled),
+            activeIcon: Icon(Icons.home_filled),
             label: 'Home',
           ),
           BottomNavigationBarItem(
@@ -55,7 +54,7 @@ class _BottomNavState extends State<BottomNav> {
             label: 'Bookings',
           ),
           BottomNavigationBarItem(
-            icon: Image.asset('assets/page-1/images/depth-4-frame-0-Kvf.png', width: 24, height: 24),
+            icon: Icon(Icons.account_circle_outlined),
             activeIcon: Icon(Icons.account_circle),
             label: 'Profile',
           ),
@@ -63,4 +62,8 @@ class _BottomNavState extends State<BottomNav> {
       ),
     );
   }
+}
+
+void main() {
+  runApp(MaterialApp(home: BottomNav()));
 }

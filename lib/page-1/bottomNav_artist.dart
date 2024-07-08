@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:test1/page-1/all_bookings_artist.dart';
 import 'package:test1/page-1/artist_inbox.dart';
-import 'package:test1/page-1/booked_artist.dart';
-import 'package:test1/page-1/dmeo.dart';
-import 'package:test1/page-1/page0.3_booking.dart';
 import 'package:test1/page-1/page_0.3_artist_home.dart';
-import 'package:test1/page-1/search.dart';
 import 'package:test1/page-1/settings.dart';
-
 
 class BottomNavart extends StatefulWidget {
   @override
@@ -20,14 +16,15 @@ class _BottomNavState extends State<BottomNavart> {
     // Replace with your actual pages/widgets
     artist_home(), // Example, replace with your Home page
     artist_inbox(),
-    bookingDetails(),
-    setting(),// Example, replace with your Search page
+    AllBookings(),
+    setting(), // Example, replace with your Search page
     // Add more pages for Bookings and Profile
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color(0xFF292938),
       body: _pages[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
@@ -36,14 +33,15 @@ class _BottomNavState extends State<BottomNavart> {
             _currentIndex = index;
           });
         },
-        selectedItemColor: Colors.black, // Set the color for the selected item
-        unselectedItemColor: Color(0xFFA63B5E), // Set the color for unselected items
+        backgroundColor: Color(0xFF292938), // Set the background color here
+        selectedItemColor: Colors.white, // Set the color for the selected item
+        unselectedItemColor: Color(0xFF9E9EB8), // Set the color for unselected items
         showSelectedLabels: true, // Show labels for the selected item
         showUnselectedLabels: true, // Show labels for unselected items
         type: BottomNavigationBarType.fixed, // Disable animation and keep the spacing even
         items: [
           BottomNavigationBarItem(
-            icon: Image.asset('assets/page-1/images/depth-4-frame-0-btb.png', width: 24, height: 24), // Replace 'assets/home_icon.png' with your actual asset path
+            icon: Icon(Icons.home_outlined), // Replace 'assets/home_icon.png' with your actual asset path
             activeIcon: Icon(Icons.home_filled), // Replace 'assets/home_icon_active.png' with your actual asset path
             label: 'Home',
           ),
@@ -58,7 +56,7 @@ class _BottomNavState extends State<BottomNavart> {
             label: 'Bookings',
           ),
           BottomNavigationBarItem(
-            icon: Image.asset('assets/page-1/images/depth-4-frame-0-Kvf.png', width: 24, height: 24),
+            icon: Icon(Icons.account_circle_outlined),
             activeIcon: Icon(Icons.account_circle),
             label: 'Profile',
           ),
@@ -66,4 +64,10 @@ class _BottomNavState extends State<BottomNavart> {
       ),
     );
   }
+}
+
+void main() {
+  runApp(MaterialApp(
+    home: BottomNavart(),
+  ));
 }

@@ -5,6 +5,7 @@ import 'package:test1/page-1/artist_info_edit.dart';
 import 'package:test1/page-1/customer_support.dart';
 
 import 'package:test1/page-1/edit_team_members.dart';
+import 'package:test1/page-1/phone_varification.dart';
 
 import 'package:test1/page-1/sign_in.dart';
 
@@ -34,7 +35,7 @@ class setting extends StatelessWidget {
       profilePictureUrl: 'https://via.placeholder.com/150', // Dummy profile picture URL
     ),
   ];
-  //conflict was found here 
+  //conflict was found here
   final storage = FlutterSecureStorage();
 
   Future<String?> getSelectedValue() async {
@@ -119,7 +120,7 @@ class setting extends StatelessWidget {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            backgroundColor: Colors.white, // Change background color of dialog
+            backgroundColor: Color(0xFF121217), // Change background color of dialog
             title: Text('Logout', style: TextStyle(color: Colors.black)), // Change color of dialog title
             content: SingleChildScrollView(
               child: ListBody(
@@ -158,7 +159,7 @@ class setting extends StatelessWidget {
     }
 
 
-    return Scaffold(
+    return Scaffold(  backgroundColor: Color(0xFF121217),
       body: SafeArea(
       child: Container(
         width: double.infinity,
@@ -167,14 +168,14 @@ class setting extends StatelessWidget {
           width: double.infinity,
           height: 844*fem,
           decoration: BoxDecoration (
-            color: Color(0xffffffff),
+            color: Color(0xFF121217),
           ),
           child: Container(
             // depth0frame0qN7 (16:2431)
             width: double.infinity,
             height: double.infinity,
             decoration: BoxDecoration (
-              color: Color(0xffffffff),
+              color:Color(0xFF121217),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -185,7 +186,8 @@ class setting extends StatelessWidget {
                   width: double.infinity,
                   height: 72*fem,
                   decoration: BoxDecoration (
-                    color: Color(0xffffffff),
+                    color: Color(0xFF121217)
+                    ,
                   ),
                   child: Container(
                     // depth4frame0WsZ (16:2440)
@@ -200,7 +202,7 @@ class setting extends StatelessWidget {
                           fontWeight: FontWeight.w700,
                           height: 1.25*ffem/fem,
                           letterSpacing: -0.2700000107*fem,
-                          color: Color(0xff171111),
+                          color: Colors.white,
                         ),
                       ),
                     ),
@@ -236,7 +238,7 @@ class setting extends StatelessWidget {
                               fontSize: 17 * ffem,
                               fontWeight: FontWeight.w400,
                               height: 1.5 * ffem / fem,
-                              color: Color(0xff171111),
+                              color: Colors.white,
                             ),
                           ),
                         ),
@@ -246,7 +248,8 @@ class setting extends StatelessWidget {
                           width: 64 * fem,
                           height: 44 * fem,
                           child: Icon(
-                            Icons.arrow_forward_ios_rounded, // Different icon
+                            Icons.arrow_forward_ios_rounded, color: Colors.white
+                            ,// Different icon
                             // Color of the icon
                             // Size of the icon
                           ),
@@ -290,7 +293,7 @@ class setting extends StatelessWidget {
                             fontSize: 17 * ffem,
                             fontWeight: FontWeight.w400,
                             height: 1.5 * ffem / fem,
-                            color: Color(0xff171111),
+                            color: Colors.white,
                           ),
                         ),
                       ),
@@ -301,7 +304,8 @@ class setting extends StatelessWidget {
                       width: 64 * fem,
                       height: 44 * fem,
                       child: Icon(
-                        Icons.arrow_forward_ios_rounded, // Different icon
+                        Icons.arrow_forward_ios_rounded, color: Colors.white
+                        , // Different icon
                         // Color of the icon
                         // Size of the icon
                       ),
@@ -315,7 +319,7 @@ class setting extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => customer_support()),
+                      MaterialPageRoute(builder: (context) => GalileoDesign()),
                     );
                   },
                   child: Container(
@@ -344,7 +348,7 @@ class setting extends StatelessWidget {
                                 fontSize: 17 * ffem,
                                 fontWeight: FontWeight.w400,
                                 height: 1.5 * ffem / fem,
-                                color: Color(0xff171111),
+                                color: Colors.white,
                               ),
                             ),
                           ),
@@ -355,7 +359,7 @@ class setting extends StatelessWidget {
                           width: 64 * fem,
                           height: 44 * fem,
                           child: Icon(
-                            Icons.arrow_forward_ios_rounded, // Different icon
+                            Icons.arrow_forward_ios_rounded,color: Colors.white, // Different icon
                             // Color of the icon
                             // Size of the icon
                           ),
@@ -398,7 +402,7 @@ class setting extends StatelessWidget {
                                 fontSize: 17 * ffem,
                                 fontWeight: FontWeight.w400,
                                 height: 1.5 * ffem / fem,
-                                color: Color(0xff171111),
+                                color: Colors.white,
                               ),
                             ),
                           ),
@@ -409,7 +413,7 @@ class setting extends StatelessWidget {
                           width: 64 * fem,
                           height: 44 * fem,
                           child: Icon(
-                            Icons.arrow_forward_ios_rounded, // Different icon
+                            Icons.arrow_forward_ios_rounded,color: Colors.white, // Different icon
                             // Color of the icon
                             // Size of the icon
                           ),
@@ -452,7 +456,7 @@ class setting extends StatelessWidget {
                                 fontSize: 17 * ffem,
                                 fontWeight: FontWeight.w400,
                                 height: 1.5 * ffem / fem,
-                                color: Color(0xff171111),
+                                color: Colors.white,
                               ),
                             ),
                           ),
@@ -463,7 +467,7 @@ class setting extends StatelessWidget {
                           width: 64 * fem,
                           height: 44 * fem,
                           child: Icon(
-                            Icons.arrow_forward_ios_rounded, // Different icon
+                            Icons.arrow_forward_ios_rounded, color: Colors.white,// Different icon
                             // Color of the icon
 
                             // Size of the icon
@@ -506,7 +510,7 @@ class setting extends StatelessWidget {
                                 fontSize: 17 * ffem,
                                 fontWeight: FontWeight.w400,
                                 height: 1.5 * ffem / fem,
-                                color: Color(0xff171111),
+                                color: Colors.white,
                               ),
                             ),
                           ),
@@ -519,7 +523,7 @@ class setting extends StatelessWidget {
 
                           child:Center(
                             child: const Text('1.0.2',
-                              style: TextStyle(
+                              style: TextStyle(color: Colors.white,
                                 fontSize: 19,
                                 fontWeight: FontWeight.w300,
                               )

@@ -23,9 +23,11 @@ class account_managment extends StatelessWidget {
     double fem = MediaQuery.of(context).size.width / baseWidth;
     double ffem = fem * 0.97;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Account'),
+    return Scaffold(backgroundColor: Color(0xFF121217)
+      ,
+      appBar: AppBar(backgroundColor: Color(0xFF121217)
+        ,
+        title: const Text('Account',style: TextStyle(color: Colors.white),),
       ),
       body: SafeArea(
         child: FutureBuilder<String?>(
@@ -56,7 +58,7 @@ class account_managment extends StatelessWidget {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => user_information()),
+                        MaterialPageRoute(builder: (context) => UserInformation()),
                       );
                     },
                     child: Container(
@@ -81,7 +83,7 @@ class account_managment extends StatelessWidget {
                                   fontSize: 17 * ffem,
                                   fontWeight: FontWeight.w400,
                                   height: 1.5 * ffem / fem,
-                                  color: Color(0xff171111),
+                                  color: Colors.white,
                                 ),
                               ),
                             ),
@@ -90,7 +92,7 @@ class account_managment extends StatelessWidget {
                             width: 64 * fem,
                             height: 44 * fem,
                             child: Icon(
-                              Icons.arrow_forward_ios_rounded,
+                              Icons.arrow_forward_ios_rounded,color: Colors.white,
                             ),
                           ),
                         ],
@@ -128,7 +130,7 @@ class account_managment extends StatelessWidget {
                                     fontSize: 17 * ffem,
                                     fontWeight: FontWeight.w400,
                                     height: 1.5 * ffem / fem,
-                                    color: Color(0xff171111),
+                                    color: Colors.white,
                                   ),
                                 ),
                               ),
@@ -137,7 +139,8 @@ class account_managment extends StatelessWidget {
                               width: 64 * fem,
                               height: 44 * fem,
                               child: Icon(
-                                Icons.arrow_forward_ios_rounded,
+                                Icons.arrow_forward_ios_rounded,color: Colors.white
+                                ,
                               ),
                             ),
                           ],
@@ -175,7 +178,7 @@ class account_managment extends StatelessWidget {
                                     fontSize: 17 * ffem,
                                     fontWeight: FontWeight.w400,
                                     height: 1.5 * ffem / fem,
-                                    color: Color(0xff171111),
+                                    color: Colors.white,
                                   ),
                                 ),
                               ),
@@ -184,7 +187,7 @@ class account_managment extends StatelessWidget {
                               width: 64 * fem,
                               height: 44 * fem,
                               child: Icon(
-                                Icons.arrow_forward_ios_rounded,
+                                Icons.arrow_forward_ios_rounded,color: Colors.white,
                               ),
                             ),
                           ],
@@ -222,7 +225,7 @@ class account_managment extends StatelessWidget {
                                     fontSize: 17 * ffem,
                                     fontWeight: FontWeight.w400,
                                     height: 1.5 * ffem / fem,
-                                    color: Color(0xff171111),
+                                    color: Colors.white,
                                   ),
                                 ),
                               ),
@@ -231,7 +234,7 @@ class account_managment extends StatelessWidget {
                               width: 64 * fem,
                               height: 44 * fem,
                               child: Icon(
-                                Icons.arrow_forward_ios_rounded,
+                                Icons.arrow_forward_ios_rounded,color: Colors.white,
                               ),
                             ),
                           ],
@@ -268,7 +271,7 @@ class account_managment extends StatelessWidget {
                                   fontSize: 17 * ffem,
                                   fontWeight: FontWeight.w400,
                                   height: 1.5 * ffem / fem,
-                                  color: Color(0xff171111),
+                                  color: Colors.white,
                                 ),
                               ),
                             ),
@@ -277,7 +280,7 @@ class account_managment extends StatelessWidget {
                             width: 64 * fem,
                             height: 44 * fem,
                             child: Icon(
-                              Icons.arrow_forward_ios_rounded,
+                              Icons.arrow_forward_ios_rounded,color: Colors.white
                             ),
                           ),
                         ],
@@ -323,7 +326,7 @@ class account_managment extends StatelessWidget {
                             width: 64 * fem,
                             height: 44 * fem,
                             child: Icon(
-                              Icons.arrow_forward_ios_rounded,
+                              Icons.arrow_forward_ios_rounded,color: Colors.white,
                             ),
                           ),
                         ],

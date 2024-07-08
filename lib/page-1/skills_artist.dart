@@ -358,7 +358,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
     double baseWidth = 390;
     double fem = MediaQuery.of(context).size.width / baseWidth;
     double ffem = fem * 0.97;
-    return Scaffold(
+    return Scaffold(backgroundColor: Color(0xFF121217),
       appBar: AppBar(
         title: Text(
           'Sign up',
@@ -369,10 +369,10 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
             fontWeight: FontWeight.w700,
             height: 1.25 * ffem / fem,
             letterSpacing: -0.8000000119 * fem,
-            color: Color(0xff1e0a11),
+            color: Colors.white,
           ),
         ),
-        backgroundColor: Color(0xffffffff),
+        backgroundColor: Color(0xFF121217),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
@@ -387,7 +387,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Container(color: Colors.white,
+                Container(color:Color(0xFF121217),
                   padding: EdgeInsets.fromLTRB(16 * fem, 12 * fem, 16 * fem, 12 * fem),
                   width: double.infinity,
                   child: Column(
@@ -407,7 +407,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                                   fontSize: 18 * ffem,
                                   fontWeight: FontWeight.w500,
                                   height: 1.5 * ffem / fem,
-                                  color: Color(0xff1e0a11),
+                                  color: Colors.white
                                 ),
                               ),
                             ),
@@ -430,15 +430,18 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                                 },
                                 decoration: InputDecoration(
                                   hintText: 'Choose Skill',
+                                  hintStyle: TextStyle(color:  Color(0xFF9E9EB8)),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12 * fem),
-                                    borderSide: BorderSide(width: 1.25, color: Color(0xffeac6d3)),
+                                    borderSide: BorderSide(width: 1.25, color: Color(0xFF9E9EB8)),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12 * fem),
                                     borderSide: BorderSide(width: 1.25, color: Color(0xffe5195e)),
                                   ),
                                 ),
+                                style: TextStyle(color:  Color(0xFF9E9EB8)),
+                                dropdownColor: Color(0xFF292938),
                               ),
                             ),
                             SizedBox(
@@ -462,15 +465,18 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                                 },
                                 decoration: InputDecoration(
                                   hintText: 'Sub-Skill',
+                                  hintStyle: TextStyle(color:  Color(0xFF9E9EB8)),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12 * fem),
-                                    borderSide: BorderSide(width: 1.25, color: Color(0xffeac6d3)),
+                                    borderSide: BorderSide(width: 1.25, color:  Color(0xFF9E9EB8)),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12 * fem),
                                     borderSide: BorderSide(width: 1.25, color: Color(0xffe5195e)),
                                   ),
                                 ),
+                                style: TextStyle(color:  Color(0xFF9E9EB8)),
+                                dropdownColor: Color(0xFF292938),
                               ),
                             ),
 
@@ -499,7 +505,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                                   fontSize: 18 * ffem,
                                   fontWeight: FontWeight.w500,
                                   height: 1.5 * ffem / fem,
-                                  color: Color(0xff1e0a11),
+                                  color: Colors.white,
                                 ),
                               ),
                             ),
@@ -514,15 +520,17 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                                 maxLines: null,
                                 decoration: InputDecoration(
                                   hintText: 'Summary of your experience',
+                                  hintStyle: TextStyle(color:  Color(0xFF9E9EB8)),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12 * fem),
-                                    borderSide: BorderSide(width: 1.25, color: Color(0xffeac6d3)),
+                                    borderSide: BorderSide(width: 1.25, color:Color(0xFF9E9EB8),),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12 * fem),
                                     borderSide: BorderSide(width: 1.25, color: Color(0xffe5195e)),
                                   ),
                                 ),
+                                style: TextStyle(color: Colors.white),
                               ),
                             ),
                           ],
@@ -545,7 +553,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                                   fontSize: 18 * ffem,
                                   fontWeight: FontWeight.w500,
                                   height: 1.5 * ffem / fem,
-                                  color: Color(0xff1e0a11),
+                                  color: Colors.white
                                 ),
                               ),
                             ),
@@ -569,15 +577,17 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                                 controller: _hourlyPriceController,
                                 decoration: InputDecoration(
                                   hintText: 'Your Total Per Hour Price ',
+                                  hintStyle: TextStyle(color:  Color(0xFF9E9EB8)),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12 * fem),
-                                    borderSide: BorderSide(width: 1.25, color: Color(0xffeac6d3)),
+                                    borderSide: BorderSide(width: 1.25, color:Color(0xFF9E9EB8),),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12 * fem),
                                     borderSide: BorderSide(width: 1.25, color: Color(0xffe5195e)),
                                   ),
                                 ),
+                                style: TextStyle(color: Colors.white),
                               ),
                             ),
                           ],
@@ -596,7 +606,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                               fontSize: 18 ,
                               fontWeight: FontWeight.w500,
                               height: 1.5 ,
-                              color: Color(0xff1e0a11),
+                              color: Colors.white,
                               fontFamily: 'Be Vietnam Pro',
                             ),
                           ),
@@ -612,7 +622,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                   width: double.infinity,
                   height: 970 * fem,
                   decoration: BoxDecoration(
-                    color: Color(0xffffffff),
+                    color: Color(0xFF121217),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -624,7 +634,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                           children: [
                             Text(
                               'Upload Audio',
-                              style: TextStyle(fontSize: 18),
+                              style: TextStyle(fontSize: 18,color: Colors.white),
 
                             ),
                             ElevatedButton(
@@ -659,7 +669,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w300,
-                              color: Colors.black,
+                              color: Colors.white,
                               fontFamily: 'Be Vietnam Pro',
                             ),
                           ),
@@ -680,7 +690,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                                 child: Icon(
                               Icons.upload_outlined,
                               size: 48.0 * fem,
-                              color: Colors.black.withOpacity(0.5),
+                              color: Colors.white.withOpacity(0.5),
                             ),
                           ),
                         ),
@@ -697,7 +707,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w300,
-                              color: Colors.black,
+                              color: Colors.white,
                               fontFamily: 'Be Vietnam Pro',
                             ),
                           ),
@@ -717,7 +727,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                               ),
                               child: _image1 != null
                                   ? Image.file(_image1!, fit: BoxFit.cover)
-                                  : Icon(Icons.add),
+                                  : Icon(Icons.add,color: Colors.white,),
                             ),
                           ),
                           GestureDetector(
@@ -728,7 +738,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                               ),
                               child: _image2 != null
                                   ? Image.file(_image2!, fit: BoxFit.cover)
-                                  : Icon(Icons.add),
+                                  : Icon(Icons.add,color: Colors.white,),
                             ),
                           ),
                           GestureDetector(
@@ -739,7 +749,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                               ),
                               child: _image3 != null
                                   ? Image.file(_image3!, fit: BoxFit.cover)
-                                  : Icon(Icons.add),
+                                  : Icon(Icons.add,color: Colors.white,),
                             ),
                           ),
                           GestureDetector(
@@ -750,7 +760,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                               ),
                               child: _image4 != null
                                   ? Image.file(_image4!, fit: BoxFit.cover)
-                                  : Icon(Icons.add),
+                                  : Icon(Icons.add,color: Colors.white,),
                             ),
                           ),
 
@@ -767,7 +777,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w300,
-                              color: Colors.black,
+                              color: Colors.white,
                               fontFamily: 'Be Vietnam Pro',
                             ),
                           ),
@@ -787,7 +797,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                               ),
                               child: _controller1 != null
                                   ? VideoPlayer(_controller1!)
-                                  : Icon(Icons.add),
+                                  : Icon(Icons.add,color: Colors.white,),
                             ),
                           ),
                           GestureDetector(
@@ -798,7 +808,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                               ),
                               child: _controller2 != null
                                   ? VideoPlayer(_controller2!)
-                                  : Icon(Icons.add),
+                                  : Icon(Icons.add,color: Colors.white,),
                             ),
                           ),
                         ],
@@ -815,7 +825,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Container(color: Colors.white,
+                      Container(color: Color(0xFF121217),
                         margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 24 * fem),
                         width: double.infinity,
                         child: Column(
@@ -830,7 +840,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                                   fontSize: 17 * ffem,
                                   fontWeight: FontWeight.w500,
                                   height: 1.5 * ffem / fem,
-                                  color: Color(0xff1e0a11),
+                                  color: Colors.white
                                 ),
                               ),
                             ),
@@ -844,15 +854,17 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                                 maxLines: null,
                                 decoration: InputDecoration(
                                   hintText: 'I don\'t work after 11 !',
+                                  hintStyle: TextStyle(color:  Color(0xFF9E9EB8)),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12 * fem),
-                                    borderSide: BorderSide(width: 1.25, color: Color(0xffeac6d3)),
+                                    borderSide: BorderSide(width: 1.25, color: Color(0xFF9E9EB8),),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12 * fem),
                                     borderSide: BorderSide(width: 1.25, color: Color(0xffe5195e)),
                                   ),
                                 ),
+                                style: TextStyle(color: Colors.white),
                               ),
                             ),
                           ],
