@@ -1,11 +1,14 @@
+import 'dart:ffi';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:test1/page-1/skills_artist.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import'google_map_page.dart';
 
 
 class artist_cred extends StatefulWidget {
@@ -18,7 +21,9 @@ class _artist_credState extends State<artist_cred> {
   TextEditingController _ageController = TextEditingController();
   TextEditingController _phoneController = TextEditingController();
   TextEditingController _addressController = TextEditingController();
-
+  LatLng? _selectedCoordinates;
+  late double _latitude;
+  late double _longitude;
 
 
   Color _nameBorderColor = Color(0xffeac6d3);
@@ -202,25 +207,52 @@ class _artist_credState extends State<artist_cred> {
                         ),
                         SizedBox(height: 16 * fem),
                         Container(
-                          width: double.infinity,
-                          height: 100 * fem,
-                          child: TextField(
-                            controller: _addressController,
-                            onChanged: (value) {
-                              setState(() {
-                                _addressBorderColor = value.isEmpty ? Colors.red : Color(0xffeac6d3);
-                              });
+                          padding: EdgeInsets.all(16.0),
+                          child: GestureDetector(
+                            onTap: () async {
+                              // Navigate to the map page and await the selected coordinates
+                              final Map<String, dynamic>? result = await Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => GoogleMapPage()),
+                              );
+
+                              if (result != null) {
+                                setState(() {
+                                  _selectedCoordinates = result['coordinates'];
+                                  _latitude = _selectedCoordinates!.latitude   ;
+                                  _longitude = _selectedCoordinates!.longitude  ;
+                                  _addressController.text = result['address'];
+                                });
+                              }
+                              print(_selectedCoordinates);
+                              // Print latitude and longitude for verification
+                              print('Latitude: $_latitude');
+                              print('Longitude: $_longitude');
                             },
-                            decoration: InputDecoration(
-                              suffixIcon: Icon(Icons.home_outlined, color: Color(0xffeac6d3)),
-                              hintText: 'Address',
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12 * fem),
-                                borderSide: BorderSide(width: 1.25, color: _addressBorderColor),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12 * fem),
-                                borderSide: BorderSide(width: 1.25, color: Color(0xffe5195e)),
+                            child: AbsorbPointer(
+                              // Prevent the text field from receiving input
+                              child: TextField(
+                                controller: _addressController,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _addressBorderColor =
+                                    value.isEmpty ? Colors.red : Color(0xffeac6d3);
+                                  });
+                                },
+                                decoration: InputDecoration(
+                                  suffixIcon: Icon(Icons.home_outlined, color: Color(0xffeac6d3)),
+                                  hintText: 'Address',
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12 * fem),
+                                    borderSide:
+                                    BorderSide(width: 1.25, color: _addressBorderColor),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12 * fem),
+                                    borderSide:
+                                    BorderSide(width: 1.25, color: Color(0xffe5195e)),
+                                  ),
+                                ),
                               ),
                             ),
                           ),
@@ -244,9 +276,11 @@ class _artist_credState extends State<artist_cred> {
                               prefs.setString('age', _ageController.text);
                               prefs.setString('name',_nameController.text);
                               prefs.setString('phone_number',_phoneController.text);
-                              prefs.setString('address',_addressController.text);
-                              // prefs.setString('address',_imageFile);
+                              // prefs.setString('address',_addressController.text);
+                              prefs.setDouble('latitude',_latitude );
+                              prefs.setDouble('longitude',_longitude! );
                               prefs.setString('profile_photo', _imageFile!.path);
+
 
 
                               Navigator.push(
@@ -275,7 +309,7 @@ class _artist_credState extends State<artist_cred> {
                               horizontal: 16 * fem,
                               vertical: 12 * fem,
                             ),
-                            minimumSize: Size(double.infinity, 14 * fem),
+                            // minimumSize: Size(double.infinity, 14 * fem),
                           ),
                           child: Center(
                             child: Text(

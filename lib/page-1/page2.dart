@@ -85,7 +85,7 @@ class _Scene2State extends State<Scene2> {
     // String? token = await _getToken();
     // print(token);
     final response = await http.post(
-      Uri.parse('http://127.0.0.1:8000/api/$endpoint'),
+      Uri.parse('http://192.0.0.2:8000/api/$endpoint'),
       headers: <String, String>{
         'Content-Type': 'application/vnd.api+json',
         'Accept': 'application/vnd.api+json',

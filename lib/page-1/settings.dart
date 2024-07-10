@@ -11,6 +11,7 @@ import 'package:test1/page-1/sign_in.dart';
 import '../utils.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import'page1.dart';
 
 class setting extends StatelessWidget {
 
@@ -540,7 +541,7 @@ class setting extends StatelessWidget {
                      logout();
                      Navigator.push(
                        context,
-                       MaterialPageRoute(builder: (context) => Scene()),
+                       MaterialPageRoute(builder: (context) => Scene1()),
                      );
 
       },

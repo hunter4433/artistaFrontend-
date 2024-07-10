@@ -60,7 +60,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
     // Initialize API URLs for different kinds
     String apiUrl;
 
-      apiUrl = 'http://127.0.0.1:8000/api/featured/artist_info/$id';
+      apiUrl = 'http://192.0.0.2:8000/api/featured/artist_info/$id';
 
 // Declare a variable to store the name outside the loop
 
@@ -74,7 +74,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
         },
       );
 // Declare a variable to store the name outside the loop
-String baseUrl='http://127.0.0.1:8000/storage';
+String baseUrl='http://192.0.0.2:8000/storage';
 
       if (response.statusCode == 200) {
         // Map<String, dynamic> userData = json.decode(response.body);

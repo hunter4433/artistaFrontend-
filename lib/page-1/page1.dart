@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 // import 'package:test1/page-1/signup_team.dart';
 import 'package:test1/page-1/page2.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:test1/page-1/phone_number.dart';
 
 class Scene1 extends StatelessWidget {
 
@@ -100,8 +101,9 @@ class Scene1 extends StatelessWidget {
                             onPressed: () {
                               saveSelectedValue('hire');
                               Navigator.push(context, MaterialPageRoute(builder:(context)
-                              => Scene2()
+                              => PhoneNumberInputScreen()
                               ));
+
                               // Handle button press
                             },
                             style: ElevatedButton.styleFrom(

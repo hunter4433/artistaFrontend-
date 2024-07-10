@@ -90,19 +90,29 @@ class _Home_userState extends State<Home_user> {
 
   // Function to make the API call
   Future<void> fetchFeaturedArtists() async {
-    for (int index = 0; index < categories.length; index++) {
-      String? source = categories[index]['source'] as String?;
-      if (source != null) {
-        // Here you can use the 'source' variable
-        print('Source at index $index: $source');
-      } else {
-        // Handle cases where 'source' is null
-        print('Source at index $index is null');
-      }
+    Future<String?> _getLatitude() async {
+      return await storage.read(key: 'latitude'); // Assuming you stored the token with key 'token'
+    }
+    Future<String?> _getLongitude() async {
+      return await storage.read(key: 'longitude'); // Assuming you stored the token with key 'token'
     }
 
+    String? latitude = await _getLatitude();
+    String? longitude = await _getLongitude();
+
+    // for (int index = 0; index < categories.length; index++) {
+    //   String? source = categories[index]['source'] as String?;
+    //   if (source != null) {
+    //     // Here you can use the 'source' variable
+    //     print('Source at index $index: $source');
+    //   } else {
+    //     // Handle cases where 'source' is null
+    //     print('Source at index $index is null');
+    //   }
+    // }
+
     try {
-      String apiUrl = 'http://127.0.0.1:8000/api/home/featured';
+      String apiUrl = 'http://192.0.0.2:8000/api/home/featured?lat=$latitude&lng=$longitude';
       // Make the HTTP GET request
       var response = await http.get(
         Uri.parse(apiUrl),
@@ -121,14 +131,14 @@ class _Home_userState extends State<Home_user> {
         // Clear the existing list
         setState(() {
           featuredArtists.clear();
-          String baseUrl = 'http://127.0.0.1:8000/storage/';
+          String baseUrl = 'http://192.0.0.2:8000/storage/';
 
           // Populate the featuredArtists list with the response data
           for (var item in data) {
             featuredArtists.add({
               'id': item['id'],
               'name': item['name'],
-              'image': 'http://127.0.0.1:8000/storage/${item['profile_photo']}',
+              'image': 'http://192.0.0.2:8000/storage/${item['profile_photo']}',
               // 'rating': item['rating'].toString(),
               'skill': item['skills'],
             });
@@ -151,7 +161,7 @@ class _Home_userState extends State<Home_user> {
   //apicall for team
   Future<void> fetchFeaturedTeams() async {
     try {
-      String apiUrl = 'http://127.0.0.1:8000/api/home/featured/team';
+      String apiUrl = 'http://192.0.0.2:8000/api/home/featured/team';
       // Make the HTTP GET request
       var response = await http.get(
         Uri.parse(apiUrl),
@@ -170,7 +180,7 @@ class _Home_userState extends State<Home_user> {
         // Clear the existing list
         setState(() {
           bestArtists.clear();
-          String baseUrl = 'http://127.0.0.1:8000/storage/';
+          String baseUrl = 'http://192.0.0.2:8000/storage/';
 
           // Populate the featuredArtists list with the response data
           for (var item in data) {
@@ -186,7 +196,7 @@ class _Home_userState extends State<Home_user> {
                 bestArtists.add({
                   'id': id,
                   'name': name,
-                  'image': 'http://127.0.0.1:8000/storage/$profilePhoto',
+                  'image': 'http://192.0.0.2:8000/storage/$profilePhoto',
                   'skill': skills,
                 });
 
