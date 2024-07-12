@@ -31,6 +31,9 @@ dependencies:
 
   flutter:
     sdk: flutter
+#  razorpay_flutter: 1.3.5
+##    path: ./razorpay_flutter
+
   file_picker: ^8.0.0+1
   flutter_secure_storage: ^9.0.0
   shared_preferences: ^2.2.2
@@ -40,6 +43,8 @@ dependencies:
   provider: ^5.0.0
   intl: ^0.17.0
   video_player: ^2.8.3
+  google_api_availability: ^5.0.0
+
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -48,17 +53,36 @@ dependencies:
   google_fonts: ^6.2.1
   image_picker: ^1.0.7
   geolocator: ^11.0.0
+  razorpay_flutter: ^1.3.7
+  firebase_core: ^3.0.0
+  firebase_auth: ^5.0.0
+  firebase_messaging: ^15.0.0
+  firebase_crashlytics: ^4.0.0
+  flutter_local_notifications: ^17.1.2
+  google_maps_flutter: ^2.7.0
+  location: ^6.0.2
+  geocoding: ^3.0.0
+
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
+  flutter_launcher_icons: "^0.13.1"
+
+flutter_launcher_icons:
+    android: "launcher_icon"
+    ios: true
+    image_path: "assets/page-1/images/depth-4-frame-0-GGo.png"
+    min_sdk_android: 21 # android min sdk min:16, default 21
+
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^3.0.0
+flutter_lints: ^3.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

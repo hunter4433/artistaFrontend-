@@ -59,6 +59,8 @@ class _ArtistCredentials2State extends State<team2signup> {
   }
 
 
+
+
   // Function to pick an image for the searched section
   Future<void> _pickImageForSearchedSection() async {
     final picker = ImagePicker();
@@ -81,6 +83,11 @@ class _ArtistCredentials2State extends State<team2signup> {
     Future<String?> _getToken() async {
       return await storage.read(key: 'token'); // Assuming you stored the token with key 'token'
     }
+
+    Future<String?> _getFCMToken() async {
+      return await storage.read(key: 'fCMToken'); // Assuming you stored the token with key 'token'
+    }
+
     try {
       // Get shared preferences data
       Map<String, String?> sharedPreferencesData = await getAllSharedPreferences();
@@ -94,6 +101,7 @@ class _ArtistCredentials2State extends State<team2signup> {
 
       // Get authentication token
       String? token = await _getToken();
+      String? fCMToken= await _getFCMToken();
       // Check if token is not null
       if (token != null) {
         // Select images from gallery
@@ -110,6 +118,7 @@ class _ArtistCredentials2State extends State<team2signup> {
             'price_per_hour': _hourlyPriceController.text,
             'skill_category': selectedSkill,
             'special_message': _messageController.text,
+            'fcm_token':fCMToken,
           };
 
           // Merge sharedPreferencesData with artistData
@@ -141,7 +150,7 @@ class _ArtistCredentials2State extends State<team2signup> {
           print(jsonData);
 
           // Example URL, replace with your actual API endpoint
-          String apiUrl = 'http://127.0.0.1:8000/api/artist/team_info';
+          String apiUrl = 'http://192.0.0.2:8000/api/artist/team_info';
           // await Future.delayed(Duration(seconds: 3));
 
           // Make POST request to the API

@@ -31,6 +31,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
   TextEditingController _hourlyPriceController = TextEditingController();
   TextEditingController _messageController = TextEditingController();
 
+
   String _selectedSkill = ''; // Variable to store the selected skill
   List<String> _skills = ['Musician', 'Comedian', 'Visual Artist', 'Dancer', 'Chef', 'Magician'];
 
@@ -41,6 +42,9 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
   // Selected options in the sub-skill dropdown
   List<String> _selectedSubSkills = [];
 
+  Future<String?> _getFCMToken() async {
+    return await storage.read(key: 'fCMToken'); // Assuming you stored the token with key 'token'
+  }
 
   Future<Map<String, String?>> profileSharedPreferences() async {
     SharedPreferences prof=await SharedPreferences.getInstance();
@@ -49,14 +53,15 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
     };
   }
 
-  Future<Map<String, String?>> getAllSharedPreferences() async {
+  Future<Map<String, dynamic?>> getAllSharedPreferences() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return {
       'age': prefs.getString('age'),
       'name': prefs.getString('name'),
-      'address': prefs.getString('address'),
+      // 'address': prefs.getString('address'),
       'phone_number': prefs.getString('phone_number'),
-      // 'profile_photo': prefs.getString('imageFilePath'),
+      'latitude': prefs.getDouble('latitude')?.toString(),
+      'longitude': prefs.getDouble('longitude')?.toString(),
     };
   }
 
@@ -73,7 +78,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
     print('bye');
     try {
       // Get shared preferences data
-      Map<String, String?> sharedPreferencesData = await getAllSharedPreferences();
+      Map<String, dynamic?> sharedPreferencesData = await getAllSharedPreferences();
       Map<String, String?> profilePreferencesData = await profileSharedPreferences();
 
       // var profilePhoto=profilePreferencesData['profile_photo'];
@@ -86,6 +91,8 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
 
       // Get authentication token
       String? token = await _getToken();
+
+      String? fCMToken= await _getFCMToken();
       // Check if token is not null
       if (token != null) {
         // Select images from gallery
@@ -101,6 +108,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
             'price_per_hour': _hourlyPriceController.text,
             'skill_category': _selectedSkill,
             'special_message': _messageController.text,
+            'fcm_token':fCMToken!,
           };
 
           // Merge sharedPreferencesData with artistData
@@ -132,7 +140,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
           print(jsonData);
 
           // Example URL, replace with your actual API endpoint
-          String apiUrl = 'http://127.0.0.1:8000/api/artist/info';
+          String apiUrl = 'http://192.0.0.2:8000/api/artist/info';
           // await Future.delayed(Duration(seconds: 3));
 
           // Make POST request to the API
@@ -229,6 +237,9 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
           break;
         case 'Magician':
           _subSkills.addAll(['Magician', 'Sculpture', 'Drawing']);
+          break;
+        case 'Dancer':
+          _subSkills.addAll(['freestyle', 'classical', 'hip-hop']);
           break;
       }
       _selectedSubSkill = _subSkills.first; // Initialize selected sub-skill with the first item in the list
@@ -941,7 +952,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
     }
     String imagePath = '';
       // Your image upload API endpoint
-      var uploadUrl = Uri.parse('http://127.0.0.1:8000/api/upload-image');
+      var uploadUrl = Uri.parse('http://192.0.0.2:8000/api/upload-image');
 
       // Create a multipart request
       var request = http.MultipartRequest('POST', uploadUrl);

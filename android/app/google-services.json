@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "2456262485",
+    "project_id": "homestage-51e95",
+    "storage_bucket": "homestage-51e95.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:2456262485:android:9b682d67cb5b72a6d4c1dc",
+        "android_client_info": {
+          "package_name": "com.HomeStage.artista"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBAnf3hqvrpLtTmSZTWx9E-n-Ohx0wO8a0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:2456262485:android:aa40ce73b8d6f0d3d4c1dc",
+        "android_client_info": {
+          "package_name": "com.example.test1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBAnf3hqvrpLtTmSZTWx9E-n-Ohx0wO8a0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

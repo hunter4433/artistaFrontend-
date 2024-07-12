@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 
+
 class Booked extends StatefulWidget {
   @override
   _BookedState createState() => _BookedState();
@@ -140,6 +141,9 @@ String? locationText ;
 
   @override
   Widget build(BuildContext context) {
+    //
+    // final message =ModalRoute.of(context)!.settings.arguments;
+
     double baseWidth = 390;
     double fem = MediaQuery.of(context).size.width / baseWidth;
     double ffem = fem * 0.97;
@@ -167,6 +171,8 @@ String? locationText ;
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+
+
                   Container(
                     padding: EdgeInsets.fromLTRB(16*fem, 16*fem, 16*fem, 29*fem),
                     width: double.infinity,
