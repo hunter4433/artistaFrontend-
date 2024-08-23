@@ -9,6 +9,7 @@ import 'package:test1/page-1/phone_varification.dart';
 
 import 'package:test1/page-1/sign_in.dart';
 
+import '../config.dart';
 import '../utils.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -43,19 +44,12 @@ class setting extends StatelessWidget {
     return await storage.read(key: 'selected_value');
   }
 
-  final String logoutUrlArtist = 'http://127.0.0.1:8000/api/artist/logout';
-  final String logoutUrlHire = 'http://127.0.0.1:8000/api/logout';
 
-
-  Future<String?> _getToken() async {
-    return await storage.read(key: 'token'); // Assuming you stored the token with key 'token'
-  }
-
-  Future<void> logout() async {
+  Future<bool> logout() async {
     try {
-      // Get authentication token
-      String? token = await _getToken();
-      print(token);
+
+      final String logoutUrlArtist = '${Config().apiDomain}/artist/logout';
+      final String logoutUrlHire = '${Config().apiDomain}/logout';
 
       var kind = await getSelectedValue();
       print(kind);
@@ -67,19 +61,22 @@ class setting extends StatelessWidget {
           headers: <String, String>{
             'Content-Type': 'application/vnd.api+json',
             'Accept': 'application/vnd.api+json',
-            'Authorization': 'Bearer $token', // Include the token in the header
+            // 'Authorization': 'Bearer $token', // Include the token in the header
           },
         );
 
 
         // Check if the request was successful (status code 200)
         if (response.statusCode == 200) {
+          await storage.write(key: 'authorised', value: 'false');
           print('successs: ${response.body}');
+          return true;
           // Handle successful logout (e.g., navigate to login screen)
         } else {
           // Handle errors (e.g., show error message)
           print('Error: ${response.body}');
         }
+        return false;
       }
       if(kind=='team' || kind=='solo_artist'){
         final response = await http.post(
@@ -87,24 +84,28 @@ class setting extends StatelessWidget {
           headers: <String, String>{
             'Content-Type': 'application/vnd.api+json',
             'Accept': 'application/vnd.api+json',
-            'Authorization': 'Bearer $token', // Include the token in the header
+            // Include the token in the header
           },
         );
 
 
         // Check if the request was successful (status code 200)
         if (response.statusCode == 200) {
+          await storage.write(key: 'authorised', value: 'false');
           print('successs: ${response.body}');
+          return true;
           // Handle successful logout (e.g., navigate to login screen)
         } else {
           // Handle errors (e.g., show error message)
           print('Error: ${response.body}');
         }
+        return false;
       }
       } catch (e) {
       // Handle exceptions (e.g., connection errors)
       print('Exception: $e');
     }
+    return false;
 
   }
 
@@ -122,13 +123,13 @@ class setting extends StatelessWidget {
         builder: (BuildContext context) {
           return AlertDialog(
             backgroundColor: Color(0xFF121217), // Change background color of dialog
-            title: Text('Logout', style: TextStyle(color: Colors.black)), // Change color of dialog title
+            title: Text('Logout', style: TextStyle(color: Colors.white)), // Change color of dialog title
             content: SingleChildScrollView(
               child: ListBody(
                 children: <Widget>[
                   Text(
                     'Are you sure you want to log out?',
-                    style: TextStyle(color: Colors.black), // Change color of dialog content text
+                    style: TextStyle(color: Colors.white), // Change color of dialog content text
                   ),
                 ],
               ),
@@ -140,13 +141,23 @@ class setting extends StatelessWidget {
                 },
                 child: Text(
                   'Cancel',
-                  style: TextStyle(color: Colors.black), // Change color of "Cancel" button text
+                  style: TextStyle(color: Colors.greenAccent), // Change color of "Cancel" button text
                 ),
               ),
               TextButton(
-                onPressed: () {
-                  // Perform logout action
-                  // Navigator.of(context).pop(); // uncomment this line to close the dialog after logout
+                onPressed: () async {
+                  bool flag= await logout();
+                  if (flag) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => Scene1()),
+                    );
+                  }else{
+                    // You can also show a snackbar or dialog here to notify the user of the error
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('something went wrong')),
+                    );
+                  }
                 },
                 child: Text(
                   'Yes',
@@ -320,7 +331,7 @@ class setting extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => GalileoDesign()),
+                      MaterialPageRoute(builder: (context) => PhoneNumberInputScreen()),
                     );
                   },
                   child: Container(
@@ -540,13 +551,10 @@ class setting extends StatelessWidget {
                 ),
 
                  GestureDetector(
-                   onTap: () {
+                   onTap: ()async {
                      // Call the logout function when the container is tapped
-                     logout();
-                     Navigator.push(
-                       context,
-                       MaterialPageRoute(builder: (context) => Scene1()),
-                     );
+                     _showLogoutConfirmationDialog();
+
 
       },
         child: Container(

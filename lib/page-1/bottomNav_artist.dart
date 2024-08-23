@@ -5,21 +5,42 @@ import 'package:test1/page-1/page_0.3_artist_home.dart';
 import 'package:test1/page-1/settings.dart';
 
 class BottomNavart extends StatefulWidget {
+  final Map<String, dynamic> data;
+  final int initialPageIndex;
+  final String? newBookingTitle;
+  final String? newBookingDateTime;
+
+  BottomNavart({
+    required this.data,
+    this.initialPageIndex = 0,
+    this.newBookingTitle,
+    this.newBookingDateTime,
+  });
+
   @override
   State<BottomNavart> createState() => _BottomNavState();
 }
 
 class _BottomNavState extends State<BottomNavart> {
-  int _currentIndex = 0;
+  late int _currentIndex;
 
-  final List<Widget> _pages = [
-    // Replace with your actual pages/widgets
-    artist_home(), // Example, replace with your Home page
-    artist_inbox(),
-    AllBookings(),
-    setting(), // Example, replace with your Search page
-    // Add more pages for Bookings and Profile
-  ];
+  late final List<Widget> _pages;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialPageIndex;
+    _pages = [
+      artist_home(),
+      artist_inbox(),
+      AllBookings(
+        data: widget.data,
+        newBookingTitle: widget.newBookingTitle,
+        newBookingDateTime: widget.newBookingDateTime,
+      ),
+      setting(),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,16 +54,16 @@ class _BottomNavState extends State<BottomNavart> {
             _currentIndex = index;
           });
         },
-        backgroundColor: Color(0xFF292938), // Set the background color here
-        selectedItemColor: Colors.white, // Set the color for the selected item
-        unselectedItemColor: Color(0xFF9E9EB8), // Set the color for unselected items
-        showSelectedLabels: true, // Show labels for the selected item
-        showUnselectedLabels: true, // Show labels for unselected items
-        type: BottomNavigationBarType.fixed, // Disable animation and keep the spacing even
+        backgroundColor: Color(0xFF292938),
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Color(0xFF9E9EB8),
+        showSelectedLabels: true,
+        showUnselectedLabels: true,
+        type: BottomNavigationBarType.fixed,
         items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined), // Replace 'assets/home_icon.png' with your actual asset path
-            activeIcon: Icon(Icons.home_filled), // Replace 'assets/home_icon_active.png' with your actual asset path
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home_filled),
             label: 'Home',
           ),
           BottomNavigationBarItem(
@@ -66,8 +87,5 @@ class _BottomNavState extends State<BottomNavart> {
   }
 }
 
-void main() {
-  runApp(MaterialApp(
-    home: BottomNavart(),
-  ));
-}
+
+

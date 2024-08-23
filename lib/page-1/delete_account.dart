@@ -3,35 +3,37 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:test1/page-1/page0.dart';
 
+import '../config.dart';
+
 class account_delete extends StatelessWidget {
 
   // Function to delete account
   Future<bool> _deleteAccount() async {
     final storage = FlutterSecureStorage();
 
-    Future<String?> _getToken() async {
-      return await storage.read(key: 'token');
-    }
 
     Future<String?> _getId() async {
       return await storage.read(key: 'id');
     }
+    Future<String?> _getUser_id() async {
+      return await storage.read(key: 'user_id'); // Assuming you stored the token with key 'token'
+    }
+
+    String? user_id = await _getUser_id();
 
     Future<String?> _getKind() async {
       return await storage.read(key: 'selected_value');
     }
 
-    String? token = await _getToken();
+
     String? id = await _getId();
     String? kind = await _getKind();
 
-    print(token);
-    print(id);
-    print(kind);
 
-    String apiUrlHire = 'http://127.0.0.1:8000/api/info/$id';
-    String apiUrlArtist='http://127.0.0.1:8000/api/artist/info/$id';
-    String apiUrlTeam='http://127.0.0.1:8000/api/artist/team_info/$id';
+
+    String apiUrlHire = '${Config().apiDomain}/info/$user_id';
+    String apiUrlArtist='${Config().apiDomain}/artist/info/$id';
+    String apiUrlTeam='${Config().apiDomain}/artist/team_info/$id';
 
     try {
       // Make DELETE request to the API based on the value of 'kind'
@@ -43,7 +45,7 @@ class account_delete extends StatelessWidget {
           headers: <String, String>{
             'Content-Type': 'application/vnd.api+json',
             'Accept': 'application/vnd.api+json',
-            'Authorization': 'Bearer $token',
+
           },
         );
       } else if (kind == 'solo_artist') {
@@ -54,7 +56,7 @@ class account_delete extends StatelessWidget {
           headers: <String, String>{
             'Content-Type': 'application/vnd.api+json',
             'Accept': 'application/vnd.api+json',
-            'Authorization': 'Bearer $token',
+
           },
         );
       } else if (kind == 'team') {
@@ -65,7 +67,7 @@ class account_delete extends StatelessWidget {
           headers: <String, String>{
             'Content-Type': 'application/vnd.api+json',
             'Accept': 'application/vnd.api+json',
-            'Authorization': 'Bearer $token',
+
           },
         );
       } else {
@@ -78,6 +80,7 @@ class account_delete extends StatelessWidget {
       if (response.statusCode == 204) {
         // Account deleted successfully
         print('Account deleted successfully');
+        await storage.write(key: 'authorised', value: 'false');
         return true;
 
       } else {
@@ -155,6 +158,8 @@ class account_delete extends StatelessWidget {
                       padding: const EdgeInsets.only(left: 45, right: 45),
                       child: ElevatedButton(
                         onPressed: () async {
+                          // _showDialog('Alert','Are you sure that you want to delete your account');
+
                           bool deleted= await _deleteAccount();
                           // _deleteAccount();
                           if (deleted) {
@@ -165,7 +170,7 @@ class account_delete extends StatelessWidget {
                           else{
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('Logout failed. Please try again.'),
+                                content: Text('Account delete failed . Please try again.'),
                                 duration: Duration(seconds: 3), // Adjust the duration as needed
                               ),
                             );
@@ -204,4 +209,25 @@ class account_delete extends StatelessWidget {
       ),
     );
   }
+
+  // void _showDialog( String title, String message) {
+  //   showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         title: Text(title),
+  //         content: Text(message),
+  //         actions: <Widget>[
+  //           TextButton(
+  //             child: Text('OK'),
+  //             onPressed: () {
+  //               Navigator.of(context).pop();
+  //             },
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
+
 }

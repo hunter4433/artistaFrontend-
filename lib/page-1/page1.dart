@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:test1/page-1/page2.dart';
+// import 'package:test1/page-1/page2.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:test1/page-1/phone_number.dart';
+import 'package:test1/page-1/phone_varification.dart';
 
 class Scene1 extends StatelessWidget {
 
@@ -101,7 +101,7 @@ class Scene1 extends StatelessWidget {
                             onPressed: () {
                               saveSelectedValue('solo_artist');
                               Navigator.push(context, MaterialPageRoute(builder:(context)
-                              => Scene2()
+                              => PhoneNumberInputScreen ()
                               ));
                               // Handle button press
                             },
@@ -140,7 +140,7 @@ class Scene1 extends StatelessWidget {
                             onPressed: () {
                               saveSelectedValue('team');
                               Navigator.push(context, MaterialPageRoute(builder:(context)
-                              => Scene2()
+                              => PhoneNumberInputScreen ()
                               ));
                               // Handle button press
                             },

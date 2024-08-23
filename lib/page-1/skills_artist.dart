@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
 import 'package:audioplayers/audioplayers.dart';
+import '../config.dart';
 import '../utils.dart';
 import 'bottomNav_artist.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -41,9 +42,13 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
 
   // Selected options in the sub-skill dropdown
   List<String> _selectedSubSkills = [];
+  bool _isLoading = false;
 
   Future<String?> _getFCMToken() async {
     return await storage.read(key: 'fCMToken'); // Assuming you stored the token with key 'token'
+  }
+  Future<String?> _getPhoneNumber() async {
+    return await storage.read(key:'phone_number'); // Assuming you stored the token with key 'token'
   }
 
   Future<Map<String, String?>> profileSharedPreferences() async {
@@ -58,8 +63,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
     return {
       'age': prefs.getString('age'),
       'name': prefs.getString('name'),
-      // 'address': prefs.getString('address'),
-      'phone_number': prefs.getString('phone_number'),
+      'address': prefs.getString('address'),
       'latitude': prefs.getDouble('latitude')?.toString(),
       'longitude': prefs.getDouble('longitude')?.toString(),
     };
@@ -71,11 +75,11 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
     return await storage.read(key: 'token'); // Assuming you stored the token with key 'token'
   }
 
-  Future<void> _sendDataToBackend() async {
+  Future<bool> _sendDataToBackend() async {
     String? profilePhotoPath = widget.profilePhoto?.path;
-    print("hi");
+
     print(profilePhotoPath);
-    print('bye');
+    String? phone_number = await _getPhoneNumber();
     try {
       // Get shared preferences data
       Map<String, dynamic?> sharedPreferencesData = await getAllSharedPreferences();
@@ -93,16 +97,17 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
       String? token = await _getToken();
 
       String? fCMToken= await _getFCMToken();
-      // Check if token is not null
-      if (token != null) {
+
+
         // Select images from gallery
         List<File?> imageFiles = [_image1, _image2, _image3, _image4,profilePhotoFile];
+        List<File?> videoFiles = [_video1, _video2, _video3, _video4];
 
 
-        // Check if images are selected
-        if (true) {
+
           // Prepare data to send to the backend
           Map<String, String> artistData = {
+            'phone_number': phone_number!,
             'skills': _selectedSubSkill,
             'about_yourself': _experienceController.text,
             'price_per_hour': _hourlyPriceController.text,
@@ -116,7 +121,16 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
           // Upload images and store paths
           print(imageFiles.length);
           List<String> imagePaths = await _uploadImages(imageFiles);
-           // print(imageFiles.length);
+          List<String> videoPaths = await uploadVideo(videoFiles);
+           print(videoPaths);
+
+           if(videoPaths.length == videoFiles.length){
+             for(int i=0; i < videoFiles.length; i++){
+               mergedData['video${i+1}']= videoPaths[i];
+             }
+
+
+           }
           //
           // Ensure imagePaths contains the profile photo path
           if (imagePaths.length == imageFiles.length) {
@@ -130,17 +144,14 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                 mergedData['image${i + 1}'] = imagePaths[i];
               }
             }
-          } else {
-             print('this side mohit');
-               // Handle the case where imagePaths length doesn't match imageFiles length
-          }
+
 
           // Convert data to JSON format
           String jsonData = json.encode(mergedData);
           print(jsonData);
 
           // Example URL, replace with your actual API endpoint
-          String apiUrl = 'http://192.0.0.2:8000/api/artist/info';
+          String apiUrl = '${Config().apiDomain}/artist/info';
           // await Future.delayed(Duration(seconds: 3));
 
           // Make POST request to the API
@@ -149,7 +160,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
             headers: <String, String>{
               'Content-Type': 'application/vnd.api+json',
               'Accept': 'application/vnd.api+json',
-              'Authorization': 'Bearer $token', // Include the token in the header
+              // 'Authorization': 'Bearer $token', // Include the token in the header
             },
             body: jsonData,
           );
@@ -168,6 +179,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
             String skill = responseData['data']['skill_category'];
             print(id);
             print(skill);
+            return true ;
           } else {
             // Request failed, handle error
             print('Failed to send data. Status code: ${response.statusCode}');
@@ -177,15 +189,54 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
         } else {
           print('No images selected');
         }
-      } else {
-        // Handle the case where token is null, perhaps by showing an error message
-        print("Token is null");
-      }
+
     } catch (e) {
       // Handle network errors
       print('Error sending data: $e');
     }
+    return false;
   }
+
+  Future<List<String>> uploadVideo(List<File?> videoFiles) async {
+    final uri = Uri.parse('${Config().apiDomain}/upload-video');
+    List<String> videoPaths = [];
+
+    try {
+      for (File? videoFile in videoFiles) {
+        if (videoFile != null) {
+          var request = http.MultipartRequest('POST', uri);
+
+          var videoStream = http.ByteStream(videoFile.openRead());
+          var videoLength = await videoFile.length();
+
+          var multipartFile = http.MultipartFile(
+            'video',
+            videoStream,
+            videoLength,
+            filename: videoFile.path.split('/').last,
+          );
+
+          request.files.add(multipartFile);
+
+          var response = await request.send();
+
+          if (response.statusCode == 201) {
+            var d = await response.stream.bytesToString();
+            String path = json.decode(d)['videoPath'];
+            print(path);
+            videoPaths.add(path); // Correctly add the path to the list
+          } else {
+            print('Video upload failed for ${videoFile.path} with status: ${response.statusCode}');
+          }
+        }
+      }
+    } catch (e) {
+      print('An error occurred during video upload: $e');
+    }
+
+    return videoPaths; // Return the list of uploaded video paths
+  }
+
 
 
   @override
@@ -201,10 +252,15 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
   File? _image2;
   File? _video1;
   File? _video2;
+  File? _video3;
+  File? _video4;
   VideoPlayerController? _controller1;
   VideoPlayerController? _controller2;
-  AudioPlayer _audioPlayer = AudioPlayer();
-  File? _audioFile;
+  VideoPlayerController? _controller3;
+  VideoPlayerController? _controller4;
+  final ImagePicker _picker = ImagePicker();
+
+
 
   File? _imageForSearchedSection; // Variable to store the selected image for the searched section
 
@@ -246,31 +302,11 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
     });
   }
 
-  // Function to play uploaded audio
-  void _playAudio() async {
-    if (_audioFile != null) {
-      try {
-        await _audioPlayer.play(_audioFile!.path as Source);
-        print('Audio playback started');
-      } catch (e) {
-        print('Error playing audio: $e');
-      }
-    }
-  }
 
 
 
-  Future<void> _pickAudio() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.audio,
-    );
 
-    if (result != null) {
-      setState(() {
-        _audioFile = File(result.files.single.path!);
-      });
-    }
-  }
+
 
   Future<void> _pickImage1() async {
     final picker = ImagePicker();
@@ -328,13 +364,18 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.video,
     );
+    if (_controller1 != null) {
+      await _controller1!.dispose();
+    }
 
     if (result != null) {
+
       setState(() {
         _video1 = File(result.files.single.path!);
         _controller1 = VideoPlayerController.file(_video1!);
         _controller1!.initialize();
       });
+      print(_video1);
     }
   }
 
@@ -342,6 +383,9 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.video,
     );
+    if (_controller2 != null) {
+      await _controller2!.dispose();
+    }
 
     if (result != null) {
       setState(() {
@@ -349,8 +393,65 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
         _controller2 = VideoPlayerController.file(_video2!);
         _controller2!.initialize();
       });
+      print('this is video2:$_video2');
     }
   }
+
+  Future<void> _pickVideo3() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.video,
+    );
+    if (_controller3 != null) {
+      await _controller3!.dispose();
+    }
+
+    if (result != null) {
+      setState(() {
+        _video3 = File(result.files.single.path!);
+        _controller3 = VideoPlayerController.file(_video3!);
+        _controller3!.initialize();
+      });
+      print(_video3);
+    }
+  }
+
+  Future<void> _pickVideo4() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.video,
+    );
+
+    if (_controller4 != null) {
+      await _controller4!.dispose();
+    }
+
+    if (result != null) {
+      setState(() {
+        _video4 = File(result.files.single.path!);
+        _controller4 = VideoPlayerController.file(_video4!);
+        _controller4!.initialize();
+      });
+      print(_video4);
+    }
+  }
+
+  // Future<void> _pickVideo4() async {
+  //   final pickedFile = await _picker.pickVideo(source: ImageSource.gallery);
+  //
+  //   if (pickedFile != null) {
+  //     final File videoFile = File(pickedFile.path);
+  //
+  //     if (_controller4 != null) {
+  //       await _controller4!.dispose();
+  //     }
+  //
+  //     _controller4 = VideoPlayerController.file(videoFile)
+  //       ..initialize().then((_) {
+  //         setState(() {
+  //           _controller4!.play();
+  //         });
+  //       });
+  //   }
+  // }
 
   @override
   void dispose() {
@@ -358,7 +459,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
     _experienceController.dispose();
     _hourlyPriceController.dispose();
     _messageController.dispose();
-    _audioPlayer.dispose();
+
     super.dispose();
   }
 
@@ -638,74 +739,28 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Upload Audio',
-                              style: TextStyle(fontSize: 18,color: Colors.white),
-
-                            ),
-                            ElevatedButton(
-                              onPressed: _audioFile == null ? _pickAudio : _playAudio,
-                              style: ButtonStyle(
-                                backgroundColor: MaterialStateProperty.all<Color>(
-                                  Color(0xffe5195e), // Adjust background color if needed
-                                ),
-                                foregroundColor: MaterialStateProperty.all<Color>(
-                                  Colors.white, // Change the text color here
-                                ),
-                              ),
-                              child: Text(
-                                _audioFile == null ? 'Upload' : 'Play',
-                              ),
-                            ),
 
 
-
-                          ],
-                        ),
-                      ),
-
-                      const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: SizedBox(
-                          height: 20,
-
-                          child: Text(
-                            'Photo For the Searched Section',
-                            textAlign: TextAlign.left,
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w300,
-                              color: Colors.white,
-                              fontFamily: 'Be Vietnam Pro',
-                            ),
-                          ),
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          _pickImageForSearchedSection(); // Call the function to pick an image for the searched section
-                        },
-                        child: Container(
-                          margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 10 * fem),
-                          width: 358 * fem,
-                          height: 238.66 * fem,
-                          color: Colors.grey.withOpacity(0.3),
-                          child: _imageForSearchedSection != null
-                              ? Image.file(_imageForSearchedSection!, fit: BoxFit.cover)
-                              : Center(
-                                child: Icon(
-                              Icons.upload_outlined,
-                              size: 48.0 * fem,
-                              color: Colors.white.withOpacity(0.5),
-                            ),
-                          ),
-                        ),
-                      ),
+                      // GestureDetector(
+                      //   onTap: () {
+                      //     _pickImageForSearchedSection(); // Call the function to pick an image for the searched section
+                      //   },
+                      //   child: Container(
+                      //     margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 10 * fem),
+                      //     width: 358 * fem,
+                      //     height: 238.66 * fem,
+                      //     color: Colors.grey.withOpacity(0.3),
+                      //     child: _imageForSearchedSection != null
+                      //         ? Image.file(_imageForSearchedSection!, fit: BoxFit.cover)
+                      //         : Center(
+                      //           child: Icon(
+                      //         Icons.upload_outlined,
+                      //         size: 48.0 * fem,
+                      //         color: Colors.white.withOpacity(0.5),
+                      //       ),
+                      //     ),
+                      //   ),
+                      // ),
 
                       const Padding(
                         padding: EdgeInsets.all(8.0),
@@ -822,6 +877,28 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                                   : Icon(Icons.add,color: Colors.white,),
                             ),
                           ),
+                          GestureDetector(
+                            onTap: _pickVideo3,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey),
+                              ),
+                              child: _controller3 != null
+                                  ? VideoPlayer(_controller3!)
+                                  : Icon(Icons.add,color: Colors.white,),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: _pickVideo4,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey),
+                              ),
+                              child: _controller4 != null
+                                  ? VideoPlayer(_controller4!)
+                                  : Icon(Icons.add,color: Colors.white,),
+                            ),
+                          ),
                         ],
                       ),
 
@@ -881,43 +958,39 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                           ],
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 20, right: 20),
-                        child: ElevatedButton(
-                          onPressed: () {
-                            getAllSharedPreferences();
-                            _sendDataToBackend();
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => BottomNavart()),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xffe5195e),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12 * fem),
-                            ),
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 16 * fem,
-                              vertical: 12 * fem,
-                            ),
-                            minimumSize: Size(double.infinity, 14 * fem),
-                          ),
-                          child: Center(
-                            child: Text(
-                              'Finish',
-                              style: SafeGoogleFont(
-                                'Be Vietnam Pro',
-                                fontSize: 16 * ffem,
-                                fontWeight: FontWeight.w700,
-                                height: 1.5 * ffem / fem,
-                                letterSpacing: 0.2399999946 * fem,
-                                color: Color(0xffffffff),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
+          Padding(
+            padding: const EdgeInsets.only(left: 20, right: 20),
+            child: ElevatedButton(
+              onPressed: _isLoading ? null : _handleButtonClick,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color(0xffe5195e),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                minimumSize: Size(double.infinity, 14),
+              ),
+              child: Center(
+                child: _isLoading
+                    ? CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                )
+                    : Text(
+                  'Finish',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    height: 1.5,
+                    letterSpacing: 0.24,
+                    color: Color(0xffffffff),
+                  ),
+                ),
+              ),
+            ),
+          ),
                     ],
                   ),
                 ),
@@ -928,6 +1001,26 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
         ),
       ),
     );
+  }
+
+  Future<void> _handleButtonClick() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    getAllSharedPreferences();
+    bool wait = await _sendDataToBackend();
+
+    setState(() {
+      _isLoading = false;
+    });
+
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => BottomNavart(data: {},)),
+      );
+
   }
 
   Future<List<String>> _uploadImages( imageFiles) async {
@@ -945,21 +1038,22 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
     return imagePaths;
   }
 
-
   Future<String> uploadImagesAndStorePaths(File? imageFile) async {
     if (imageFile == null) {
       throw ArgumentError('Image file cannot be null');
     }
+
     String imagePath = '';
+
+    try {
       // Your image upload API endpoint
-      var uploadUrl = Uri.parse('http://192.0.0.2:8000/api/upload-image');
+      var uploadUrl = Uri.parse('${Config().apiDomain}/upload-image');
 
       // Create a multipart request
       var request = http.MultipartRequest('POST', uploadUrl);
 
       // Add the image file to the request
       var image = await http.MultipartFile.fromPath('image', imageFile.path);
-
       request.files.add(image);
 
       // Send the request to upload the image
@@ -970,18 +1064,18 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
       if (streamedResponse.statusCode == 200) {
         // Parse the response to get the image URL or file path
         var response = await streamedResponse.stream.bytesToString();
-
         imagePath = json.decode(response)['imagePath'];
+      } else {
+        throw Exception('Failed to upload image. Status code: ${streamedResponse.statusCode}');
       }
-      //   else {
-    //     throw Exception('Failed to upload image');
-    //   }
-    // } catch (e) {
-    //   // Handle errors if needed
-    //   print('Error uploading image: $e');
-    //   throw Exception('Error uploading image: $e');
-    // }
+    } catch (e) {
+      // Handle errors if needed
+      print('Error uploading image: $e');
+      throw Exception('Error uploading image: $e');
+    }
+
     return imagePath;
   }
+
 
 }

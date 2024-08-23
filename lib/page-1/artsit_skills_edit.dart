@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:test1/page-1/worksamples_edit.dart';
+import '../config.dart';
 import '../utils.dart';
 import 'bottomNav_artist.dart';
 import 'package:http/http.dart' as http;
@@ -70,9 +71,9 @@ class _ArtistCredentials33State extends State<ArtistCredentials33> {
     // Initialize API URLs for different kinds
     String apiUrl;
     if (kind == 'solo_artist') {
-      apiUrl = 'http://127.0.0.1:8000/api/artist/info/$id';
+      apiUrl = '${Config().apiDomain}/artist/info/$id';
     } else if (kind == 'team') {
-      apiUrl = 'http://127.0.0.1:8000/api/artist/team_info/$id';
+      apiUrl = '${Config().apiDomain}/artist/team_info/$id';
     } else {
       // Handle the case where kind is not recognized
       return;
@@ -509,9 +510,9 @@ class _ArtistCredentials33State extends State<ArtistCredentials33> {
     // Initialize API URLs for different kinds
     String apiUrl;
     if (kind == 'solo_artist') {
-      apiUrl = 'http://127.0.0.1:8000/api/artist/info/$id';
+      apiUrl = '${Config().apiDomain}/artist/info/$id';
     } else {
-      apiUrl = 'http://127.0.0.1:8000/api/artist/team_info/$id';
+      apiUrl = '${Config().apiDomain}/artist/team_info/$id';
     }
     // Prepare data to send to the backend
     Map<String, dynamic> userData = {

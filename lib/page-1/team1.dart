@@ -349,7 +349,7 @@ class _team1signupState extends State<team1signup> {
                     // }
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => BottomNavart()),
+                      MaterialPageRoute(builder: (context) => BottomNavart(data: {},)),
                     );
                   },
                   style: ElevatedButton.styleFrom(

@@ -1,8 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'dart:ui';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geocoding/geocoding.dart';
+
 
 class MyCustomScrollBehavior extends MaterialScrollBehavior {
+
+  static Future<String?> getAddressFromLatLng(Position position) async {
+    try {
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
+
+      if (placemarks.isNotEmpty) {
+        Placemark place = placemarks[0];
+        return '${place.street}, ${place.locality}, ${place.administrativeArea} ${place.postalCode}, ${place.country}';
+      }
+    } catch (e) {
+      print(e);
+    }
+    return null;
+  }
+
+
   @override
   Set<PointerDeviceKind> get dragDevices => {
     PointerDeviceKind.touch,

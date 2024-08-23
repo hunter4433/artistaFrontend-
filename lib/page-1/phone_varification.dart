@@ -1,15 +1,61 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:test1/page-1/OTP.dart';
+import 'package:test1/page-1/otp_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-class GalileoDesign extends StatefulWidget {
+class PhoneNumberInputScreen extends StatefulWidget {
   @override
-  _GalileoDesignState createState() => _GalileoDesignState();
+  _PhoneNumberInputScreenState createState() => _PhoneNumberInputScreenState();
 }
 
-class _GalileoDesignState extends State<GalileoDesign> {
+class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
   bool isChecked = false;
-  TextEditingController _controller = TextEditingController(text: '+91 ');
+  // TextEditingController _controller = TextEditingController(text: '+91 ');
+  final _phoneController = TextEditingController(text: '+91 ');
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final storage = FlutterSecureStorage();
+
+  void _verifyPhoneNumber() async {
+    await _auth.verifyPhoneNumber(
+      phoneNumber: _phoneController.text,
+      verificationCompleted: (PhoneAuthCredential credential) async {
+
+        await _auth.signInWithCredential(credential);
+
+      },
+
+      verificationFailed: (FirebaseAuthException e) {
+        String errorMessage;
+        if (e.code == 'invalid-phone-number') {
+          errorMessage = 'The provided phone number is not valid.';
+        } else {
+          errorMessage = 'Something went wrong: ${e.message}';
+        }
+        _showSnackBar(errorMessage);
+      },
+
+      codeSent: (String verificationId, int? resendToken) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => VerificationCodeInputScreen(
+              verificationId: verificationId,
+            ),
+          ),
+        );
+      },
+      codeAutoRetrievalTimeout: (String verificationId) {
+        print('Code auto retrieval timeout');
+      },
+    );
+  }
+
+  void _showSnackBar(String message) {
+    final snackBar = SnackBar(content: Text(message));
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +108,7 @@ class _GalileoDesignState extends State<GalileoDesign> {
               ),
               padding: EdgeInsets.fromLTRB(14, 0, 14, 0),
               child: TextField(
-                controller: _controller,
+                controller: _phoneController,
                 style: TextStyle(color: Colors.white),
                 decoration: InputDecoration(
                   border: InputBorder.none,
@@ -77,9 +123,9 @@ class _GalileoDesignState extends State<GalileoDesign> {
                 keyboardType: TextInputType.phone,
                 onChanged: (value) {
                   if (!value.startsWith('+91 ')) {
-                    _controller.text = '+91 ';
-                    _controller.selection = TextSelection.fromPosition(
-                        TextPosition(offset: _controller.text.length));
+                    _phoneController.text = '+91 ';
+                    _phoneController.selection = TextSelection.fromPosition(
+                        TextPosition(offset: _phoneController.text.length));
                   }
                 },
               ),
@@ -127,13 +173,12 @@ class _GalileoDesignState extends State<GalileoDesign> {
                         padding: EdgeInsets.symmetric(vertical: 12),
                       ),
                       onPressed: isChecked
-                          ? () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => GalileoDesign2(),
-                          ),
-                        );
+                          ? () async {
+
+                        await storage.write(key:'phone_number',value: _phoneController.text );
+                        _verifyPhoneNumber();
+
+
                       }
                           : null,
                       child: Text(
@@ -162,6 +207,3 @@ class _GalileoDesignState extends State<GalileoDesign> {
   }
 }
 
-void main() {
-  runApp(MaterialApp(home: GalileoDesign()));
-}

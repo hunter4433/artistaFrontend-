@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:test1/page-1/booking_history.dart';
+import '../config.dart';
 import '../utils.dart';
 import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
+import 'booked_artist.dart';
 import'google_map_page.dart';
+
 
 class booking_artist extends StatefulWidget {
   @override
@@ -15,7 +19,6 @@ class booking_artist extends StatefulWidget {
 }
 
 class _BookingArtistState extends State<booking_artist> {
-    // Razorpay _razorpay = Razorpay();
 
   DateTime? selectedDate; // Define selectedDate variable here
   bool isContainerTapped = false;
@@ -31,11 +34,19 @@ class _BookingArtistState extends State<booking_artist> {
   int? hours;
   int? minutes;
   late String fcm_token;
+ late double? latitude;
+  late double? longitude;
+  final FocusNode locationFocusNode = FocusNode();
+  String? selectedToTime; // Define selectedToTime variable here
+
   // Define TextEditingController instances
   TextEditingController durationController = TextEditingController();
   TextEditingController locationController = TextEditingController();
   TextEditingController specialRequestController = TextEditingController();
-
+  TextEditingController fromTimeController = TextEditingController();
+  TextEditingController toTimeController = TextEditingController();
+  String? selectedCategory;
+  List<String> categories = ['House party', 'Corporate event', 'Wedding events','School or College fest','Cultural or Art Exhibitions','Festival','Birthday party','Private booking','Baby showers','Private Dinners','others']; // Replace with your actual categories
 
 
   final storage = FlutterSecureStorage();
@@ -49,24 +60,21 @@ class _BookingArtistState extends State<booking_artist> {
   Future<String?> _getKind() async {
     return await storage.read(key: 'selected_value'); // Assuming you stored the token with key 'token'
   }
+  Future<String?> _getUserFCMToken() async {
+    return await storage.read(key: 'fCMToken'); // Assuming you stored the token with key 'token'
+  }
 
-
-
-
-    // Simulated backend function to fetch artist name and price
   @override
   void initState() {
     super.initState();
     fetchArtistInformation();
-    // // Set the initial value of the "From" controller to selectedFromTime if it's not null
-    // fromTimeController.text = selectedFromTime ?? '';
-    // // Set the initial value of the "To" controller to selectedToTime if it's not null
-    // toTimeController.text = selectedToTime ?? '';
+
   }
 
   @override
   void dispose(){
     super.dispose();
+    locationFocusNode.dispose();
     // _razorpay.clear(); // Removes all listeners
   }
 
@@ -84,42 +92,15 @@ class _BookingArtistState extends State<booking_artist> {
 
 
 
-    // void _handlePaymentError(PaymentFailureResponse response) {
-    //   // Do something when payment fails
-    //   // showAlertDialog(context, "Payment Failed", "Code: ${response.code}\nDescription: ${response.message}\nMetadata:${response.error.toString()}");
-    // }
 
-    // void _handleExternalWallet(ExternalWalletResponse response) {
-    //   // Do something when an external wallet is selected
-    // //   showAlertDialog(context, "External Wallet Selected", "${response.walletName}");
-    //  }
-    // void showAlertDialog(BuildContext context, String title, String message){
-    //   // set up the buttons
-    //   Widget continueButton = ElevatedButton(
-    //     child: const Text("Continue"),
-    //     onPressed:  () {},
-    //   );
-    //   // set up the AlertDialog
-    //   AlertDialog alert = AlertDialog(
-    //     title: Text(title),
-    //     content: Text(message),
-    //   );
-    //   // show the dialog
-    //   showDialog(
-    //     context: context,
-    //     builder: (BuildContext context) {
-    //       return alert;
-    //     },
-    //   );
-    // }
     void calculateDuration() {
       if (selectedFromTimeBack != null && selectedToTimeBack != null) {
-        DateTime fromTime = DateTime.parse(selectedFromTimeBack!);
-        DateTime toTime = DateTime.parse(selectedToTimeBack!);
+
+        DateFormat dateFormat = DateFormat('yyyy-MM-dd HH:mm:ss');
+        DateTime fromTime = dateFormat.parse(selectedFromTimeBack!);
+        DateTime toTime = dateFormat.parse(selectedToTimeBack!);
 
         Duration duration = toTime.difference(fromTime);
-        //  hours= duration.inHours;
-        // int minutes = duration.inMinutes.remainder(60);
 
         if (duration.isNegative) {
           // Handle the case when 'To' time is before 'From' time
@@ -158,21 +139,12 @@ class _BookingArtistState extends State<booking_artist> {
     String? token = await _getToken();
     String? id = await _getid();
     String? kind = await _getKind();
-    // print(token);
-    print(id);
-    print(kind);
+
 
     // Initialize API URLs for different kinds
     String apiUrl;
     // if (kind == 'solo_artist') {
-      apiUrl = 'http://192.0.0.2:8000/api/featured/artist_info/$id';
-
-    // } else if (kind == 'team') {
-    //   apiUrl = 'http://127.0.0.1:8000/api/artist/team_info/$id';
-    // } else {
-    //   // Handle the case where kind is not recognized
-    //   return;
-    // }
+      apiUrl = '${Config().apiDomain}/featured/artist_info/$id';
 
     try {
       var response = await http.get(
@@ -185,10 +157,7 @@ class _BookingArtistState extends State<booking_artist> {
       );
       if (response.statusCode == 200) {
         // Parse the response JSON
-        // Parse the response JSON
         List<dynamic> userDataList = json.decode(response.body);
-        print(userDataList);
-
 
         // Assuming the response is a list, iterate over each user's data
         for (var userData in userDataList) {
@@ -199,8 +168,7 @@ class _BookingArtistState extends State<booking_artist> {
             image = 'http://192.0.0.2:8000/storage/${userData['profile_photo']}' ;
             fcm_token=userData['fcm_token'] ?? '';
           });
-            print( price);
-            print(fcm_token);
+
         }
       } else {
         print('Failed to fetch user information. Status code: ${response.body}');
@@ -210,18 +178,12 @@ class _BookingArtistState extends State<booking_artist> {
     }
   }
 
+
     Future<String?> createOrder(double totalAmount) async {
-
-      print(totalAmount);
-
-
-// Convert totalAmount to int and multiply by 100
+      // Convert totalAmount to int and multiply by 100
       int totalAmountInCents = (totalAmount * 100).toInt();
-
       // Initialize API URLs for different kinds
-      String  apiUrl = 'http://192.0.0.2:8000/api/order';
-
-
+      String  apiUrl = '${Config().apiDomain}/order';
       try {
         var uri = Uri.parse(apiUrl).replace(queryParameters: {'amount': totalAmountInCents.toString()});
         var response = await http.get(
@@ -234,15 +196,12 @@ class _BookingArtistState extends State<booking_artist> {
         );
         if (response.statusCode == 201) {
           // Parse the response JSON
-          // Parse the response JSON
           Map<String, dynamic> orderResponse  = json.decode(response.body);
 
           orderId= orderResponse['order_id'];
           print( orderId);
           return orderId;
 
-
-          // }
         } else {
           print('Failed to create order. Status code: ${response.body}');
         }
@@ -252,16 +211,29 @@ class _BookingArtistState extends State<booking_artist> {
       return null;
     }
 
+
+
   Future<void> sendNotification(BuildContext context, String fcm_token) async {
-    print('hi mohit here');
-    print(fcm_token);
-    print('bye');
+    Future<String?> _getBookingId() async {
+      return await storage.read(key: 'booking_id'); // Assuming you stored the token with key 'token'
+    }
+    String? id = await _getid();
+    String? booking_id = await _getBookingId();
+    String? user_fcmToken = await _getUserFCMToken();
+
+
+
 
     // Initialize API URLs for different kinds
-    String apiUrl = 'http://192.0.0.2:8000/api/send-notification';
+    String apiUrl = '${Config().apiDomain}/send-notification';
 
     Map<String, dynamic> requestBody = {
       'fcm_token': fcm_token,
+      'type':'artist',
+      // 'artist_id': id,
+      // 'booking_id':booking_id,
+      // 'user_fcmToken':user_fcmToken,
+      'status':false,
     };
     print(requestBody);
 
@@ -286,9 +258,21 @@ class _BookingArtistState extends State<booking_artist> {
         print('notification sent successfully: ${response.body}');
       } else {
         print('Failed to send notification. Status code: ${response.body}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Notification unsuccessfull'),
+            backgroundColor: Colors.green,
+          ),
+        );
       }
     } catch (e) {
       print('Error sending notification: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Notification has been sent to the artist'),
+          backgroundColor: Colors.green,
+        ),
+      );
     }
   }
 
@@ -330,19 +314,7 @@ class _BookingArtistState extends State<booking_artist> {
     }
   }
 
-  // Define a TextEditingController for the "From" TextField
-  TextEditingController fromTimeController = TextEditingController();
-  // Define a TextEditingController for the "To" TextField
-  TextEditingController toTimeController = TextEditingController();
 
-  // @override
-  // void dispose() {
-  //   // Dispose both controllers to avoid memory leaks
-  //   fromTimeController.dispose();
-  //   toTimeController.dispose();
-  //   super.dispose();
-  // }
-  String? selectedToTime; // Define selectedToTime variable here
 
 
   @override
@@ -379,21 +351,18 @@ class _BookingArtistState extends State<booking_artist> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-
-
                   Container(
                     // depth1frame28cw (9:1588)
-                    padding: EdgeInsets.fromLTRB(16*fem, 0*fem, 16*fem, 1*fem),
+                    padding: EdgeInsets.fromLTRB(16 * fem, 0 * fem, 16 * fem, 1 * fem),
                     width: double.infinity,
-                    height: 148.66*fem,
-                    decoration: BoxDecoration (
-                    ),
+                    height: 148.66 * fem,
+                    decoration: BoxDecoration(),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Container(
                           // depth2frame03V1 (9:1589)
-                          margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 7.39*fem, 0*fem),
+                          margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 7.39 * fem, 0 * fem),
                           height: double.infinity,
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
@@ -403,8 +372,8 @@ class _BookingArtistState extends State<booking_artist> {
                                 width: 128 * fem,
                                 height: 128 * fem,
                                 decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                  ),
+                                  shape: BoxShape.circle,
+                                ),
                                 child: Container(
                                   margin: EdgeInsets.fromLTRB(10 * fem, 0 * fem, 10 * fem, 0 * fem),
                                   width: 128 * fem,
@@ -426,8 +395,8 @@ class _BookingArtistState extends State<booking_artist> {
                               ),
                               Container(
                                 // depth3frame26CP (9:1591)
-                                margin: EdgeInsets.fromLTRB(10*fem, 44.83*fem, 0*fem, 1.83*fem),
-                                width: 202.61*fem,
+                                margin: EdgeInsets.fromLTRB(10 * fem, 44.83 * fem, 0 * fem, 1.83 * fem),
+                                width: 202.61 * fem,
                                 height: double.infinity,
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -459,11 +428,67 @@ class _BookingArtistState extends State<booking_artist> {
                             ],
                           ),
                         ),
-
                       ],
                     ),
                   ),
                   Container(
+                  // autogroupe7afD43 (JkRkRPf57vHepTRWamE7AF)
+                  padding: EdgeInsets.fromLTRB(16 * fem, 20 * fem, 16 * fem, 12 * fem),
+                   width: double.infinity,
+                    child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                     children: [
+                  // Add Category Dropdown here
+                       Container(
+                        margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 16 * fem),
+                         child: DropdownButtonFormField<String>(
+                          value: selectedCategory,
+                          hint: Text(
+                          'Select Booking Category',
+                         style: SafeGoogleFont(
+                          'Be Vietnam Pro',
+                          fontSize: 16 * ffem,
+                          fontWeight: FontWeight.w500,
+                          height: 1.5 * ffem / fem,
+                          color: Color(0xff1e0a11),
+                           ),
+                         ),
+                          items: categories.map((String category) {
+                            return DropdownMenuItem<String>(
+                          value: category,
+                          child: Text(
+                            category,
+                            style: SafeGoogleFont(
+                              'Be Vietnam Pro',
+                              fontSize: 16 * ffem,
+                              fontWeight: FontWeight.w500,
+                              height: 1.5 * ffem / fem,
+                              color: Color(0xff1e0a11),
+                            ),
+                           ),
+                            );
+                          }).toList(),
+                      onChanged: (newValue) {
+                        setState(() {
+                          selectedCategory = newValue;
+                        });
+                         },
+                      decoration: InputDecoration(
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12 * fem),
+                          borderSide: BorderSide(width: 1.25, color: Color(0xffeac6d3)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12 * fem),
+                          borderSide: BorderSide(width: 1.25, color: Color(0xffe5195e)),
+                        ),
+                      ),
+                    ),
+                  ),
+                 ],
+                 ),
+                  ),
+                   Container(
                     // autogroupe7afD43 (JkRkRPf57vHepTRWamE7AF)
                     padding: EdgeInsets.fromLTRB(16*fem, 20*fem, 16*fem, 12*fem),
                     width: double.infinity,
@@ -584,7 +609,6 @@ class _BookingArtistState extends State<booking_artist> {
                                             selectedFromTimeBack = '$formattedDate ${pickedTime.hour}:${pickedTime.minute}:00';
                                             print(selectedFromTimeBack);
                                             fromTimeController.text = selectedFromTime ?? ''; // Update the text field
-                                            // fromTimeController.text = selectedFromTime ?? ''; // Update the text field
                                           });
                                         }
                                       },
@@ -682,8 +706,6 @@ class _BookingArtistState extends State<booking_artist> {
                           ),
                         ),
                         SizedBox(height: 18 * fem),
-
-// Add the new text widget here
                         Container(
                           margin: EdgeInsets.symmetric(vertical: 8 * fem),
                           child: FutureBuilder<double>(
@@ -728,48 +750,69 @@ class _BookingArtistState extends State<booking_artist> {
                         ),
 
                         Container(
-                          margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 16 * fem),
-                          child: Text(
-                            'Event Location',
-                            style: TextStyle(
-                              fontSize: 22 * ffem,
-                              fontWeight: FontWeight.w700,
-                              height: 1.25 * ffem / fem,
-                              letterSpacing: -0.33 * fem,
-                              color: Color(0xff1e0a11),
-                            ),
+                          margin: EdgeInsets.only(bottom: 16.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Event Location',
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w700,
+                                  height: 1.25,
+                                  letterSpacing: -0.33,
+                                  color: Color(0xff1e0a11),
+                                ),
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.edit, color: Color(0xffe5195e)),
+                                onPressed: () {
+                                  // Focus on the TextField to allow editing
+                                  locationFocusNode.requestFocus();
+                                },
+                              ),
+                            ],
                           ),
                         ),
-                        Container(
-                          width: double.infinity,
-                          height: 156 * fem,
-                          child: InkWell(
-                            onTap: () {
-                              // Navigate to the GoogleMapPage when tapped
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => GoogleMapPage()),
-                              );
-                            },
-                            child: IgnorePointer(
-                              child: TextField(
-                                controller: locationController, // Connect the controller here
-                                maxLines: null,
-                                decoration: InputDecoration(
-                                  hintText: 'Full Address',
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12 * fem),
-                                    borderSide: BorderSide(width: 1.25, color: Color(0xffeac6d3)),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12 * fem),
-                                    borderSide: BorderSide(width: 1.25, color: Color(0xffe5195e)),
+                        Stack(
+                          children: [
+                            Container(
+                              width: double.infinity,
+                              height: 156,
+                              child: InkWell(
+                                onTap: () {
+                                  _showLocationDialog(context);
+                                },
+                                child: IgnorePointer(
+                                  child: TextField(
+                                    controller: locationController,
+                                    focusNode: locationFocusNode,
+                                    maxLines: null,
+                                    decoration: InputDecoration(
+                                      hintText: 'Full Address',
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12.0),
+                                        borderSide: BorderSide(
+                                          width: 1.25,
+                                          color: Color(0xffeac6d3),
+                                        ),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12.0),
+                                        borderSide: BorderSide(
+                                          width: 1.25,
+                                          color: Color(0xffe5195e),
+                                        ),
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
+                          ],
                         ),
+
+
                         SizedBox(height: 18 * fem),
                         Container(
                           margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 6.5 * fem),
@@ -832,16 +875,11 @@ class _BookingArtistState extends State<booking_artist> {
                           padding: const EdgeInsets.only(left: 25, right: 25),
                           child: ElevatedButton(
                             onPressed: () async{
-                              // _handlePaymentSuccess(response);
-                              _saveBookingInformation();
+
                               // Calculate the total amount
                               double totalAmount = calculateTotalAmount(price!, hours!, minutes!);
-                              print(totalAmount);
                               // Create order and wait for the response
                               String? orderId = await createOrder(totalAmount);
-                              print('hi');
-                              print(orderId);
-                              print('bi');
 
                              if (orderId != null) {
                                Razorpay _razorpay = Razorpay();
@@ -849,7 +887,6 @@ class _BookingArtistState extends State<booking_artist> {
                                var options = {
                                  'key': 'rzp_test_Hb4hFCm46361XC',
                                  'amount': 5000,
-                                 //in the smallest currency sub-unit.
                                  'name': 'Home Stage ',
                                  'order_id': orderId,
                                  // Generate order_id using Orders API
@@ -924,51 +961,180 @@ class _BookingArtistState extends State<booking_artist> {
           ),
         ),
             ),
-    ),);
+    ),
+    );
   }
 
-    void _handlePaymentSuccess(BuildContext context, PaymentSuccessResponse response) {
-      debugPrint('Payment Success: $response');
+  void _showLocationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Event Location'),
+          content: Text('How would you like to enter the event location?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                latitude = null;
+                longitude = null;
+                Navigator.of(context).pop();
+                _showManualEntryDialog(context);
+              },
+              child: Text('Enter Manually'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => GoogleMapPage()),
+                );
+                if (result != null && result.containsKey('coordinates')) {
 
+                  LatLng  coordinates = result['coordinates'];
+                  latitude= coordinates.latitude;
+                  longitude= coordinates.longitude;
+                  String address = result['address'];
+                  setState(() {
+                    locationController.text = address;
+                  });
+                  print('Selected Coordinates: ${coordinates.latitude}, ${coordinates.longitude}');
+
+                }
+              },
+              child: Text('Select on Map'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showManualEntryDialog(BuildContext context) {
+    TextEditingController flatController = TextEditingController();
+    TextEditingController areaController = TextEditingController();
+    TextEditingController cityController = TextEditingController();
+    TextEditingController stateController = TextEditingController();
+    TextEditingController pincodeController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Enter Address Manually'),
+          content: SingleChildScrollView(
+            child: Column(
+              children: [
+                TextField(
+                  controller: flatController,
+                  decoration: InputDecoration(hintText: 'Flat, House No, Building, Apartment'),
+                ),
+                TextField(
+                  controller: areaController,
+                  decoration: InputDecoration(hintText: 'Area, Street, Sector'),
+                ),
+                TextField(
+                  controller: cityController,
+                  decoration: InputDecoration(hintText: 'City'),
+                ),
+                TextField(
+                  controller: stateController,
+                  decoration: InputDecoration(hintText: 'State'),
+                ),
+                TextField(
+                  controller: pincodeController,
+                  decoration: InputDecoration(hintText: 'Pincode'),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                locationController.text =
+                "${flatController.text}, ${areaController.text}, ${cityController.text}, ${stateController.text}, ${pincodeController.text}";
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
+
+Future<void> _handlePaymentSuccess(BuildContext context, PaymentSuccessResponse response) async {
 
       // Extract the payment details
       String razorpayPaymentId = response.paymentId!;
-      debugPrint(razorpayPaymentId);
+
       String razorpayOrderId = response.orderId!;
-      debugPrint(razorpayOrderId);
+
       String razorpaySignature = response.signature!;
-      debugPrint(razorpaySignature );
+
+      Future<String?> _getArtist_id() async {
+        return await storage.read(key: 'id'); // Assuming you stored the token with key 'token'
+      }
+
+      String artist_id = await _getArtist_id().toString();
+
+      String id= await _saveBookingInformation().toString();
 
       // Send the payment details to the server
-      _sendPaymentDetailsToServer(razorpayPaymentId, razorpayOrderId, razorpaySignature);
+
+        _sendPaymentDetailsToServer(
+            razorpayPaymentId, razorpayOrderId, razorpaySignature);
+
+
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => Booked(BookingId: id ,artistId :artist_id ),
+        ),
+      );
 
       sendNotification(context , fcm_token);
 
     }
 
-    Future<bool> _saveBookingInformation() async {
+    Future<Object> _saveBookingInformation() async {
       final storage = FlutterSecureStorage();
 
+
       Future<String?> _getArtist_id() async {
-        return await storage.read(key: 'artist_id'); // Assuming you stored the token with key 'token'
+        return await storage.read(key: 'id'); // Assuming you stored the token with key 'token'
       }
 
       Future<String?> _getToken() async {
         return await storage.read(key: 'token');
       }
+      Future<String?> _getUserId() async {
+        return await storage.read(key: 'user_id');
+      }
 
       String? token = await _getToken();
+      String? user_id = await _getUserId();
+
       String? artist_id = await _getArtist_id();
-      String? apiUrl='http://192.0.0.2:8000/api/booking';
+      String? apiUrl='${Config().apiDomain}/booking';
 
       Map<String, dynamic> bookingData = {
-        'artist_id':'$artist_id',
+        'artist_id':artist_id,
+        'user_id': user_id,
         'booking_date': selectedDate != null ? selectedDate.toString() : null,
         'booked_from':  selectedFromTimeBack ?? '',
         'booked_to':  selectedToTimeBack ?? '',
         'duration': durationController.text,
+
         'location': locationController.text,
+        'longitude': longitude,
+        'latitude': latitude,
         'special_request': specialRequestController.text,
+        'category':selectedCategory,
+        'status':0,
       };
 
 
@@ -988,7 +1154,7 @@ class _BookingArtistState extends State<booking_artist> {
         // Check if request was successful (status code 200)
         if (response.statusCode == 201) {
           // User information saved successfully, handle response if needed
-          print('User information saved successfully');
+          print('Booking information saved successfully');
 
           Map<String, dynamic> responseData = jsonDecode(response.body);
           int id = responseData['id'];
@@ -998,10 +1164,10 @@ class _BookingArtistState extends State<booking_artist> {
           print(id);
           // Example response handling
           print('Response: ${response.body}');
-          return true;
+          return id;
         } else {
           // Request failed, handle error
-          print('Failed to save user information. Status code: ${response.statusCode}');
+          print('Failed to save booking information. Status code: ${response.statusCode}');
           // Example error handling
           print('Error response: ${response.body}');
           return false;
@@ -1015,7 +1181,7 @@ class _BookingArtistState extends State<booking_artist> {
 
     Future<void> _sendPaymentDetailsToServer(String paymentId, String orderId, String signature) async {
 
-      String serverUrl = 'http://192.0.0.2:8000/api/payment/success';
+      String serverUrl = '${Config().apiDomain}/payment/success';
 
       Future<String?> _getBookingId() async {
         return await storage.read(key: 'booking_id'); // Assuming you stored the token with key 'token'

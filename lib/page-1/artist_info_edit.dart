@@ -8,6 +8,7 @@ import 'dart:convert';
 
 
 
+import '../config.dart';
 import '../utils.dart';
 
 class EditProfileScreen extends StatefulWidget {
@@ -53,9 +54,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     // Initialize API URLs for different kinds
     String apiUrl;
       if (kind == 'solo_artist') {
-      apiUrl = 'http://127.0.0.1:8000/api/artist/info/$id';
+      apiUrl = '${Config().apiDomain}/artist/info/$id';
     } else if (kind == 'team') {
-      apiUrl = 'http://127.0.0.1:8000/api/artist/team_info/$id';
+      apiUrl = '${Config().apiDomain}/artist/team_info/$id';
     } else {
       // Handle the case where kind is not recognized
       return;
@@ -323,9 +324,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     // Initialize API URLs for different kinds
     String apiUrl;
     if (kind == 'solo_artist') {
-      apiUrl = 'http://127.0.0.1:8000/api/artist/info/$id';
+      apiUrl = '${Config().apiDomain}/artist/info/$id';
     } else if (kind == 'team') {
-      apiUrl = 'http://127.0.0.1:8000/api/artist/team_info/$id';
+      apiUrl = '${Config().apiDomain}/artist/team_info/$id';
     } else {
       // Handle the case where kind is not recognized
       return;
@@ -377,8 +378,4 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
 }
 
-void main() {
-  runApp(MaterialApp(
-    home: EditProfileScreen(),
-  ));
-}
+

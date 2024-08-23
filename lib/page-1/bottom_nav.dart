@@ -3,8 +3,21 @@ import 'package:test1/page-1/booked_artist.dart';
 import 'package:test1/page-1/dmeo.dart';
 import 'package:test1/page-1/search.dart';
 import 'package:test1/page-1/settings.dart';
+import 'package:test1/page-1/user_bookings.dart';
 
 class BottomNav extends StatefulWidget {
+
+  final Map<String, dynamic> data;
+  final int initialPageIndex;
+  final String? newBookingTitle;
+  final String? newBookingDateTime;
+
+  BottomNav({
+    required this.data,
+    this.initialPageIndex = 0,
+    this.newBookingTitle,
+    this.newBookingDateTime,
+  });
   @override
   State<BottomNav> createState() => _BottomNavState();
 }
@@ -12,12 +25,20 @@ class BottomNav extends StatefulWidget {
 class _BottomNavState extends State<BottomNav> {
   int _currentIndex = 0;
 
-  final List<Widget> _pages = [
-    Home_user(),
+  late List<Widget> _pages = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialPageIndex;
+    _pages=[ Home_user(),
     Search(),
-    Booked(),
+    UserBookings( data: widget.data,
+    newBookingTitle: widget.newBookingTitle,
+    newBookingDateTime: widget.newBookingDateTime,),
     setting(),
-  ];
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,6 +85,4 @@ class _BottomNavState extends State<BottomNav> {
   }
 }
 
-void main() {
-  runApp(MaterialApp(home: BottomNav()));
-}
+

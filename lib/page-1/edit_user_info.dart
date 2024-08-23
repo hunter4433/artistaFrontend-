@@ -3,6 +3,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+import '../config.dart';
+
 class UserInformation extends StatefulWidget {
   @override
   _UserInformationState createState() => _UserInformationState();
@@ -12,10 +14,10 @@ class _UserInformationState extends State<UserInformation> {
   TextEditingController _nameController = TextEditingController();
   TextEditingController _lastNameController = TextEditingController();
   TextEditingController _phoneController = TextEditingController();
-  TextEditingController _buildingController = TextEditingController();
-  TextEditingController _cityController = TextEditingController();
-  TextEditingController _stateController = TextEditingController();
-  TextEditingController _pinCodeController = TextEditingController();
+  // TextEditingController _buildingController = TextEditingController();
+  // TextEditingController _cityController = TextEditingController();
+  // TextEditingController _stateController = TextEditingController();
+  // TextEditingController _pinCodeController = TextEditingController();
 
   final storage = FlutterSecureStorage();
 
@@ -24,7 +26,7 @@ class _UserInformationState extends State<UserInformation> {
   }
 
   Future<String?> _getId() async {
-    return await storage.read(key: 'id'); // Assuming you stored the token with key 'id'
+    return await storage.read(key: 'user_id'); // Assuming you stored the token with key 'id'
   }
 
   Future<String?> _getKind() async {
@@ -46,7 +48,7 @@ class _UserInformationState extends State<UserInformation> {
     print(id);
     print(kind);
     // Example URL, replace with your actual API endpoint
-    String apiUrl = 'http://127.0.0.1:8000/api/info/$id';
+    String apiUrl = '${Config().apiDomain}/info/$id';
 
     try {
       var response = await http.get(
@@ -54,7 +56,7 @@ class _UserInformationState extends State<UserInformation> {
         headers: <String, String>{
           'Content-Type': 'application/vnd.api+json',
           'Accept': 'application/vnd.api+json',
-          'Authorization': 'Bearer $token', // Include the token in the header
+           // Include the token in the header
         },
       );
       if (response.statusCode == 200) {
@@ -64,14 +66,15 @@ class _UserInformationState extends State<UserInformation> {
 
         // Update text controllers with fetched data
         setState(() {
-          _nameController.text = userData['data']['attributes']['first_name'] ?? '';
-          _lastNameController.text = userData['data']['attributes']['last_name'] ?? '';
-          _phoneController.text = userData['data']['attributes']['phone_no'] ?? '';
-          _buildingController.text = userData['data']['attributes']['house_no_building'] ?? '';
-          _cityController.text = userData['data']['attributes']['city'] ?? '';
-          _stateController.text = userData['data']['attributes']['state'] ?? '';
-          _pinCodeController.text = userData['data']['attributes']['pin'] ?? '';
+          _nameController.text = userData['first_name'] ?? '';
+          _lastNameController.text = userData['last_name'] ?? '';
+          _phoneController.text = userData['phone_number'] ?? '';
+          // _buildingController.text = userData['house_no_building'] ?? '';
+          // _cityController.text = userData['city'] ?? '';
+          // _stateController.text = userData['state'] ?? '';
+          // _pinCodeController.text = userData['pin'] ?? '';
         });
+        print(_phoneController.text);
       } else {
         print('Failed to fetch user information. Status code: ${response.statusCode}');
       }
@@ -130,10 +133,10 @@ class _UserInformationState extends State<UserInformation> {
                   buildEditableRow("Name:", _nameController, fem, ffem),
                   buildEditableRow("Last Name:", _lastNameController, fem, ffem),
                   buildEditableRow("Phone No:", _phoneController, fem, ffem),
-                  buildEditableRow("Building:", _buildingController, fem, ffem),
-                  buildEditableRow("City:", _cityController, fem, ffem),
-                  buildEditableRow("State:", _stateController, fem, ffem),
-                  buildEditableRow("Pin Code:", _pinCodeController, fem, ffem),
+                  // buildEditableRow("Building:", _buildingController, fem, ffem),
+                  // buildEditableRow("City:", _cityController, fem, ffem),
+                  // buildEditableRow("State:", _stateController, fem, ffem),
+                  // buildEditableRow("Pin Code:", _pinCodeController, fem, ffem),
                 ],
               ),
             ),
@@ -189,17 +192,17 @@ class _UserInformationState extends State<UserInformation> {
     print(token);
     print(id);
     // Example URL, replace with your actual API endpoint
-    String apiUrl = 'http://127.0.0.1:8000/api/info/$id';
+    String apiUrl = '${Config().apiDomain}/info/49';
 
     // Prepare data to send to the backend
     Map<String, dynamic> userData = {
       'first_name': _nameController.text,
       'last_name': _lastNameController.text,
-      'phone_no': _phoneController.text,
-      'house_no_building': _buildingController.text,
-      'city': _cityController.text,
-      'state': _stateController.text,
-      'pin': _pinCodeController.text,
+      'phone_number': _phoneController.text,
+      // 'house_no_building': _buildingController.text,
+      // 'city': _cityController.text,
+      // 'state': _stateController.text,
+      // 'pin': _pinCodeController.text,
     };
 
     try {
@@ -233,8 +236,8 @@ class _UserInformationState extends State<UserInformation> {
   }
 }
 
-void main() {
-  runApp(MaterialApp(
-    home: UserInformation(),
-  ));
-}
+// void main() {
+//   runApp(MaterialApp(
+//     home: UserInformation(),
+//   ));
+// }

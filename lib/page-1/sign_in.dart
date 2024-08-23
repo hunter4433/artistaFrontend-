@@ -256,7 +256,7 @@ class _SceneState extends State<Scene> {
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
-                                            builder: (context) => BottomNav(), // Assuming SignupUser is the page for 'hire'
+                                            builder: (context) => BottomNav(data: {},), // Assuming SignupUser is the page for 'hire'
                                           ),
                                         );
                                         break;
@@ -264,7 +264,7 @@ class _SceneState extends State<Scene> {
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
-                                            builder: (context) => BottomNavart(), // Page for 'solo_artist'
+                                            builder: (context) => BottomNavart(data: {},), // Page for 'solo_artist'
                                           ),
                                         );
                                         break;
@@ -272,7 +272,7 @@ class _SceneState extends State<Scene> {
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
-                                            builder: (context) => BottomNavart(), // Page for 'team'
+                                            builder: (context) => BottomNavart(data: {},), // Page for 'team'
                                           ),
                                         );
                                         break;

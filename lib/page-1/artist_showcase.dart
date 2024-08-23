@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:test1/page-1/booking_artis.dart';
+import 'package:test1/page-1/artist_booking.dart';
+import 'package:video_player/video_player.dart';
+import '../config.dart';
 import '../utils.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -7,6 +9,10 @@ import 'dart:convert';
 
 
 class ArtistProfile extends StatefulWidget {
+     late String  artist_id;
+   ArtistProfile( {required this.artist_id});
+
+
   @override
   _ArtistProfileState createState() => _ArtistProfileState();
 }
@@ -26,16 +32,14 @@ class _ArtistProfileState extends State<ArtistProfile> {
   String? image2;
   String? image3;
   String? image4;
-  List<String> imagePathsFromBackend = []; // List to store image URLs
+  String? video1;
+  String? video2;
+  String? video3;
+  String? video4;
+  List<String> imagePathsFromBackend = [];
+  List<String> VideoPathsFromBackend = [];// List to store image URLs
 
 
-  Future<String?> _getToken() async {
-    return await storage.read(key: 'token'); // Assuming you stored the token with key 'token'
-  }
-
-  Future<String?> _getId() async {
-    return await storage.read(key: 'id'); // Assuming you stored the token with key 'id'
-  }
 
   Future<String?> _getKind() async {
     return await storage.read(key: 'selected_value'); // Assuming you stored the token with key 'selected_value'
@@ -44,23 +48,18 @@ class _ArtistProfileState extends State<ArtistProfile> {
   @override
   void initState() {
     super.initState();
-    fetchArtistWorkInformation(); // Fetch profile data when screen initializes
+    fetchArtistWorkInformation(widget.artist_id); // Fetch profile data when screen initializes
   }
 
-  Future<void> fetchArtistWorkInformation() async {
+  Future<void> fetchArtistWorkInformation(String artist_id) async {
     // String baseUrl = 'http://127.0.0.1:8000/storage/';
-    String? token = await _getToken();
-    String? id = await _getId();
+
+
     String? kind = await _getKind();
 
-    print(token);
-    print(id);
-    print(kind);
-
-    // Initialize API URLs for different kinds
     String apiUrl;
 
-      apiUrl = 'http://192.0.0.2:8000/api/featured/artist_info/$id';
+      apiUrl = '${Config().apiDomain}/featured/artist_info/$artist_id';
 
 // Declare a variable to store the name outside the loop
 
@@ -70,7 +69,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
         headers: <String, String>{
           'Content-Type': 'application/vnd.api+json',
           'Accept': 'application/vnd.api+json',
-          // 'Authorization': 'Bearer $token',
+
         },
       );
 // Declare a variable to store the name outside the loop
@@ -94,14 +93,25 @@ String baseUrl='http://192.0.0.2:8000/storage';
           image2 = '$baseUrl/${artistData['image2']}';
           image3 = '$baseUrl/${artistData['image3']}';
           image4 = '$baseUrl/${artistData['image4']}';
+          video1= '$baseUrl/${artistData['video1']}';
+          video2= '$baseUrl/${artistData['video2']}';
+          video3= '$baseUrl/${artistData['video3']}';
+          video4= '$baseUrl/${artistData['video4']}';
 
           // Add non-null image URLs to the list
           if (image1 != null) imagePathsFromBackend.add(image1!);
           if (image2 != null) imagePathsFromBackend.add(image2!);
           if (image3 != null) imagePathsFromBackend.add(image3!);
           if (image4 != null) imagePathsFromBackend.add(image4!);
+          if (video1 != null) VideoPathsFromBackend.add(video1!);
+          if (video2 != null) VideoPathsFromBackend.add(video2!);
+          if (video3 != null) VideoPathsFromBackend.add(video3!);
+          if (video4 != null) VideoPathsFromBackend.add(video4!);
         }
-        await storage.write(key: 'artist_id', value: artist_id);
+        print(video1);
+
+
+        print(VideoPathsFromBackend);
         // print(imagePathsFromBackend);
 
         // String profilePhoto = 'http://127.0.0.1:8000/storage/${userData['data']['attributes']['profile_photo']}';
@@ -118,11 +128,40 @@ String baseUrl='http://192.0.0.2:8000/storage';
     } catch (e) {
       print('Error fetching user information: $e');
     }
-    // Now you can access the artistName variable outside the loop
-    // print('Artist name: $artistName');
-    // print(profilePhoto);
+
   }
 
+  Future<String> fetchAvailabilityStatus() async {
+    String apiUrl = '${Config().apiDomain}/artist/info/${widget.artist_id}';
+    print(apiUrl);
+
+    try {
+      var response = await http.get(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/vnd.api+json',
+          'Accept': 'application/vnd.api+json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        Map<String, dynamic> responseData = json.decode(response.body);
+        int status = responseData['data']['attributes']['booked_status'];
+
+        if (status == 0) {
+          return 'Available for Bookings';
+        } else   {
+          return 'Not Available';
+        }
+      } else {
+        print('Failed to fetch data. Status code: ${response.statusCode}');
+        return 'Error fetching availability status';
+      }
+    } catch (e) {
+      print('Error fetching data: $e');
+      return 'Error fetching availability status';
+    }
+  }
 
 
 
@@ -132,38 +171,7 @@ String baseUrl='http://192.0.0.2:8000/storage';
     double fem = MediaQuery.of(context).size.width / baseWidth;
     double ffem = fem * 0.97;
 
-    // Simulated data fetched from backend
-    Future<String> fetchName() async {
-      // Fetch name from the backend
-      return Future.delayed(Duration(seconds: 1), () => 'Carla');
-    }
 
-    Future<String> fetchRole() async {
-      // Fetch role from the backend
-      return Future.delayed(Duration(seconds: 1), () => 'Artist');
-    }
-
-    Future<String> fetchRatings() async {
-      // Fetch ratings from the backend
-      return Future.delayed(Duration(seconds: 1), () => '4.5/5');
-    }
-
-    Future<String> fetchPrice() async {
-      // Fetch price per hour from the backend
-      return Future.delayed(Duration(seconds: 1), () => '200');
-    }
-
-
-    Future<String> fetchAboutText() async {
-      // Simulated delay to mimic network request
-      await Future.delayed(Duration(seconds: 1));
-
-      // Simulated data fetched from the backend
-      String aboutText = 'My work is inspired by nature and the human form. I specialize in murals and paintings.';
-
-      // Return the fetched about text
-      return aboutText;
-    }
 
     // Function to fetch the special message from the backend
     Future<String> fetchSpecialMessage() async {
@@ -176,14 +184,7 @@ String baseUrl='http://192.0.0.2:8000/storage';
       // Return the fetched special message
       return specialMessage;
     }
-    Future<String> fetchAvailabilityStatus() async {
-      // Simulated delay to mimic network request
-      await Future.delayed(Duration(seconds: 2));
 
-      // Simulated data fetched from the backend
-      // You can replace this with your actual backend logic to fetch availability status
-      return 'Available for Booking'; // Example status fetched from backend
-    }
 
     Widget buildAvailabilityText(String status) {
       Color lightColor;
@@ -401,6 +402,7 @@ String baseUrl='http://192.0.0.2:8000/storage';
                             }
                           },
                         ),
+
 
                         SizedBox(height: 15 * fem),
 
@@ -632,6 +634,63 @@ String baseUrl='http://192.0.0.2:8000/storage';
                       ],
                     ),
                   ),
+              Container(
+                margin: EdgeInsets.fromLTRB(16 * fem, 30, 16 * fem, 0),
+                width: double.infinity,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Video Samples',
+                      style: TextStyle(
+                        fontSize: 22 * ffem,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xff1c0c11),
+                      ),
+                    ),
+                    SizedBox(height: 12 * fem),
+                    // GridView builder for the gallery
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemCount: VideoPathsFromBackend.length, // Total count including placeholders
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 12 * fem,
+                        crossAxisSpacing: 12 * fem,
+                        childAspectRatio: 1, // Aspect ratio of each grid item
+                      ),
+                      itemBuilder: (context, index) {
+                        if (index < VideoPathsFromBackend.length) {
+                          // If index is within the number of actual videos
+                          return GestureDetector(
+                            onTap: () {
+                              // Navigate to fullscreen view
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => FullScreenVideoView(
+                                    videoUrl: VideoPathsFromBackend[index],
+                                  ),
+                                ),
+                              );
+                            },
+                            child: VideoPlayerWidget(url: VideoPathsFromBackend[index]),
+                          );
+                        } else {
+                          // If index exceeds actual videos, return empty containers
+                          return Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(50),
+                              color: Colors.grey[200], // Placeholder color
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ),
 
 
 
@@ -782,6 +841,112 @@ class FullScreenView extends StatelessWidget {
           },
           child: Image.network(imagePath), // Use Image.network for network images
         ),
+      ),
+    );
+  }
+}
+
+class VideoPlayerWidget extends StatefulWidget {
+  final String url;
+
+  VideoPlayerWidget({required this.url});
+
+  @override
+  _VideoPlayerWidgetState createState() => _VideoPlayerWidgetState();
+}
+
+class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
+  late VideoPlayerController _controller;
+  bool _isError = false;
+  bool _isPlaying = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Uri videoUri = Uri.parse(widget.url); // Convert String to Uri
+    _controller = VideoPlayerController.networkUrl(videoUri)
+      ..initialize().then((_) {
+        setState(() {});
+      }).catchError((error) {
+        setState(() {
+          _isError = true;
+        });
+      });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _controller.dispose();
+  }
+
+  void _togglePlayPause() {
+    setState(() {
+      if (_controller.value.isPlaying) {
+        _controller.pause();
+        _isPlaying = false;
+      } else {
+        _controller.play();
+        _isPlaying = true;
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isError) {
+      return Container(
+        color: Colors.black,
+        child: Center(
+          child: Text(
+            'Error loading video',
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+      );
+    }
+
+    return _controller.value.isInitialized
+        ? Stack(
+      alignment: Alignment.center,
+      children: [
+        AspectRatio(
+          aspectRatio: _controller.value.aspectRatio,
+          child: VideoPlayer(_controller),
+        ),
+        if (!_isPlaying)
+          IconButton(
+            icon: Icon(Icons.play_arrow, size: 64, color: Colors.white),
+            onPressed: _togglePlayPause,
+          ),
+        if (_isPlaying)
+          IconButton(
+            icon: Icon(Icons.pause, size: 64, color: Colors.white),
+            onPressed: _togglePlayPause,
+          ),
+      ],
+    )
+        : Container(
+      color: Colors.black,
+      child: Center(child: CircularProgressIndicator()),
+    );
+  }
+}
+
+
+class FullScreenVideoView extends StatelessWidget {
+  final String videoUrl;
+
+  FullScreenVideoView({required this.videoUrl});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Full Screen Video'),
+      ),
+      body: Center(
+        child: VideoPlayerWidget(url: videoUrl),
       ),
     );
   }

@@ -12,7 +12,9 @@
     <application
         android:label="HomeStage"
         android:name="${applicationName}"
-        android:icon="@mipmap/launcher_icon">
+        android:largeHeap="true"
+        android:icon="@mipmap/launcher_icon"
+        android:networkSecurityConfig="@xml/network_security_config">
 
         <!-- Firebase Cloud Messaging service declaration -->
         <service
@@ -90,4 +92,5 @@
             <data android:mimeType="text/plain"/>
         </intent>
     </queries>
+
 </manifest>

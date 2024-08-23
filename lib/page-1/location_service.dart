@@ -3,6 +3,8 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 
+import '../config.dart';
+
 class LocationService {
   Future<Position> getCurrentLocation() async {
     bool serviceEnabled;
@@ -28,6 +30,40 @@ class LocationService {
     return await Geolocator.getCurrentPosition();
   }
 
+  Future<Position> getLocationFromAddress(String address) async {
+    final response = await http.get(Uri.parse('https://nominatim.openstreetmap.org/search?q=$address&format=json&limit=1'));
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      if (data.isNotEmpty) {
+        double lat = double.parse(data[0]['lat']);
+        double lon = double.parse(data[0]['lon']);
+        // Example of creating a Position object using the constructor
+        Position position = Position(
+          latitude: lat,
+          longitude: lon,
+          timestamp: DateTime.now(),
+          accuracy: 0.0, // Provide appropriate values based on your use case
+          altitude: 0.0, // Provide appropriate values based on your use case
+          altitudeAccuracy: 0.0, // Provide appropriate values based on your use case
+          heading: 0.0, // Provide appropriate values based on your use case
+          headingAccuracy: 0.0, // Provide appropriate values based on your use case
+          speed: 0.0, // Provide appropriate values based on your use case
+          speedAccuracy: 0.0, // Provide appropriate values based on your use case
+          floor: null, // Optional parameter, can be null if not needed
+          isMocked: false, // Optional parameter, default is false
+        );
+
+        return position;
+      } else {
+        throw Exception('Location not found for address: $address');
+      }
+    } else {
+      throw Exception('Failed to fetch location data');
+    }
+  }
+
+
   Future<bool> isServiceAvailable(Position position) async {
     // Make an HTTP request to your server to check service availability
     // Example URL: https://example.com/check_service?lat=${position.latitude}&lng=${position.longitude}
@@ -39,7 +75,7 @@ class LocationService {
     await storage.write(key: 'longitude', value: position.longitude.toString());
 
 
-    final response = await http.get(Uri.parse('http://192.0.0.2:8000/api/check_service?lat=${position.latitude}&lng=${position.longitude}'));
+    final response = await http.get(Uri.parse('${Config().apiDomain}/check_service?lat=${position.latitude}&lng=${position.longitude}'));
 
     if (response.statusCode == 200) {
       print('Response Body: ${response.body}');

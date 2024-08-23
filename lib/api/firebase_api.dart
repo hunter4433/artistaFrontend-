@@ -1,22 +1,23 @@
 import 'dart:convert';
-
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:test1/page-1/booked_artist.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-
-
-
 import '../main.dart';
+import '../page-1/all_bookings_artist.dart';
+import '../page-1/artist_inbox.dart';
+import '../page-1/bottomNav_artist.dart';
+import '../page-1/bottom_nav.dart';
+import '../page-1/user_bookings.dart';
 // import 'package:firebase_iid/firebase_iid.dart';
 
 Future <void> handleBackgroundMessage(RemoteMessage message) async{
   print('title: ${message.notification?.title}');
   print('body: ${message.notification?.body}');
   print('payload: ${message.data}');
+  // print('type: ${message.data?.type}');
 }
 
 class FirebaseApi {
@@ -34,17 +35,53 @@ final androidChannel = const AndroidNotificationChannel(
 
 
 
-  void handleMessage (RemoteMessage? message){
+  void handleMessage(RemoteMessage? message) {
     if (message == null) return;
-    // Add your navigation logic here
-    navigatorKey.currentState?.push(
-      MaterialPageRoute(
-        builder: (context) => Booked(),
-      ),
-    );
+
+    Map<String, dynamic> data = message.data;
+    String? notificationTitle = message.notification?.title;
+    String? notificationBody = message.notification?.body;
+    String? bookingType = data['type'];
+
+    print(bookingType);
+
+    if (bookingType == 'artist') {
+      navigatorKey.currentState?.push(
+        MaterialPageRoute(
+          builder: (context) => BottomNavart(
+            data: data,
+            initialPageIndex: 2, // 2 is the index for AllBookings page
+            newBookingTitle: notificationTitle,
+            newBookingDateTime: notificationBody,
+          ),
+        ),
+      );
+    } else if (bookingType == 'user') {
+      navigatorKey.currentState?.push(
+        MaterialPageRoute(
+          builder: (context) => BottomNav(
+            data: data,
+            initialPageIndex: 2, // Replace with appropriate index if different for UserBookings
+            newBookingTitle: notificationTitle,
+            newBookingDateTime: notificationBody,
+          ),
+        ),
+      );
+    } else if (bookingType == 'app') {
+      navigatorKey.currentState?.push(
+        MaterialPageRoute(
+          builder: (context) => BottomNavart(
+            data: data,
+            initialPageIndex: 1, // 1 is the index for artist_inbox page
+          ),
+        ),
+      );
+    }
   }
 
-Future initLocalNotification() async {
+
+
+  Future initLocalNotification() async {
     // const iOS = iOSInitializationSettings();
     const android = AndroidInitializationSettings('@drawable/android_logo');
     const settings = InitializationSettings(android : android );
@@ -97,30 +134,6 @@ Future initLocalNotification() async {
 
   }
 
-  Future<void> sendFCMTokenBackend(String? token) async {
-    if (token == null) return;
-
-    final String backendUrl = 'https://your-backend-url.com/saveFCMToken';
-    final response = await http.post(
-      Uri.parse(backendUrl),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(<String, String>{
-        'fcm_token': token,
-      }),
-    );
-
-    if (response.statusCode == 200) {
-      print('FCM token sent successfully');
-    } else {
-      print('Failed to send FCM token: ${response.reasonPhrase}');
-    }
-  }
-
-
-
-
   Future<void> initNotification() async {
     try {
       await _firebaseMessaging.requestPermission();
@@ -128,7 +141,7 @@ Future initLocalNotification() async {
       if (fCMToken != null) {
         print('token: $fCMToken');
         await storage.write( key: 'fCMToken', value: fCMToken);
-        // sendFCMTokenBackend(fCMToken);
+
       }
       initPushNotification();
       initLocalNotification();
@@ -140,7 +153,6 @@ Future initLocalNotification() async {
       if (gotFBCrash) {
         try {
           final fCMToken = await FirebaseMessaging.instance.getToken();
-          print('token: $fCMToken');
         } catch (e) {
           // Handle the case where Firebase throws an exception again
           FirebaseCrashlytics.instance.recordError(e, StackTrace.current);
@@ -148,4 +160,10 @@ Future initLocalNotification() async {
       }
     }
   }
+}
+Widget buildBottomNavart(Map<String, dynamic> data, int initialPageIndex) {
+  return BottomNavart(
+    data: data,
+    initialPageIndex: initialPageIndex,
+  );
 }
