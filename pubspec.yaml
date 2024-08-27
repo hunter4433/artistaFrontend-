@@ -60,9 +60,12 @@ dependencies:
   firebase_messaging: ^15.0.0
   firebase_crashlytics: ^4.0.0
   flutter_local_notifications: ^17.1.2
-  google_maps_flutter: ^2.7.0
+  google_maps_flutter: ^2.6.1
   location: ^6.0.2
   geocoding: ^3.0.0
+  flutter_rating_stars: ^1.1.0
+  visibility_detector: ^0.4.0+2
+  flutter_pannable_rating_bar: ^2.7.2+1
 
 
 dev_dependencies:

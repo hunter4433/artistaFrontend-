@@ -58,26 +58,23 @@ class _artist_credState extends State<artist_cred> {
     double baseWidth = 390;
     double fem = MediaQuery.of(context).size.width / baseWidth;
     double ffem = fem * 0.97;
-    return Scaffold(backgroundColor: Color(0xFF121217),
+    return Scaffold(backgroundColor:  Color(0xFF0D0D0F),
       appBar: AppBar(
-        title: Text(
-          'Sign up',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 19 * ffem,
-            fontWeight: FontWeight.w700,
-            height: 1.25 * ffem / fem,
-            letterSpacing: -0.8000000119 * fem,
-            color: Colors.white,
+        automaticallyImplyLeading: false,
+        title: Padding(
+          padding: const EdgeInsets.fromLTRB(0, 0, 8, 0),
+          child: Center(
+            child: Text(
+              'Sign Up',
+              style: TextStyle(
+                fontSize: 20 * fem,
+                fontWeight: FontWeight.w400,
+                color: Colors.white,
+              ),
+            ),
           ),
         ),
-        backgroundColor: Color(0xFF121217),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back,color: Color(0xFF9E9EB8),),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
+        backgroundColor: Color(0xFF0D0D0F),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -85,13 +82,13 @@ class _artist_credState extends State<artist_cred> {
             width: double.infinity,
             // height: double.infinity,
             decoration: BoxDecoration(
-              color: Color(0xFF121217),
+              color:  Color(0xFF0D0D0F),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Container(
-                  margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 10 * fem),
+                  margin: EdgeInsets.fromLTRB(0 * fem, 15 * fem, 0 * fem, 25 * fem),
                   constraints: BoxConstraints(
                     maxWidth: 333 * fem,
                   ),
@@ -100,7 +97,7 @@ class _artist_credState extends State<artist_cred> {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 22 * ffem,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w400,
                       height: 1.25 * ffem / fem,
                       letterSpacing: -0.8000000119 * fem,
                       color: Colors.white,
@@ -123,7 +120,7 @@ class _artist_credState extends State<artist_cred> {
                           height: 220 * fem,
                           decoration: BoxDecoration(
                             border: Border.all(color: Color(0xFF9E9EB8),),
-                            borderRadius: BorderRadius.circular(12 * fem),
+                            borderRadius: BorderRadius.circular(10 * fem),
                           ),
                           child: _imageFile != null
                               ? Image.file(
@@ -139,7 +136,7 @@ class _artist_credState extends State<artist_cred> {
                           ),
                         ),
                       ),
-                      SizedBox(height: 16 * fem),
+                      SizedBox(height: 28 * fem),
                       Container(
                         width: double.infinity,
                         height: 56 * fem,
@@ -155,12 +152,12 @@ class _artist_credState extends State<artist_cred> {
                             hintText: 'What\'s Your Name',
                             hintStyle: TextStyle(color:  Color(0xFF9E9EB8)),
                             enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12 * fem),
+                              borderRadius: BorderRadius.circular(10 * fem),
                               borderSide: BorderSide(width: 1.25, color: Color(0xFF9E9EB8),),
                             ),
                             focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12 * fem),
-                              borderSide: BorderSide(width: 1.25, color: Color(0xffe5195e)),
+                              borderRadius: BorderRadius.circular(10 * fem),
+                              borderSide: BorderSide(width: 1.25, color: Colors.white),
                             ),
                           ),
 
@@ -185,12 +182,12 @@ class _artist_credState extends State<artist_cred> {
                             hintText: 'Your Age',
                             hintStyle: TextStyle(color:  Color(0xFF9E9EB8)),
                             enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12 * fem),
+                              borderRadius: BorderRadius.circular(10 * fem),
                               borderSide: BorderSide(width: 1.25, color: Color(0xFF9E9EB8),),
                             ),
                             focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12 * fem),
-                              borderSide: BorderSide(width: 1.25, color: Color(0xffe5195e)),
+                              borderRadius: BorderRadius.circular(10 * fem),
+                              borderSide: BorderSide(width: 1.25, color: Colors.white),
                             ),
                           ),
                           style: TextStyle(color: Colors.white),
@@ -205,28 +202,29 @@ class _artist_credState extends State<artist_cred> {
                           absorbing: true, // Prevents the TextField from receiving touch events
                           child: Container(
                             width: double.infinity,
-                            height: 56 * fem,
                             child: TextField(
                               controller: _addressController,
+                              minLines: 1, // Minimum number of lines (1 by default)
+                              maxLines: null, // Allow it to expand as needed
                               decoration: InputDecoration(
                                 suffixIcon: Icon(
                                   Icons.home_outlined,
                                   color: Color(0xFF9E9EB8),
                                 ),
-                                hintText: 'Address',
+                                hintText: 'Enter Your Current Address',
                                 hintStyle: TextStyle(color: Color(0xFF9E9EB8)),
                                 enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12 * fem),
+                                  borderRadius: BorderRadius.circular(10 * fem),
                                   borderSide: BorderSide(
                                     width: 1.25,
                                     color: Color(0xFF9E9EB8),
                                   ),
                                 ),
                                 focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12 * fem),
+                                  borderRadius: BorderRadius.circular(10 * fem),
                                   borderSide: BorderSide(
                                     width: 1.25,
-                                    color: Color(0xffe5195e),
+                                    color: Colors.white,
                                   ),
                                 ),
                               ),
@@ -235,7 +233,7 @@ class _artist_credState extends State<artist_cred> {
                           ),
                         ),
                       ),
-                      SizedBox(height: 16 * fem),
+                      SizedBox(height: 35 * fem),
                       ElevatedButton(
                         onPressed: () async {
                           if (_nameController.text.isEmpty ||
@@ -270,7 +268,7 @@ class _artist_credState extends State<artist_cred> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Color(0xffe5195e),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12 * fem),
+                            borderRadius: BorderRadius.circular(10 * fem),
                           ),
                           padding: EdgeInsets.symmetric(
                             horizontal: 16 * fem,
@@ -282,8 +280,8 @@ class _artist_credState extends State<artist_cred> {
                           child: Text(
                             'Tell Us About Your Skills',
                             style: TextStyle(
-                              fontSize: 16 * ffem,
-                              fontWeight: FontWeight.w700,
+                              fontSize: 18 * ffem,
+                              fontWeight: FontWeight.w500,
                               height: 1.5 * ffem / fem,
                               letterSpacing: 0.24 * fem,
                               color: Color(0xffffffff),
@@ -308,28 +306,28 @@ class _artist_credState extends State<artist_cred> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
+        return AlertDialog(backgroundColor:Color(0xfffff5f8) ,
           title: Text('Address'),
           content: isLoading
               ? Center(child: CircularProgressIndicator())
-              : Text('How would you like to enter your Address?'),
+              : Text('How would you like to enter your Address?',style: TextStyle(fontSize: 17,color: Colors.black),),
           actions: isLoading
               ? []
               : [
-            TextButton(
+            ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop();
                 _showManualEntryDialog(context);
               },
-              child: Text('Enter Manually'),
+              child: Text('Enter Manually',style: TextStyle(fontSize: 16, color: Colors.black),),
             ),
-            TextButton(
+            ElevatedButton(
               onPressed: () async {
                 _useCurrentLocation();
                 // Close the dialog after fetching the location
                 Navigator.of(context).pop();
               },
-              child: Text('Use Current Location'),
+              child: Text('Use Current Location',style: TextStyle(fontSize: 16, color: Colors.black),),
             ),
           ],
         );
@@ -349,42 +347,98 @@ class _artist_credState extends State<artist_cred> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Enter Address Manually'),
+          backgroundColor: Color(0xfffff5f8),
+          title: Text(
+            'Enter Address',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w400,
+              color: Colors.black,
+            ),
+          ),
           content: SingleChildScrollView(
             child: Column(
               children: [
+                // House No / Apartment TextField
                 TextField(
                   controller: flatController,
-                  decoration: InputDecoration(hintText: 'Flat, House No, Building, Apartment'),
+                  decoration: InputDecoration(
+                    hintText: 'House No/Apartment, Building',
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.pink), // Focused line color
+                    ),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey), // Unfocused line color
+                    ),
+                  ),
                 ),
+                // Landmark / Street TextField
                 TextField(
                   controller: areaController,
-                  decoration: InputDecoration(hintText: 'Area, Street, Sector'),
+                  decoration: InputDecoration(
+                    hintText: 'Landmark, Street, Sector',
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.pink),
+                    ),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey),
+                    ),
+                  ),
                 ),
+                // City TextField
                 TextField(
                   controller: cityController,
-                  decoration: InputDecoration(hintText: 'City'),
+                  decoration: InputDecoration(
+                    hintText: 'City',
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.pink),
+                    ),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey),
+                    ),
+                  ),
                 ),
+                // State TextField
                 TextField(
                   controller: stateController,
-                  decoration: InputDecoration(hintText: 'State'),
+                  decoration: InputDecoration(
+                    hintText: 'State',
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.pink),
+                    ),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey),
+                    ),
+                  ),
                 ),
+                // Pincode TextField
                 TextField(
                   controller: pincodeController,
-                  decoration: InputDecoration(hintText: 'Pincode'),
+                  decoration: InputDecoration(
+                    hintText: 'Pincode',
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.pink),
+                    ),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey),
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
           actions: [
-            TextButton(
+            ElevatedButton(
               onPressed: () {
                 _addressController.text =
                 "${flatController.text}, ${areaController.text}, ${cityController.text}, ${stateController.text}, ${pincodeController.text}";
                 convertAddressToLatLng(pincodeController.text);
                 Navigator.of(context).pop();
-                },
-              child: Text('OK'),
+              },
+              child: Text(
+                'Enter',
+                style: TextStyle(fontSize: 16, color: Colors.black),
+              ),
             ),
           ],
         );

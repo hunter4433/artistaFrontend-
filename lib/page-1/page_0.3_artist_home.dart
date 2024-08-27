@@ -102,17 +102,20 @@ class _artist_home extends State<artist_home> {
     double ffem = fem * 0.97;
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor:Color(0xFF121217),
       appBar: AppBar(
-        title: Text(
-          'HOMESTAGE',
-          textAlign: TextAlign.center,
-          style: SafeGoogleFont(
-            'Be Vietnam Pro',
-            fontSize: 22 * ffem,
-            fontWeight: FontWeight.w700,
-            height: 1.25 * ffem / fem,
-            color: Colors.white,
+        automaticallyImplyLeading: false,
+        title: Padding(
+          padding: const EdgeInsets.fromLTRB(0, 0, 8, 0),
+          child: Center(
+            child: Text(
+              'Home',
+              style: TextStyle(
+                fontSize: 20 * fem,
+                fontWeight: FontWeight.w400,
+                color: Colors.white,
+              ),
+            ),
           ),
         ),
         backgroundColor: Color(0xFF121217),
@@ -129,43 +132,47 @@ class _artist_home extends State<artist_home> {
               children: [
                 SizedBox(height: 18),
                 if (imageUrl != null)
-                  Container(
-                    width: 140 * fem,
-                    height: 140 * fem,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        colors: [Colors.grey.shade300, Colors.grey.shade700],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                    ),
+        Container(
+        width: 170 * fem,
+        height: 200 * fem,
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: Color(0xFF9E9EB8),
+            width: 3.50, // Adjust the thickness of the border
+          ),
+          borderRadius: BorderRadius.circular(10),
+          gradient: LinearGradient(
+            colors: [Colors.grey.shade300, Colors.grey.shade700],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+
                     child: Padding(
                       padding: EdgeInsets.all(4.0),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(64 * fem),
+
                         child: Image.network(
                           imageUrl!,
                           fit: BoxFit.cover,
-                        ),
+
                       ),
                     ),
                   ),
                 SizedBox(height: 18 * fem),
                 if (name != null)
                   Text(
-                    'Hi, $name',
+                    'Hi,  $name',
                     textAlign: TextAlign.center,
                     style: SafeGoogleFont(
                       'Be Vietnam Pro',
                       fontSize: 22 * ffem,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w400,
                       height: 1.25 * ffem / fem,
                       letterSpacing: -0.33 * fem,
                       color: Colors.white,
                     ),
                   ),
-                SizedBox(height: 18 * fem),
+                SizedBox(height: 30 * fem),
                 Expanded(
                   child: Container(
                     padding: EdgeInsets.symmetric(horizontal: 16 * fem),

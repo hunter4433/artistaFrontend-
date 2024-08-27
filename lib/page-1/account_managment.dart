@@ -25,9 +25,22 @@ class account_managment extends StatelessWidget {
 
     return Scaffold(backgroundColor: Color(0xFF121217)
       ,
-      appBar: AppBar(backgroundColor: Color(0xFF121217)
-        ,
-        title: const Text('Account',style: TextStyle(color: Colors.white),),
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: Padding(
+          padding: const EdgeInsets.fromLTRB(0, 0, 8, 0),
+          child: Center(
+            child: Text(
+              'Account',
+              style: TextStyle(
+                fontSize: 20 * fem,
+                fontWeight: FontWeight.w400,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+        backgroundColor: Color(0xFF121217),
       ),
       body: SafeArea(
         child: FutureBuilder<String?>(
@@ -127,7 +140,7 @@ class account_managment extends StatelessWidget {
                                 child: Text(
                                   'Edit Artist Profile',
                                   style: TextStyle(
-                                    fontSize: 17 * ffem,
+                                    fontSize: 18 * ffem,
                                     fontWeight: FontWeight.w400,
                                     height: 1.5 * ffem / fem,
                                     color: Colors.white,

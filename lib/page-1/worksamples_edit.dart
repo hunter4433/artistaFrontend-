@@ -227,49 +227,7 @@ class _ArtistCredentialsState extends State<ArtistCredentials44> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              SizedBox(height: 20),
-              Text(
-                'Upload Audios Here',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Column(
-                    children: [
-                      GestureDetector(
-                        onTap: _pickAudio1,
-                        child: Container(
-                          width: 150,
-                          height: 150,
-                          color: Colors.grey.withOpacity(0.3),
-                          child: _audioFile1 != null
-                              ? Text('Audio 1 selected!')
-                              : Icon(Icons.upload_outlined),
-                        ),
-                      ),
-                      if (_audioFile1 != null) Text('Audio 1 selected!'),
-                    ],
-                  ),
-                  Column(
-                    children: [
-                      GestureDetector(
-                        onTap: _pickAudio2,
-                        child: Container(
-                          width: 150,
-                          height: 150,
-                          color: Colors.grey.withOpacity(0.3),
-                          child: _audioFile2 != null
-                              ? Text('Audio 2 selected!')
-                              : Icon(Icons.upload_outlined),
-                        ),
-                      ),
-                      if (_audioFile2 != null) Text('Audio 2 selected!'),
-                    ],
-                  ),
-                ],
-              ),
+
               SizedBox(height: 20),
               Text(
                 'Upload Videos Here',
@@ -432,32 +390,6 @@ class _ArtistCredentialsState extends State<ArtistCredentials44> {
               ),
 
               SizedBox(height: 20),
-              Text(
-                'Upload Image for the Searched Section',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              GestureDetector(
-                onTap: _pickImageForSearchedSection,
-                child: Container(
-                  margin: EdgeInsets.all(8.0),
-                  width: 200.0,
-                  height: 200.0,
-                  color: Colors.grey.withOpacity(0.3),
-                  child: _searchedImage != null
-                      ? Image.file(
-                    _searchedImage!,
-                    fit: BoxFit.cover,
-                  )
-                      : Center(
-                    child: Icon(
-                      Icons.upload_outlined,
-                      size: 48.0,
-                      color: Colors.black.withOpacity(0.5),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(height: 20),
               Padding(
                 padding: const EdgeInsets.only(left: 25, right: 25, bottom: 45),
                 child: ElevatedButton(
@@ -469,7 +401,7 @@ class _ArtistCredentialsState extends State<ArtistCredentials44> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Color(0xffe5195e),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12 * fem),
+                      borderRadius: BorderRadius.circular(10 * fem),
                     ),
                     padding: EdgeInsets.symmetric(
                       horizontal: 16 * fem,
@@ -482,8 +414,8 @@ class _ArtistCredentialsState extends State<ArtistCredentials44> {
                       'Done',
                       style: SafeGoogleFont(
                         'Be Vietnam Pro',
-                        fontSize: 16 * ffem,
-                        fontWeight: FontWeight.w700,
+                        fontSize: 17 * ffem,
+                        fontWeight: FontWeight.w500,
                         height: 1.5 * ffem / fem,
                         letterSpacing: 0.2399999946 * fem,
                         color: Color(0xffffffff),
@@ -580,22 +512,6 @@ class _ArtistCredentialsState extends State<ArtistCredentials44> {
     return false;
   }
 
-
-
-  // Future<List<String>> _uploadImages( imageFiles) async {
-  //   List<String> imagePaths = [];
-  //   // print(imageFiles.length);
-  //   for (int i = 0; i < imageFiles.length; i++) {
-  //     if (imageFiles[i] != null) {
-  //       // Upload the image and store its path
-  //       String paths = await uploadImagesAndStorePaths(imageFiles[i]);
-  //       // for (String imagePath in paths) {
-  //       imagePaths.add(paths);
-  //
-  //     }
-  //   }
-  //   return imagePaths;
-  // }
 
 
   Future<String> uploadImagesAndStorePaths(File? imageFile) async {

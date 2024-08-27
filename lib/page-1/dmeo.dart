@@ -8,6 +8,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 import 'package:video_player/video_player.dart';
 import '../config.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 
 
@@ -18,6 +19,7 @@ class Home_user extends StatefulWidget {
 
 class _Home_userState extends State<Home_user> {
   final storage = FlutterSecureStorage();
+  late VideoPlayerController _controller;
 
   // Dummy data for testing. Replace it with actual data from your backend.
   final List<Map<String, dynamic>> categories = [
@@ -28,7 +30,26 @@ class _Home_userState extends State<Home_user> {
     // Add more data as needed
   ];
 
-  final List<Map<String, dynamic>> bestArtists = [];
+  final List<Map<String, dynamic>> bestArtists = [
+    {
+
+      'name':'Infuse your gathering with the vocals of a premier singer.',
+      'type': 'video',
+      'url': 'assets/page-1/images/newmarraige.mov'
+    },
+    {
+      'name': 'Treat your elite guests to culinary perfection.',
+      'type': 'video',
+      'url': 'assets/page-1/images/homestage2.mov'
+
+    },
+    {
+      'name': 'Make your little one’s birthday magical.',
+      'type': 'video',
+      'url': 'assets/page-1/images/mehandi.mov'
+
+    },
+  ];
 
   @override
   void initState() {
@@ -77,7 +98,7 @@ class _Home_userState extends State<Home_user> {
 
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);
-
+print(data);
         setState(() {
           featuredArtists.clear();
 
@@ -87,12 +108,13 @@ class _Home_userState extends State<Home_user> {
               'id': item['id'],
               'name': item['name'],
 
-              'image': '${Config().baseDomain}/storage/${item['profile_photo']}',
+              'image': '${item['profile_photo']}',
               // 'rating': item['rating'].toString(),
 
               'skill': item['skills'],
             });
           }
+          print(featuredArtists);
         });
 
         print(featuredArtists);
@@ -124,6 +146,7 @@ class _Home_userState extends State<Home_user> {
         // List<Map<String, String>> recommended = [];
         recommended.clear();
         categories.clear();
+        seasonal.clear();
 
         for (var section in data) {
           if (section['section_name'] == 'Recommended') {
@@ -140,7 +163,7 @@ class _Home_userState extends State<Home_user> {
                 'subheading': subheading,
                 'name': name,
                 'type': type,
-                'image': '${Config().baseDomain}/storage/${item['item_data']}',
+                'image': '${item['item_data']}',
               });
             }
           } else if (section['section_name'] == 'Categories') {
@@ -151,24 +174,26 @@ class _Home_userState extends State<Home_user> {
                 // 'id': item['item_id'],
                 'name': item['item_name'],
                 'type': 'image',
-                'image': '${Config().baseDomain}/storage/${item['item_data']}',
+                'image': '${item['item_data']}',
               });
             }
             }
             else if (section['section_name'] == 'Seasonal') {
-            seasonal.add({
-              'section_name':section['section_name'],
-            });
+
               for (var item in section['items']) {
                 seasonal.add({
                   // 'id': item['item_id'],
                   'name': item['item_name'],
                   // 'type': 'image',
-                  'image': '${Config().baseDomain}/storage/${item['item_data']}',
+                  'image': '${item['item_data']}',
                 });
+
               }
+
           }
+
         }
+        print(seasonal);
 
 
         return {
@@ -240,62 +265,32 @@ class _Home_userState extends State<Home_user> {
   }
 
   final List<Map<String, dynamic>> seasonal = [
-    // {
-    //   'name': 'Alpin Band',
-    //   'image': 'assets/page-1/images/2d51a82294e0fd051de11eaa0b0c0678.jpg'
-    // },
-    // {
-    //   'name': 'Tech House',
-    //   'image': 'assets/page-1/images/Oxygen-Band-1024x768.jpg'
-    // },
-    // {
-    //   'name': 'Trance',
-    //   'image': 'assets/page-1/images/music-of-dhwani-1.jpg'
-    // },
+
   ];
 
   final List<Map<String, dynamic>> recommended = [
-    // {
-    //   'subheading': 'Feel the Air',
-    //   'name':'Infuse your gathering with the vocals of a premier singer.',
-    //   'type': 'image',
-    //   'url': 'assets/page-1/images/music-of-dhwani-1.jpg'
-    // },
-    // {
-    // 'subheading': 'Let the aroma flow',
-    // 'name': 'Treat your elite guests to culinary perfection.',
-    // 'type': 'video',
-    // 'url': 'assets/videos/df4a85b2902ddaa7e688b63d4d1c60ba.mp4'
-    //
-    // },
-    // {
-    //   'subheading': 'Magical touch',
-    //   'name': 'Make your little one’s birthday magical.',
-    //   'type': 'image',
-    //   'url': 'assets/page-1/images/Oxygen-Band-1024x768.jpg'
-    //
-    // },
+
   ];
 
   final List<Map<String, dynamic>> best = [
     {
-      'subheading': 'Feel the Air',
+
       'name':'Infuse your gathering with the vocals of a premier singer.',
-      'type': 'image',
-      'url': 'assets/page-1/images/2d51a82294e0fd051de11eaa0b0c0678.jpg'
+      'type': 'video',
+      'url': 'assets/page-1/images/newmarraige.mov'
     },
     {
       'subheading': 'Let the aroma flow',
       'name': 'Treat your elite guests to culinary perfection.',
       'type': 'video',
-      'url': 'assets/videos/df4a85b2902ddaa7e688b63d4d1c60ba.mp4'
+      'url': 'assets/page-1/images/homestage2.mov'
 
     },
     {
       'subheading': 'Magical touch',
       'name': 'Make your little one’s birthday magical.',
-      'type': 'image',
-      'url': 'assets/page-1/images/Oxygen-Band-1024x768.jpg'
+      'type': 'video',
+      'url': 'assets/page-1/images/mehandi.mov'
 
     },
   ];
@@ -309,21 +304,23 @@ class _Home_userState extends State<Home_user> {
         .width / baseWidth;
     double ffem = fem * 0.97;
 
-    return Scaffold(
+    return Scaffold(backgroundColor: Color(0xFF0D0D0F),
       appBar: AppBar(
         automaticallyImplyLeading: false,
         title: Padding(
           padding: const EdgeInsets.fromLTRB(0, 0, 8, 0),
-          child: Text(
-            'Home',
-            style: TextStyle(
-              fontSize: 18 * fem,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
+          child: Center(
+            child: Text(
+              'Home',
+              style: TextStyle(
+                fontSize: 20 * fem,
+                fontWeight: FontWeight.w400,
+                color: Colors.white,
+              ),
             ),
           ),
         ),
-        backgroundColor: Color(0xFF121217),
+        backgroundColor: Color(0xFF0D0D0F),
       ),
       body: FutureBuilder(
           future: fetchAssets(), // Replace with your actual API call
@@ -350,32 +347,33 @@ class _Home_userState extends State<Home_user> {
               // }
               // print(data);
               return Container(
-                color: Color(0xFF121217),
+                color: Color(0xFF0D0D0F),
                 child: SafeArea(
                   child: SingleChildScrollView(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
-                          padding: EdgeInsets.fromLTRB(15 * fem, 10 * fem,
+                          padding: EdgeInsets.fromLTRB(12 * fem, 10 * fem,
                               0 * fem, 18 * fem),
                           child: Text(
                             'Categories',
                             style: TextStyle(
-                              fontSize: 18 * ffem,
-                              fontWeight: FontWeight.bold,
+                              fontSize: 22 * ffem,
+                              fontWeight: FontWeight.w400,
                               color: Colors.white,
                             ),
                           ),
                         ),
-                        GridView.builder(
+                        GridView.builder(padding: EdgeInsets.fromLTRB(12 * fem, 0 * fem,
+                            12 * fem, 0 * fem),
                           shrinkWrap: true,
                           physics: NeverScrollableScrollPhysics(),
                           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
-                            crossAxisSpacing: 10.0,
-                            mainAxisSpacing: 10.0,
-                            childAspectRatio: 2.0,
+                            crossAxisSpacing: 15.0,
+                            mainAxisSpacing: 15.0,
+                            childAspectRatio: 2.5,
                           ),
                           itemCount: categories?.length,
                           itemBuilder: (context, index) {
@@ -383,7 +381,7 @@ class _Home_userState extends State<Home_user> {
                             return Container(
                               height: 83.0,
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(10),
                                 gradient: LinearGradient(
                                   begin: Alignment(0, 1),
                                   end: Alignment(0, -1),
@@ -408,7 +406,7 @@ class _Home_userState extends State<Home_user> {
                                     category['name'],
                                     style: GoogleFonts.getFont(
                                       'Be Vietnam Pro',
-                                      fontWeight: FontWeight.w700,
+                                      fontWeight: FontWeight.w600,
                                       fontSize: 16,
                                       height: 1.3,
                                       color: Color(0xFFFFFFFF),
@@ -457,8 +455,9 @@ class _Home_userState extends State<Home_user> {
                                           recommended?[index]['image'],
                                           fit: BoxFit.cover,
                                         )
-                                            : VideoWidget(
-                                            url: recommended?[index]['image']),
+                                            : CustomVideoPlayer(
+                                            source: recommended?[index]['image'],
+                                           isAsset: false ),
                                       ),
                                     ),
                                     Text(
@@ -496,7 +495,7 @@ class _Home_userState extends State<Home_user> {
                           padding: EdgeInsets.fromLTRB(15 * fem, 38 * fem,
                               0 * fem, 0 * fem),
                           child: Text(
-                            'Featured Artists',
+                            'Featured Talent',
                             style: TextStyle(
                               fontSize: 22 * ffem,
                               fontWeight: FontWeight.w400,
@@ -513,7 +512,7 @@ class _Home_userState extends State<Home_user> {
                             itemBuilder: (context, index) {
                               return Container(
                                 margin: EdgeInsets.only(right: 0 * fem),
-                                width: 160 * fem,
+                                width: 180 * fem,
                                 padding: EdgeInsets.fromLTRB(
                                     12 * fem, 16 * fem, 0 * fem, 10 * fem),
                                 child: Column(
@@ -538,8 +537,8 @@ class _Home_userState extends State<Home_user> {
                                       child: Container(
                                         margin: EdgeInsets.only(
                                             bottom: 12 * fem),
-                                        width: 160 * fem,
-                                        height: 213 * fem,
+                                        width: 175 * fem,
+                                        height: 223 * fem,
                                         child: ClipRRect(
                                           borderRadius: BorderRadius.circular(
                                               12 * fem),
@@ -553,7 +552,7 @@ class _Home_userState extends State<Home_user> {
                                     Text(
                                       featuredArtists[index]['name'],
                                       style: TextStyle(
-                                        fontSize: 16 * ffem,
+                                        fontSize: 17 * ffem,
                                         fontWeight: FontWeight.w600,
                                         height: 1.5 * ffem / fem,
                                         color: Colors.white,
@@ -565,7 +564,7 @@ class _Home_userState extends State<Home_user> {
                                         Text(
                                           ' ${featuredArtists[index]['skill']}',
                                           style: TextStyle(
-                                            fontSize: 14 * ffem,
+                                            fontSize: 16 * ffem,
                                             fontWeight: FontWeight.w500,
                                             color: Color(0xFF9E9EB8),
                                           ),
@@ -573,11 +572,11 @@ class _Home_userState extends State<Home_user> {
                                         Spacer(),
                                         Padding(
                                           padding: const EdgeInsets.fromLTRB(
-                                              0, 0, 16, 0),
+                                              0, 0, 5, 0),
                                           child: Text(
                                             ' ${featuredArtists[index]['rating']}/5',
                                             style: TextStyle(
-                                              fontSize: 14 * ffem,
+                                              fontSize: 16 * ffem,
                                               fontWeight: FontWeight.w500,
                                               color: Color(0xFF9E9EB8),
                                             ),
@@ -593,66 +592,12 @@ class _Home_userState extends State<Home_user> {
                         ),
 
 
-                        Container(
-                          padding: EdgeInsets.fromLTRB(15 * fem, 0 * fem,
-                              0 * fem, 0 * fem),
-                          child: Text(
-                            'Seasonal',
-                            style: TextStyle(
-                              fontSize: 22 * ffem,
-                              fontWeight: FontWeight.w400,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                        Container(
-                          height: 330 * fem,
-                          // Set a specific height for the Container
 
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: seasonal?.length,
-                            itemBuilder: (context, index) {
-                              return Container(
-                                width: 160 * fem,
-                                padding: EdgeInsets.fromLTRB(
-                                    12 * fem, 16 * fem, 0 * fem, 0 * fem),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      margin: EdgeInsets.only(bottom: 12 * fem),
-                                      width: 160 * fem,
-                                      height: 213 * fem,
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(
-                                            12 * fem),
-                                        child: Image.network(
-                                          seasonal?[index]['image'],
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                    ),
-                                    Text(
-                                      seasonal?[index]['name'],
-                                      style: TextStyle(
-                                        fontSize: 17 * ffem,
-                                        fontWeight: FontWeight.w500,
-                                        height: 1.5 * ffem / fem,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                        ),
                         Container(
                           padding: EdgeInsets.fromLTRB(25 * fem, 0 * fem,
                               25 * fem, 18 * fem),
                           child: Text(
-                            'Best Teams',
+                            'Wedding Special',
                             style: TextStyle(
                               fontSize: 22 * ffem,
                               fontWeight: FontWeight.w400,
@@ -660,134 +605,86 @@ class _Home_userState extends State<Home_user> {
                             ),
                           ),
                         ),
-                        Container(
-                          height: 495,
-                          margin: EdgeInsets.fromLTRB(20, 0, 0, 0),
-                          child: PageView.builder(
-                            controller: PageController(viewportFraction: 0.99),
-                            // Set viewport fraction for partial visibility of side images
-                            scrollDirection: Axis.horizontal,
-                            itemCount: best.length,
-                            itemBuilder: (context, index) {
-                              final artist = best[index];
-                              if (artist == null) {
-                                return SizedBox(); // Return an empty SizedBox if the artist is null
-                              }
-                              return Container(
-                                margin: EdgeInsets.symmetric(
-                                    horizontal: 6 * fem),
-                                // Add margin for spacing between items
-                                child: GestureDetector(
-                                  onTap: () async {
-                                    String team_id = artist['id'];
-
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => TeamProfile(),
-                                      ),
-                                    );
-                                  },
-                                  child: Stack(
-                                    children: [
-                                      Container(
-                                        width: 330 * fem,
-                                        // Set the desired width for the image container
-                                        height: 495 * fem,
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                              12 * fem),
-                                          child: Image.network(
-                                            artist['image'] ?? '',
-                                            // Provide a default value if image is null
-                                            fit: BoxFit.cover,
-                                          ),
-                                        ),
-                                      ),
-                                      Positioned(
-                                        bottom: 30 * fem,
-                                        left: 16 * fem,
-                                        right: 34 * fem,
-                                        child: Text(
-                                          artist['name'] ?? '',
-                                          // Provide a default value if name is null
-                                          style: TextStyle(
-                                            fontSize: 18 * ffem,
-                                            fontWeight: FontWeight.w400,
-                                            height: 1.3625 * ffem / fem,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+                    Container(
+                      height: 495,
+                      margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                      child: PageView.builder(
+                        controller: PageController(viewportFraction: 0.87),
+                        scrollDirection: Axis.horizontal,
+                        itemCount: best.length,
+                        itemBuilder: (context, index) {
+                          final artist = best[index];
+                          if (artist == null) {
+                            return SizedBox(); // Return an empty SizedBox if the artist is null
+                          }
+                          return Container(
+                            margin: EdgeInsets.symmetric(horizontal: 6),
+                            child: GestureDetector(
+                              onTap: () async {
+                                String team_id = artist['id']; // Use artist ID if needed
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => TeamProfile(),
                                   ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
+                                );
+                              },
+                              child: Stack(
+                                children: [
+                                  // Main image or video
+                                  Container(
+                                    width: 330,
+                                    height: 495,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: artist['type'] == 'image'
+                                          ? Image.asset(
+                                        artist['url'] ?? '', // Image from assets
+                                        fit: BoxFit.cover,
+                                      )
+                                          : CustomVideoPlayer(
+                                        source: artist['url'] ?? '', // Video from assets
+                                          isAsset:true
+                                      ),
+                                    ),
+                                  ),
+                                  // Semi-transparent overlay
+                                  Positioned.fill(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withOpacity(0.2), // Adjust transparency
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                  ),
+                                  // Artist name text
+                                  Positioned(
+                                    bottom: 30,
+                                    left: 16,
+                                    right: 34,
+                                    child: Text(
+                                      artist['name'] ?? '',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w400,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
 
 
                         Container(
                           padding: EdgeInsets.fromLTRB(15 * fem, 40 * fem,
                               0 * fem, 0 * fem),
                           child: Text(
-                            'Seasonal',
-                            style: TextStyle(
-                              fontSize: 22 * ffem,
-                              fontWeight: FontWeight.w400,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                        Container(
-                          height: 310 * fem,
-                          // Set a specific height for the Container
-
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: seasonal?.length,
-                            itemBuilder: (context, index) {
-                              return Container(
-                                width: 160 * fem,
-                                padding: EdgeInsets.fromLTRB(
-                                    12 * fem, 16 * fem, 0 * fem, 0 * fem),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      margin: EdgeInsets.only(bottom: 12 * fem),
-                                      width: 160 * fem,
-                                      height: 213 * fem,
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(
-                                            12 * fem),
-                                        child: Image.network(
-                                          seasonal?[index]['image'],
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                    ),
-                                    Text(
-                                      seasonal?[index]['name'],
-                                      style: TextStyle(
-                                        fontSize: 17 * ffem,
-                                        fontWeight: FontWeight.w500,
-                                        height: 1.5 * ffem / fem,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.fromLTRB(15 * fem, 0 * fem,
-                              0 * fem, 0 * fem),
-                          child: Text(
-                            'Seasonal',
+                            'Artists Around You',
                             style: TextStyle(
                               fontSize: 22 * ffem,
                               fontWeight: FontWeight.w400,
@@ -804,7 +701,7 @@ class _Home_userState extends State<Home_user> {
                             itemCount: seasonal?.length,
                             itemBuilder: (context, index) {
                               return Container(
-                                width: 160 * fem,
+                                width: 180 * fem,
                                 padding: EdgeInsets.fromLTRB(
                                     12 * fem, 16 * fem, 0 * fem, 0 * fem),
                                 child: Column(
@@ -812,8 +709,63 @@ class _Home_userState extends State<Home_user> {
                                   children: [
                                     Container(
                                       margin: EdgeInsets.only(bottom: 12 * fem),
-                                      width: 160 * fem,
-                                      height: 213 * fem,
+                                      width: 175 * fem,
+                                      height: 223 * fem,
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(
+                                            10 * fem),
+                                        child: Image.network(
+                                          seasonal?[index]['image'],
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                    ),
+                                    Text(
+                                      seasonal?[index]['name'],
+                                      style: TextStyle(
+                                        fontSize: 17 * ffem,
+                                        fontWeight: FontWeight.w400,
+                                        height: 1.5 * ffem / fem,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        Container(
+                          padding: EdgeInsets.fromLTRB(15 * fem, 0 * fem,
+                              0 * fem, 0 * fem),
+                          child: Text(
+                            'Best in Bands',
+                            style: TextStyle(
+                              fontSize: 22 * ffem,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          height: 330 * fem,
+                          // Set a specific height for the Container
+
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: seasonal?.length,
+                            itemBuilder: (context, index) {
+                              return Container(
+                                width: 180 * fem,
+                                padding: EdgeInsets.fromLTRB(
+                                    12 * fem, 16 * fem, 0 * fem, 0 * fem),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      margin: EdgeInsets.only(bottom: 12 * fem),
+                                      width: 175 * fem,
+                                      height: 223 * fem,
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.circular(
                                             12 * fem),
@@ -841,94 +793,134 @@ class _Home_userState extends State<Home_user> {
 
 
                         Container(
-                          padding: EdgeInsets.fromLTRB(25 * fem, 0 * fem,
-                              0 * fem, 18 * fem),
-                          child: Text(
-                            'Best Teams',
-                            style: TextStyle(
-                              fontSize: 22 * ffem,
-                              fontWeight: FontWeight.w400,
-                              color: Colors.white,
+                          height: 790, // Full height for the container
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                              image: AssetImage('assets/page-1/images/bulbs.jpg'), // Background image
+                              fit: BoxFit.cover, // Adjust image to cover the container
                             ),
                           ),
-                        ),
-                        Container(
-                          height: 495,
-                          // Set a specific height for the Container
-                          child: PageView.builder(
-                            controller: PageController(viewportFraction: 0.87),
-                            // Set viewport fraction for partial visibility of side images
-                            scrollDirection: Axis.horizontal,
-                            itemCount: best.length,
-                            itemBuilder: (context, index) {
-                              final artist = best[index];
-                              if (artist == null) {
-                                return SizedBox(); // Return an empty SizedBox if the artist is null
-                              }
-                              return Container(
-                                margin: EdgeInsets.symmetric(
-                                    horizontal: 6 * fem),
-                                // Add margin for spacing between items
-                                child: GestureDetector(
-                                  onTap: () async {
-                                    String bestTeam_id = artist['id'];
-
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => TeamProfile(),
-                                      ),
-                                    );
-                                  },
-                                  child: Stack(
-                                    children: [
-                                      Container(
-                                        width: 350 * fem,
-                                        // Set the desired width for the image container
-                                        height: 495 * fem,
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                              12 * fem),
-                                          child: Image.network(
-                                            artist['image'] ?? '',
-                                            // Provide a default value if image is null
-                                            fit: BoxFit.cover,
-                                          ),
-                                        ),
-                                      ),
-                                      Positioned(
-                                        bottom: 30 * fem,
-                                        left: 16 * fem,
-                                        right: 24 * fem,
-                                        child: Text(
-                                          artist['name'] ?? '',
-                                          // Provide a default value if name is null
-                                          style: TextStyle(
-                                            fontSize: 18 * ffem,
-                                            fontWeight: FontWeight.w400,
-                                            height: 1.3625 * ffem / fem,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+                          child: Stack(
+                            children: [
+                              // Semi-transparent overlay over the entire container
+                              Positioned.fill(
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withOpacity(0.7), // Control opacity here
                                   ),
                                 ),
-                              );
-                            },
+                              ),
+                              // "Best Teams" title at the top
+                              Positioned(
+                                top: 65, // Adjust top padding as needed
+                                left: 25, // Adjust left padding as needed
+                                child: Text(
+                                  'Best Teams',
+                                  style: TextStyle(
+                                    fontSize: 22 * ffem,
+                                    fontWeight: FontWeight.w400,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                              // PageView for videos or images
+                              Positioned(
+                                top: 110, // Position this below the "Best Teams" title
+                                left: 0,
+                                right: 0,
+                                child: Container(
+                                  width: 330,
+                                  height: 495,// Full height for PageView to match the container
+                                  child: PageView.builder(
+                                    controller: PageController(viewportFraction: 0.87),
+                                    scrollDirection: Axis.horizontal,
+                                    itemCount: bestArtists.length,
+                                    itemBuilder: (context, index) {
+                                      final artist = bestArtists[index];
+                                      if (artist == null) {
+                                        return SizedBox(); // Return an empty SizedBox if the artist is null
+                                      }
+                                      return Container(
+                                        margin: EdgeInsets.symmetric(horizontal: 6),
+                                        child: GestureDetector(
+                                          onTap: () async {
+                                            String team_id = artist['id']; // Use artist ID if needed
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) => TeamProfile(),
+                                              ),
+                                            );
+                                          },
+                                          child: Stack(
+                                            children: [
+                                              // Main image or video
+                                              Container(
+                                                width: 330,
+                                                height: 495,
+                                                child: ClipRRect(
+                                                  borderRadius: BorderRadius.circular(12),
+                                                  child: artist['type'] == 'image'
+                                                      ? Image.asset(
+                                                    artist['url'] ?? '', // Image from assets
+                                                    fit: BoxFit.cover,
+                                                  )
+                                                      : CustomVideoPlayer(
+                                                    source: artist['url'] ?? '', // Video from assets
+                                                    isAsset: true,
+                                                  ),
+                                                ),
+                                              ),
+                                              // Semi-transparent overlay on each video/image
+                                              Positioned.fill(
+                                                child: Container(
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.black.withOpacity(0.2), // Adjust transparency
+                                                    borderRadius: BorderRadius.circular(10),
+                                                  ),
+                                                ),
+                                              ),
+                                              // Artist name text on each image/video
+                                              Positioned(
+                                                bottom: 30, // Position near the bottom of each video/image
+                                                left: 16,
+                                                right: 34,
+                                                child: Text(
+                                                  artist['name'] ?? '',
+                                                  style: TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.w400,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                              // HomeStage text at the bottom
+                              Positioned(
+                                bottom: 60, // Position the text 30 pixels from the bottom
+                                left: 0,
+                                right: 0,
+                                child: Center(
+                                  child: Text(
+                                    'HOMESTAGE',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 40,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        Container(padding: EdgeInsets.fromLTRB(0, 80, 0, 80),
-                          child:
-                          Center(
-                            child: Text('HomeStage',
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w400,
-                                  fontSize: 38
-                              ),),
-                          ),
-                        )
                       ],
                     ),
                   ),
@@ -948,18 +940,23 @@ class _Home_userState extends State<Home_user> {
 }
 
 
-class VideoWidget extends StatefulWidget {
-  final String url;
+// import 'package:video_player/video_player.dart';
+// import 'package:flutter/material.dart';
 
-  VideoWidget({required this.url});
+class CustomVideoPlayer extends StatefulWidget {
+  final String source;
+  final bool isAsset; // Set to true for assets, false for URLs
+
+  CustomVideoPlayer({required this.source, this.isAsset = false});
 
   @override
-  _VideoWidgetState createState() => _VideoWidgetState();
+  _CustomVideoPlayerState createState() => _CustomVideoPlayerState();
 }
 
-class _VideoWidgetState extends State<VideoWidget> with WidgetsBindingObserver {
+class _CustomVideoPlayerState extends State<CustomVideoPlayer> with WidgetsBindingObserver {
   late VideoPlayerController _controller;
   bool _isInitialized = false;
+  bool _isPlaying = false;
 
   @override
   void initState() {
@@ -977,36 +974,49 @@ class _VideoWidgetState extends State<VideoWidget> with WidgetsBindingObserver {
 
   Future<void> _initializeVideo() async {
     try {
-      _controller = VideoPlayerController.networkUrl(Uri.parse(widget.url)); // Use network instead of asset
+      _controller = widget.isAsset
+          ? VideoPlayerController.asset(widget.source)
+          : VideoPlayerController.networkUrl(Uri.parse(widget.source));
+
       await _controller.initialize();
       setState(() {
         _isInitialized = true;
       });
       _controller.setLooping(true);
-      _controller.setVolume(0.0); // Mute the video
-      _controller.play();
     } catch (e) {
       print("Error initializing video: $e");
     }
   }
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.detached) {
-      _controller.pause();
-    } else if (state == AppLifecycleState.resumed) {
+  void _playPauseVideo(bool visible) {
+    if (visible && !_isPlaying) {
       _controller.play();
+      setState(() {
+        _isPlaying = true;
+      });
+    } else if (!visible && _isPlaying) {
+      _controller.pause();
+      setState(() {
+        _isPlaying = false;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return _isInitialized
-        ? AspectRatio(
-      aspectRatio: _controller.value.aspectRatio,
-      child: VideoPlayer(_controller),
-    )
-        : Center(child: CircularProgressIndicator());
+    return VisibilityDetector(
+      key: Key(widget.source),
+      onVisibilityChanged: (visibilityInfo) {
+        // Play video only when more than 50% of it is visible
+        var visiblePercentage = visibilityInfo.visibleFraction * 100;
+        _playPauseVideo(visiblePercentage > 50);
+      },
+      child: _isInitialized
+          ? AspectRatio(
+        aspectRatio: _controller.value.aspectRatio,
+        child: VideoPlayer(_controller),
+      )
+          : Center(child: CircularProgressIndicator()),
+    );
   }
 }
-

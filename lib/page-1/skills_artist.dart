@@ -3,7 +3,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
-import 'package:audioplayers/audioplayers.dart';
 import '../config.dart';
 import '../utils.dart';
 import 'bottomNav_artist.dart';
@@ -16,11 +15,13 @@ import 'package:http/http.dart' as http;
 class ArtistCredentials2 extends StatefulWidget {
   final File? profilePhoto;
 
+
   ArtistCredentials2({
     this.profilePhoto,
   });
   @override
   _ArtistCredentials2State createState() => _ArtistCredentials2State();
+  String? selectedOption;
 }
 
 
@@ -31,7 +32,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
   TextEditingController _experienceController = TextEditingController();
   TextEditingController _hourlyPriceController = TextEditingController();
   TextEditingController _messageController = TextEditingController();
-
+  String? selectedOption;
 
   String _selectedSkill = ''; // Variable to store the selected skill
   List<String> _skills = ['Musician', 'Comedian', 'Visual Artist', 'Dancer', 'Chef', 'Magician'];
@@ -43,6 +44,8 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
   // Selected options in the sub-skill dropdown
   List<String> _selectedSubSkills = [];
   bool _isLoading = false;
+
+
 
   Future<String?> _getFCMToken() async {
     return await storage.read(key: 'fCMToken'); // Assuming you stored the token with key 'token'
@@ -434,24 +437,6 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
     }
   }
 
-  // Future<void> _pickVideo4() async {
-  //   final pickedFile = await _picker.pickVideo(source: ImageSource.gallery);
-  //
-  //   if (pickedFile != null) {
-  //     final File videoFile = File(pickedFile.path);
-  //
-  //     if (_controller4 != null) {
-  //       await _controller4!.dispose();
-  //     }
-  //
-  //     _controller4 = VideoPlayerController.file(videoFile)
-  //       ..initialize().then((_) {
-  //         setState(() {
-  //           _controller4!.play();
-  //         });
-  //       });
-  //   }
-  // }
 
   @override
   void dispose() {
@@ -472,25 +457,21 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
     double ffem = fem * 0.97;
     return Scaffold(backgroundColor: Color(0xFF121217),
       appBar: AppBar(
-        title: Text(
-          'Sign up',
-          textAlign: TextAlign.center,
-          style: SafeGoogleFont(
-            'Be Vietnam Pro',
-            fontSize: 19 * ffem,
-            fontWeight: FontWeight.w700,
-            height: 1.25 * ffem / fem,
-            letterSpacing: -0.8000000119 * fem,
-            color: Colors.white,
+        automaticallyImplyLeading: false,
+        title: Padding(
+          padding: const EdgeInsets.fromLTRB(0, 0, 8, 0),
+          child: Center(
+            child: Text(
+              'Sign Up',
+              style: TextStyle(
+                fontSize: 20 * fem,
+                fontWeight: FontWeight.w400,
+                color: Colors.white,
+              ),
+            ),
           ),
         ),
         backgroundColor: Color(0xFF121217),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -516,8 +497,8 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                                 'Your Skills',
                                 style: SafeGoogleFont(
                                   'Be Vietnam Pro',
-                                  fontSize: 18 * ffem,
-                                  fontWeight: FontWeight.w500,
+                                  fontSize: 20 * ffem,
+                                  fontWeight: FontWeight.w400,
                                   height: 1.5 * ffem / fem,
                                   color: Colors.white
                                 ),
@@ -531,7 +512,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                                 items: _skills.map((String skill) {
                                   return DropdownMenuItem<String>(
                                     value: skill,
-                                    child: Text(skill),
+                                    child: Text(skill,style: TextStyle(fontSize: 18, color: Colors.white),),
                                   );
                                 }).toList(),
                                 onChanged: (String? value) {
@@ -549,7 +530,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12 * fem),
-                                    borderSide: BorderSide(width: 1.25, color: Color(0xffe5195e)),
+                                    borderSide: BorderSide(width: 1.25, color: Colors.white),
                                   ),
                                 ),
                                 style: TextStyle(color:  Color(0xFF9E9EB8)),
@@ -567,7 +548,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                                 items: _subSkills.map((String subSkill) {
                                   return DropdownMenuItem<String>(
                                     value: subSkill,
-                                    child: Text(subSkill),
+                                    child: Text(subSkill, style: TextStyle(fontSize: 18, color: Colors.white),),
                                   );
                                 }).toList(),
                                 onChanged: (String? value) {
@@ -584,7 +565,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12 * fem),
-                                    borderSide: BorderSide(width: 1.25, color: Color(0xffe5195e)),
+                                    borderSide: BorderSide(width: 1.25, color: Colors.white),
                                   ),
                                 ),
                                 style: TextStyle(color:  Color(0xFF9E9EB8)),
@@ -614,8 +595,8 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                                 'Tell Users about Yourself',
                                 style: SafeGoogleFont(
                                   'Plus Jakarta Sans',
-                                  fontSize: 18 * ffem,
-                                  fontWeight: FontWeight.w500,
+                                  fontSize: 20 * ffem,
+                                  fontWeight: FontWeight.w400,
                                   height: 1.5 * ffem / fem,
                                   color: Colors.white,
                                 ),
@@ -625,28 +606,75 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
 
                               width: double.infinity,
                               // Adjusted height to match the height of the outer container
-                              height: 80 * fem,
+                              height: 70 * fem,
 
                               child: TextField(
                                 controller: _experienceController,
-                                maxLines: null,
                                 decoration: InputDecoration(
-                                  hintText: 'Summary of your experience',
+                                  hintText: 'Years of Experience you have',
                                   hintStyle: TextStyle(color:  Color(0xFF9E9EB8)),
                                   enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12 * fem),
+                                    borderRadius: BorderRadius.circular(10 * fem),
                                     borderSide: BorderSide(width: 1.25, color:Color(0xFF9E9EB8),),
                                   ),
                                   focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12 * fem),
-                                    borderSide: BorderSide(width: 1.25, color: Color(0xffe5195e)),
+                                    borderRadius: BorderRadius.circular(10 * fem),
+                                    borderSide: BorderSide(width: 1.25, color: Color(0xffe5195e) ),
                                   ),
                                 ),
-                                style: TextStyle(color: Colors.white),
+                                style: TextStyle(color: Colors.white, fontSize: 16),
                               ),
                             ),
-                          ],
-                        ),
+                            SizedBox(height: 10,),
+                            Container(
+                              margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 11 * fem),
+                              child: Text(
+                                'Do you have your own equipment  (microphone, speakers, etc.) for the performance?',
+                                style: SafeGoogleFont(
+                                  'Plus Jakarta Sans',
+                                  fontSize: 16 * ffem,
+                                  fontWeight: FontWeight.w400,
+                                  height: 1.5 * ffem / fem,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                            Container(
+                              width: double.infinity,
+                              height: 70 * fem, // Adjusted height to match the outer container
+                              child: DropdownButtonFormField<String>(
+                                decoration: InputDecoration(
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10 * fem),
+                                    borderSide: BorderSide(width: 1.25, color: Color(0xFF9E9EB8)),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10 * fem),
+                                    borderSide: BorderSide(width: 1.25, color: Colors.white),
+                                  ),
+                                  hintText: 'Your Answer',
+                                  hintStyle: TextStyle(color: Color(0xFF9E9EB8)),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10 * fem),
+                                    borderSide: BorderSide(width: 1.25, color: Color(0xFF9E9EB8)),
+                                  ),
+                                ),
+                                value: selectedOption, // The currently selected value (nullable)
+                                items: ['Yes', 'No'].map((String value) {
+                                  return DropdownMenuItem<String>(
+                                    value: value,
+                                    child: Text(value, style: TextStyle(color: Colors.white,fontSize: 16)), // Dropdown item text
+                                  );
+                                }).toList(),
+                                dropdownColor: Color(0xff1a1a1a), // Background color of dropdown menu
+                                onChanged: (String? newValue) {
+                                  setState(() {
+                                    selectedOption = newValue; // Update selected option
+                                  });
+                                },
+                              ),
+                            )
+                        ] ),
                       ),
                       SizedBox(
                         height: 24 * fem,
@@ -657,28 +685,30 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
-                              margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 3 * fem),
+                              margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 10 * fem),
                               child: Text(
                                 'How Much Do You Charge Per Hour ?',
                                 style: SafeGoogleFont(
                                   'Be Vietnam Pro',
-                                  fontSize: 18 * ffem,
-                                  fontWeight: FontWeight.w500,
+                                  fontSize: 20 * ffem,
+                                  fontWeight: FontWeight.w400,
                                   height: 1.5 * ffem / fem,
                                   color: Colors.white
                                 ),
                               ),
                             ),
                             Container(
-                              margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 8 * fem),
+                              margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 18 * fem),
                               child: Text(
-                                '(Please Include Transportation Charges in this Price Only)',
+                                '⦾ Include transportation in the total price for city bookings.'
+                                    ' For out-of-city bookings, charges can be discussed with the host \n\n'
+                                    '⦾ HomeStage will charge a 20% fee on the total price.',
                                 style: SafeGoogleFont(
                                   'Be Vietnam Pro',
-                                  fontSize: 15 * ffem,
+                                  fontSize: 16.5 * ffem,
                                   fontWeight: FontWeight.w400,
                                   height: 1.5 * ffem / fem,
-                                  color: Colors.redAccent,
+                                  color: Colors.blue,
                                 ),
                               ),
                             ),
@@ -687,26 +717,33 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                               height: 56 * fem,
                               child: TextField(
                                 controller: _hourlyPriceController,
+                                keyboardType: TextInputType.number, // Ensures that only numbers are entered
                                 decoration: InputDecoration(
-                                  hintText: 'Your Total Per Hour Price ',
-                                  hintStyle: TextStyle(color:  Color(0xFF9E9EB8)),
+                                  hintText: _hourlyPriceController.text.isEmpty ? 'Your Total Per Hour Price' : null, // Hint text only when the field is empty
+                                  hintStyle: TextStyle(color: Color(0xFF9E9EB8)),
+                                  prefixText: 'Rs ', // Prefix Rs that stays in place as user types
+                                  prefixStyle: TextStyle(color: Colors.white, fontSize: 19), // Style for the Rs
                                   enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12 * fem),
-                                    borderSide: BorderSide(width: 1.25, color:Color(0xFF9E9EB8),),
+                                    borderRadius: BorderRadius.circular(10 * fem),
+                                    borderSide: BorderSide(width: 1.25, color: Color(0xFF9E9EB8)),
                                   ),
                                   focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12 * fem),
-                                    borderSide: BorderSide(width: 1.25, color: Color(0xffe5195e)),
+                                    borderRadius: BorderRadius.circular(10 * fem),
+                                    borderSide: BorderSide(width: 1.25, color: Colors.white),
                                   ),
                                 ),
-                                style: TextStyle(color: Colors.white),
+                                style: TextStyle(color: Colors.white, fontSize: 19), // Style for the text entered by the user
+                                onChanged: (value) {
+                                  // Rebuild the widget when the text changes to manage the hintText visibility
+                                  (context as Element).markNeedsBuild();
+                                },
                               ),
-                            ),
+                            )
                           ],
                         ),
                       ),
                        Padding(
-                        padding: EdgeInsets.fromLTRB(1 * fem, 20 * fem, 16 * fem, 0 * fem),
+                        padding: EdgeInsets.fromLTRB(1 * fem, 30 * fem, 16 * fem, 0 * fem),
 
                         child: const SizedBox(
                           height: 23,
@@ -715,8 +752,8 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                             'Upload Your Work Samples',
                             textAlign: TextAlign.left,
                             style: TextStyle(
-                              fontSize: 18 ,
-                              fontWeight: FontWeight.w500,
+                              fontSize: 20 ,
+                              fontWeight: FontWeight.w400,
                               height: 1.5 ,
                               color: Colors.white,
                               fontFamily: 'Be Vietnam Pro',
@@ -732,7 +769,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                 Container(
                   padding: EdgeInsets.fromLTRB(16 * fem, 0 * fem, 16 * fem, 1 * fem),
                   width: double.infinity,
-                  height: 970 * fem,
+                  height: 860 * fem,
                   decoration: BoxDecoration(
                     color: Color(0xFF121217),
                   ),
@@ -740,46 +777,24 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
 
-
-                      // GestureDetector(
-                      //   onTap: () {
-                      //     _pickImageForSearchedSection(); // Call the function to pick an image for the searched section
-                      //   },
-                      //   child: Container(
-                      //     margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 10 * fem),
-                      //     width: 358 * fem,
-                      //     height: 238.66 * fem,
-                      //     color: Colors.grey.withOpacity(0.3),
-                      //     child: _imageForSearchedSection != null
-                      //         ? Image.file(_imageForSearchedSection!, fit: BoxFit.cover)
-                      //         : Center(
-                      //           child: Icon(
-                      //         Icons.upload_outlined,
-                      //         size: 48.0 * fem,
-                      //         color: Colors.white.withOpacity(0.5),
-                      //       ),
-                      //     ),
-                      //   ),
-                      // ),
-
                       const Padding(
                         padding: EdgeInsets.all(8.0),
                         child: SizedBox(
-                          height: 20,
+                          height: 30,
 
                           child: Text(
                             'Photos For the Portfolio',
                             textAlign: TextAlign.left,
                             style: TextStyle(
                               fontSize: 16,
-                              fontWeight: FontWeight.w300,
+                              fontWeight: FontWeight.w400,
                               color: Colors.white,
                               fontFamily: 'Be Vietnam Pro',
                             ),
                           ),
                         ),
                       ),
-                      GridView.count(
+                      GridView.count(physics: NeverScrollableScrollPhysics(),
                         shrinkWrap: true,
                         crossAxisCount: 2,
                         mainAxisSpacing: 16.0,
@@ -788,7 +803,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                           GestureDetector(
                             onTap: _pickImage1,
                             child: Container(
-                              decoration: BoxDecoration(
+                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10*fem),
                                 border: Border.all(color: Colors.grey),
                               ),
                               child: _image1 != null
@@ -799,7 +814,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                           GestureDetector(
                             onTap: _pickImage2,
                             child: Container(
-                              decoration: BoxDecoration(
+                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10*fem),
                                 border: Border.all(color: Colors.grey),
                               ),
                               child: _image2 != null
@@ -810,7 +825,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                           GestureDetector(
                             onTap: _pickImage3,
                             child: Container(
-                              decoration: BoxDecoration(
+                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10*fem),
                                 border: Border.all(color: Colors.grey),
                               ),
                               child: _image3 != null
@@ -821,7 +836,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                           GestureDetector(
                             onTap: _pickImage4,
                             child: Container(
-                              decoration: BoxDecoration(
+                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10*fem),
                                 border: Border.all(color: Colors.grey),
                               ),
                               child: _image4 != null
@@ -833,23 +848,23 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                         ],
                       ),
                       const Padding(
-                        padding: EdgeInsets.all(8.0),
+                        padding: EdgeInsets.fromLTRB(0,20,0,0),
                         child: SizedBox(
-                          height: 20,
+                          height: 40,
 
                           child: Text(
                             'Upload Your Videos Here',
                             textAlign: TextAlign.left,
                             style: TextStyle(
                               fontSize: 16,
-                              fontWeight: FontWeight.w300,
+                              fontWeight: FontWeight.w400,
                               color: Colors.white,
                               fontFamily: 'Be Vietnam Pro',
                             ),
                           ),
                         ),
                       ),
-                      GridView.count(
+                      GridView.count(physics: NeverScrollableScrollPhysics(),
                         shrinkWrap: true,
                         crossAxisCount: 2,
                         mainAxisSpacing: 16.0,
@@ -858,7 +873,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                           GestureDetector(
                             onTap: _pickVideo1,
                             child: Container(
-                              decoration: BoxDecoration(
+                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10*fem),
                                 border: Border.all(color: Colors.grey),
                               ),
                               child: _controller1 != null
@@ -869,7 +884,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                           GestureDetector(
                             onTap: _pickVideo2,
                             child: Container(
-                              decoration: BoxDecoration(
+                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10*fem),
                                 border: Border.all(color: Colors.grey),
                               ),
                               child: _controller2 != null
@@ -880,7 +895,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                           GestureDetector(
                             onTap: _pickVideo3,
                             child: Container(
-                              decoration: BoxDecoration(
+                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10*fem),
                                 border: Border.all(color: Colors.grey),
                               ),
                               child: _controller3 != null
@@ -891,7 +906,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                           GestureDetector(
                             onTap: _pickVideo4,
                             child: Container(
-                              decoration: BoxDecoration(
+                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10*fem),
                                 border: Border.all(color: Colors.grey),
                               ),
                               child: _controller4 != null
@@ -920,13 +935,13 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
-                              margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 8 * fem),
+                              margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 18 * fem),
                               child: Text(
-                                'Leave a special message for the host',
+                                'Special message for the host',
                                 style: SafeGoogleFont(
                                   'Be Vietnam Pro',
-                                  fontSize: 17 * ffem,
-                                  fontWeight: FontWeight.w500,
+                                  fontSize: 20 * ffem,
+                                  fontWeight: FontWeight.w400,
                                   height: 1.5 * ffem / fem,
                                   color: Colors.white
                                 ),
@@ -935,7 +950,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                             Container(
 
                               width: double.infinity,
-                              height: 80 * fem,
+                              height: 70 * fem,
 
                               child: TextField(
                                 controller: _messageController,
@@ -949,7 +964,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12 * fem),
-                                    borderSide: BorderSide(width: 1.25, color: Color(0xffe5195e)),
+                                    borderSide: BorderSide(width: 1.25, color: Colors.white),
                                   ),
                                 ),
                                 style: TextStyle(color: Colors.white),
@@ -959,7 +974,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                         ),
                       ),
           Padding(
-            padding: const EdgeInsets.only(left: 20, right: 20),
+            padding: const EdgeInsets.only(left: 7, right: 7, bottom: 30),
             child: ElevatedButton(
               onPressed: _isLoading ? null : _handleButtonClick,
               style: ElevatedButton.styleFrom(
@@ -981,8 +996,8 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                     : Text(
                   'Finish',
                   style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
                     height: 1.5,
                     letterSpacing: 0.24,
                     color: Color(0xffffffff),

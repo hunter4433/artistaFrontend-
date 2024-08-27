@@ -4,11 +4,10 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:test1/page-1/artist_sign_up.dart';
 import '../config.dart';
 import 'bottomNav_artist.dart';
-import'loc_service_ui.dart';
+import 'loc_service_ui.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-
 
 class VerificationCodeInputScreen extends StatefulWidget {
   final String verificationId;
@@ -16,29 +15,29 @@ class VerificationCodeInputScreen extends StatefulWidget {
   VerificationCodeInputScreen({required this.verificationId});
 
   @override
-  _VerificationCodeInputScreenState createState() => _VerificationCodeInputScreenState();
+  _VerificationCodeInputScreenState createState() =>
+      _VerificationCodeInputScreenState();
 }
 
-class _VerificationCodeInputScreenState extends State<VerificationCodeInputScreen> {
-
-  final List<TextEditingController> _codeController = List.generate(6, (index) => TextEditingController());
+class _VerificationCodeInputScreenState
+    extends State<VerificationCodeInputScreen> {
+  final List<TextEditingController> _codeController =
+  List.generate(6, (index) => TextEditingController());
   List<FocusNode> _focusNodes = List.generate(6, (index) => FocusNode());
 
-
-
-  // final _codeController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final storage = FlutterSecureStorage();
 
   Future<String?> _getFCMToken() async {
-    return await storage.read(key: 'fCMToken'); // Assuming you stored the token with key 'token'
+    return await storage.read(key: 'fCMToken');
   }
 
   Future<String?> _getPhoneNumber() async {
-    return await storage.read(key:'phone_number'); // Assuming you stored the token with key 'token'
+    return await storage.read(key: 'phone_number');
   }
+
   Future<String?> _getSelectedValue() async {
-    return await storage.read(key:'selected_value'); // Assuming you stored the token with key 'token'
+    return await storage.read(key: 'selected_value');
   }
 
   @override
@@ -59,7 +58,6 @@ class _VerificationCodeInputScreenState extends State<VerificationCodeInputScree
     final String userLoginUrl = '${Config().apiDomain}/user/login';
     String? userType = await _getSelectedValue();
 
-
     String url = (userType == 'hire') ? userLoginUrl : artistLoginUrl;
     bool loginSuccessful = await _sendLoginRequest(url, fCMToken, phoneNumber);
 
@@ -72,7 +70,8 @@ class _VerificationCodeInputScreenState extends State<VerificationCodeInputScree
     }
   }
 
-  Future<bool> _sendLoginRequest(String url, String fCMToken, String phoneNumber) async {
+  Future<bool> _sendLoginRequest(
+      String url, String fCMToken, String phoneNumber) async {
     final response = await http.post(
       Uri.parse(url),
       headers: <String, String>{
@@ -87,24 +86,23 @@ class _VerificationCodeInputScreenState extends State<VerificationCodeInputScree
 
     String? userType = await _getSelectedValue();
     print(userType);
-    if(userType=='hire') {
+    if (userType == 'hire') {
       if (response.statusCode == 200) {
         Map<String, dynamic> body = jsonDecode(response.body);
         print(body);
-         int id = body['user']['id'] ;
+        int id = body['user']['id'];
         await storage.write(key: 'user_id', value: id.toString());
         return true;
       } else {
         print('Failed to update FCM token: ${response.reasonPhrase}');
         return false;
       }
-    }
-    else{
+    } else {
       if (response.statusCode == 200) {
         Map<String, dynamic> body = jsonDecode(response.body);
         print(body);
-         int id = body['artist']['id'];
-         print(id);
+        int id = body['artist']['id'];
+        print(id);
         await storage.write(key: 'id', value: id.toString());
         return true;
       } else {
@@ -114,9 +112,8 @@ class _VerificationCodeInputScreenState extends State<VerificationCodeInputScree
     }
   }
 
-
-
-  Future<bool> sendFCMTokenBackend(String? fCMToken, String? phoneNumber) async {
+  Future<bool> sendFCMTokenBackend(
+      String? fCMToken, String? phoneNumber) async {
     if (fCMToken == null || phoneNumber == null) return false;
 
     final String backendUrl = '${Config().apiDomain}/basic';
@@ -146,8 +143,6 @@ class _VerificationCodeInputScreenState extends State<VerificationCodeInputScree
     }
   }
 
-
-
   void _signInWithPhoneNumber() async {
     final smsCode = _codeController.map((controller) => controller.text.trim()).join();
 
@@ -161,7 +156,6 @@ class _VerificationCodeInputScreenState extends State<VerificationCodeInputScree
       String? fCMToken = await _getFCMToken();
       String? phoneNumber = await _getPhoneNumber();
       String? userType = await _getSelectedValue();
-
 
       bool loginSuccessful = await login(fCMToken, phoneNumber);
       if (loginSuccessful) {
@@ -186,7 +180,7 @@ class _VerificationCodeInputScreenState extends State<VerificationCodeInputScree
     if (userType == 'hire') {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => ServiceCheckerPage ()),
+        MaterialPageRoute(builder: (context) => ServiceCheckerPage()),
       );
     } else if (userType == 'solo_artist') {
       Navigator.pushReplacement(
@@ -208,7 +202,7 @@ class _VerificationCodeInputScreenState extends State<VerificationCodeInputScree
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF121217),
+      backgroundColor: Colors.black,
       body: Padding(
         padding: const EdgeInsets.fromLTRB(0, 0, 0, 6.5),
         child: Column(
@@ -217,7 +211,7 @@ class _VerificationCodeInputScreenState extends State<VerificationCodeInputScree
           children: [
             Container(
               decoration: BoxDecoration(
-                color: Color(0xFF121217),
+                color: Colors.black,
               ),
               child: SizedBox(
                 width: double.infinity,
@@ -228,31 +222,15 @@ class _VerificationCodeInputScreenState extends State<VerificationCodeInputScree
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Container(
-                        margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Color(0xFF121217),
-                          ),
-                          child: Container(
-                            height: 72,
-                            padding: EdgeInsets.fromLTRB(16, 28, 16, 20),
-                            child: SizedBox(
-                              width: 24,
-                              height: 24,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Container(
-                        margin: EdgeInsets.fromLTRB(16, 15, 16, 24),
+                        margin: EdgeInsets.fromLTRB(16, 110, 16, 24),
                         child: Center(
                           child: Text(
                             'Enter the code we just texted you',
-                            style: GoogleFonts.inter(
+                            style: GoogleFonts.beVietnamPro(
                               fontWeight: FontWeight.w400,
-                              fontSize: 22,
-                              height: 1.3,
-                              letterSpacing: -0.3,
+                              fontSize: 23,
+                              height: 1.25,
+                              letterSpacing: -0.7,
                               color: Colors.white,
                             ),
                           ),
@@ -268,15 +246,20 @@ class _VerificationCodeInputScreenState extends State<VerificationCodeInputScree
                                 margin: EdgeInsets.symmetric(horizontal: 4),
                                 decoration: BoxDecoration(
                                   border: Border.all(color: Color(0xFF292938)),
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(9),
                                   color: Color(0xFF292938),
                                 ),
                                 child: AspectRatio(
-                                  aspectRatio: 0.9,
+                                  aspectRatio: 0.75,
                                   child: TextField(
                                     controller: _codeController[index],
                                     focusNode: _focusNodes[index],
                                     textAlign: TextAlign.center,
+                                    style: GoogleFonts.manrope(
+                                      color: Colors.white, // Text color
+                                      fontSize: 24, // Text size
+                                      fontWeight: FontWeight.w500, // Font weight
+                                    ),
                                     decoration: InputDecoration(
                                       border: InputBorder.none,
                                       counterText: '',
@@ -287,10 +270,18 @@ class _VerificationCodeInputScreenState extends State<VerificationCodeInputScree
                                       if (value.length == 1) {
                                         if (index < _focusNodes.length - 1) {
                                           _focusNodes[index].unfocus();
-                                          FocusScope.of(context).requestFocus(_focusNodes[index + 1]);
+                                          FocusScope.of(context)
+                                              .requestFocus(
+                                              _focusNodes[index + 1]);
                                         } else {
                                           _focusNodes[index].unfocus();
-                                          // Perform any action when the last character is entered
+                                        }
+                                      } else if (value.isEmpty) {
+                                        if (index > 0) {
+                                          _focusNodes[index].unfocus();
+                                          FocusScope.of(context)
+                                              .requestFocus(
+                                              _focusNodes[index - 1]);
                                         }
                                       }
                                     },
@@ -301,49 +292,38 @@ class _VerificationCodeInputScreenState extends State<VerificationCodeInputScree
                           }),
                         ),
                       ),
-                      Container(
-                        margin: EdgeInsets.fromLTRB(16, 0, 16, 21.5),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Container(
-                              margin: EdgeInsets.fromLTRB(0, 0, 0, 21.5),
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Color(0xFF388FE5),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  padding: EdgeInsets.symmetric(vertical: 12),
-                                ),
-                                onPressed: () async {
-                                  // Call your function here
-                                  _signInWithPhoneNumber();
-                                },
-                                child: Text(
-                                  'Next',
-                                  style: GoogleFonts.manrope(
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 16,
-                                    height: 1.5,
-                                    color: Colors.white,
-                                  ),
-                                ),
+                      SizedBox(height: 24),
+                      Center(
+                        child: SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.9,
+                          child: TextButton(
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.symmetric(vertical: 16),
+                              backgroundColor:  Color(0xffe5195e),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
                               ),
                             ),
-                            Center(
-                              child: Text(
-                                'Send Code Again',
-                                style: GoogleFonts.manrope(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 14,
-                                  height: 1.5,
-                                  color: Colors.white,
-                                ),
+                            onPressed: _signInWithPhoneNumber,
+                            child: Text(
+                              'Confirm',
+                              style: GoogleFonts.beVietnamPro(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 19,
+                                color: Colors.white,
                               ),
                             ),
-                          ],
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 24),
+                      Center(
+                        child: Text(
+                          'Didn\'t receive the code? Resend Code',
+                          style: GoogleFonts.beVietnamPro(
+                            fontSize: 16,
+                            color: Colors.white.withOpacity(0.7),
+                          ),
                         ),
                       ),
                     ],
@@ -357,4 +337,3 @@ class _VerificationCodeInputScreenState extends State<VerificationCodeInputScree
     );
   }
 }
-

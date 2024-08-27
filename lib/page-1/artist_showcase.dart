@@ -1,11 +1,15 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:test1/page-1/artist_booking.dart';
+import 'package:test1/page-1/reviews.dart';
 import 'package:video_player/video_player.dart';
 import '../config.dart';
 import '../utils.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
+import 'package:flutter_pannable_rating_bar/flutter_pannable_rating_bar.dart';
+
 
 
 class ArtistProfile extends StatefulWidget {
@@ -88,15 +92,15 @@ String baseUrl='http://192.0.0.2:8000/storage';
           artistPrice=artistData['price_per_hour'];
           artistAboutText=artistData['about_yourself'];
           artistSpecialMessage=artistData['special_message'];
-          profilePhoto = '$baseUrl/${artistData['profile_photo']}';
-          image1 = '$baseUrl/${artistData['image1']}';
-          image2 = '$baseUrl/${artistData['image2']}';
-          image3 = '$baseUrl/${artistData['image3']}';
-          image4 = '$baseUrl/${artistData['image4']}';
-          video1= '$baseUrl/${artistData['video1']}';
-          video2= '$baseUrl/${artistData['video2']}';
-          video3= '$baseUrl/${artistData['video3']}';
-          video4= '$baseUrl/${artistData['video4']}';
+          profilePhoto = '${artistData['profile_photo']}';
+          image1 = '${artistData['image1']}';
+          image2 = '${artistData['image2']}';
+          image3 = '${artistData['image3']}';
+          image4 = '${artistData['image4']}';
+          video1= '${artistData['video1']}';
+          video2= '${artistData['video2']}';
+          video3= '${artistData['video3']}';
+          video4= '${artistData['video4']}';
 
           // Add non-null image URLs to the list
           if (image1 != null) imagePathsFromBackend.add(image1!);
@@ -237,7 +241,7 @@ String baseUrl='http://192.0.0.2:8000/storage';
 
 
     return Scaffold(
-      appBar: AppBar(title: Text('Artista'),
+      appBar: AppBar(title: Center(child: Text('Artist Profile')),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
@@ -271,20 +275,21 @@ String baseUrl='http://192.0.0.2:8000/storage';
 
                   Container(
                     // autogroupw2njBkj (JkS1Ti6a5oTyiELwzGW2nj)
-                    padding: EdgeInsets.fromLTRB(16*fem, 16*fem, 25*fem, 11.5*fem),
+                    margin: EdgeInsets.fromLTRB(16*fem, 16*fem, 5*fem, 11.5*fem),
                     width: double.infinity,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 0*fem, 12*fem),
+                        Container(width: double.infinity,
+                          margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 12 * fem),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              ClipOval(
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(9.0), // Set the radius to make the corners round
                                 child: Container(
                                   width: 128 * fem,
-                                  height: 128 * fem,
+                                  height: 160 * fem,
                                   color: Colors.grey[200], // Placeholder color
                                   child: Image.network(
                                     profilePhoto,
@@ -293,10 +298,11 @@ String baseUrl='http://192.0.0.2:8000/storage';
                                 ),
                               ),
                               Container(
-                                margin: EdgeInsets.fromLTRB(20*fem, 5*fem, 0*fem, 15*fem),
+                                margin: EdgeInsets.fromLTRB(20*fem,0*fem, 0*fem, 25*fem),
+                                padding: EdgeInsets.fromLTRB(0*fem, 20*fem, 0*fem, 0*fem),
                                 // depth4frame1YUo (15:2131)
-                                width: 200*fem,
-                                height: 130*fem,
+                                width:220*fem,
+                                height: 155*fem,
                                 child: Column(  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     // FutureBuilder to fetch and display name
@@ -304,8 +310,8 @@ String baseUrl='http://192.0.0.2:8000/storage';
                                       artistName ?? '', // Use the artistName variable directly
                                       style: TextStyle(
                                         fontSize: 22 * ffem,
-                                        fontWeight: FontWeight.w700,
-                                        color: Color(0xff1c0c11),
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.black,
                                       ),
                                     ),
 
@@ -314,7 +320,7 @@ String baseUrl='http://192.0.0.2:8000/storage';
                                     Text(
                                       artistRole ?? '', // Use the artistRole variable directly
                                       style: TextStyle(
-                                        fontSize: 16 * ffem,
+                                        fontSize: 18 * ffem,
                                         fontWeight: FontWeight.w400,
                                         color: Color(0xff964f66),
                                       ),
@@ -329,17 +335,17 @@ String baseUrl='http://192.0.0.2:8000/storage';
                                         Text(
                                           'Rating: 4.57/5', // Static text
                                           style: TextStyle(
-                                            fontSize: 16 * ffem,
-                                            fontWeight: FontWeight.w500,
-                                            color: Color(0xff1c0c11),
+                                            fontSize: 18 * ffem,
+                                            fontWeight: FontWeight.w400,
+                                            color: Colors.black,
                                           ),
                                         ),
                                         Text(
                                           artistRatings ?? '', // Use the artistRatings variable directly
                                           style: TextStyle(
-                                            fontSize: 16 * ffem,
+                                            fontSize: 18 * ffem,
                                             fontWeight: FontWeight.w500,
-                                            color: Color(0xff1c0c11),
+                                            color: Colors.black,
                                           ),
                                         ),
                                       ],
@@ -353,19 +359,19 @@ String baseUrl='http://192.0.0.2:8000/storage';
                                     Row(
                                       children: [
                                         Text(
-                                          'Price Per Hour:₹', // Static text
+                                          'Price Per Hour: ₹ ', // Static text
                                           style: TextStyle(
-                                            fontSize: 16 * ffem,
-                                            fontWeight: FontWeight.w500,
-                                            color: Color(0xff1c0c11),
+                                            fontSize: 18 * ffem,
+                                            fontWeight: FontWeight.w400,
+                                            color: Colors.black,
                                           ),
                                         ),
                                         Text(
                                           artistPrice ?? '', // Use the artistPrice variable directly
                                           style: TextStyle(
-                                            fontSize: 16 * ffem,
+                                            fontSize: 18 * ffem,
                                             fontWeight: FontWeight.w500,
-                                            color: Color(0xff1c0c11),
+                                            color: Colors.black,
                                           ),
                                         ),
                                       ],
@@ -393,8 +399,8 @@ String baseUrl='http://192.0.0.2:8000/storage';
                                 return Text(
                                   'Error fetching availability status',
                                   style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w600,
                                     color: Colors.red,
                                   ),
                                 );
@@ -407,7 +413,7 @@ String baseUrl='http://192.0.0.2:8000/storage';
                         SizedBox(height: 15 * fem),
 
                         Padding(
-                          padding: const EdgeInsets.only(left: 25, right: 25, bottom: 25),
+                          padding: const EdgeInsets.only(left: 4, right: 15, bottom: 25),
                           child: ElevatedButton(
                             onPressed: () {
                               Navigator.push(context, MaterialPageRoute(builder: (context)=>booking_artist()));
@@ -416,7 +422,7 @@ String baseUrl='http://192.0.0.2:8000/storage';
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Color(0xffe5195e),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12 * fem),
+                                borderRadius: BorderRadius.circular(9 * fem),
                               ),
                               padding: EdgeInsets.symmetric(
                                 horizontal: 16 * fem,
@@ -429,8 +435,8 @@ String baseUrl='http://192.0.0.2:8000/storage';
                                 'Book Artist',
                                 style: SafeGoogleFont(
                                   'Be Vietnam Pro',
-                                  fontSize: 16 * ffem,
-                                  fontWeight: FontWeight.w700,
+                                  fontSize: 17 * ffem,
+                                  fontWeight: FontWeight.w500,
                                   height: 1.5 * ffem / fem,
                                   letterSpacing: 0.2399999946 * fem,
                                   color: Color(0xffffffff),
@@ -447,10 +453,10 @@ String baseUrl='http://192.0.0.2:8000/storage';
                             style: SafeGoogleFont (
                               'Be Vietnam Pro',
                               fontSize: 22*ffem,
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.w500,
                               height: 1.25*ffem/fem,
                               letterSpacing: -0.3300000131*fem,
-                              color: Color(0xff1c0c11),
+                              color: Colors.black,
                             ),
                           ),
                         ),
@@ -479,102 +485,13 @@ String baseUrl='http://192.0.0.2:8000/storage';
                           ),
 
                         ),
-                        Text(
-                          // audiosamplesxKZ (15:2148)
-                          'Audio Sample',
-                          style: SafeGoogleFont (
-                            'Be Vietnam Pro',
-                            fontSize: 22*ffem,
-                            fontWeight: FontWeight.w700,
-                            height: 1.25*ffem/fem,
-                            letterSpacing: -0.3300000131*fem,
-                            color: Color(0xff1c0c11),
-                          ),
-                        ),
+
                       ],
                     ),
                   ),
+
                   Container(
-                    // depth1frame55uy (15:2149)
-                    width: double.infinity,
-                    height: 80*fem,
-                    decoration: BoxDecoration (
-                      color: Color(0xffffffff),
-                    ),
-                    child: Container(
-                      // depth2frame024X (15:2150)
-                      padding: EdgeInsets.fromLTRB(16*fem, 12*fem, 16*fem, 12*fem),
-                      width: double.infinity,
-                      height: double.infinity,
-                      decoration: BoxDecoration (
-                        color: Color(0xfff2e8ea),
-                        borderRadius: BorderRadius.circular(12*fem),
-                      ),
-                      child: Container(
-                        // depth3frame0MMh (15:2151)
-                        width: double.infinity,
-                        height: double.infinity,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Container(
-                              // depth4frame0JGw (15:2152)
-                              width: 56*fem,
-                              height: 56*fem,
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(8*fem),
-                                child: Image.asset(
-                                  'assets/page-1/images/depth-4-frame-0-bao.png',
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ),
-                            Container(
-                              padding: EdgeInsets.fromLTRB(16*fem, 7.5*fem, 0*fem, 7.5*fem),
-                              height: double.infinity,
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Container(
-                                    // depth4frame2v3R (15:2153)
-                                    margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 16*fem, 0*fem),
-                                    width: 230*fem,
-                                    height: double.infinity,
-                                    child: Container(
-                                      width: 270*fem,
-                                      height: 20*fem,
-                                      child: Text(
-                                        'Nature Inspiration',
-                                        style: SafeGoogleFont (
-                                          'Be Vietnam Pro',
-                                          fontSize: 17*ffem,
-                                          fontWeight: FontWeight.w700,
-                                          height: 1.25*ffem/fem,
-                                          color: Color(0xff1c0c11),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  Container(
-                                    // depth4frame3A6B (15:2160)
-                                    width: 40*fem,
-                                    height: 40*fem,
-                                    child: Image.asset(
-                                      'assets/page-1/images/depth-4-frame-3-oFu.png',
-                                      width: 40*fem,
-                                      height: 40*fem,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  Container(
-                    margin: EdgeInsets.fromLTRB(16 * fem, 30, 16 * fem, 0),
+                    margin: EdgeInsets.fromLTRB(15 * fem, 30, 16 * fem, 0),
                     width: double.infinity,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -583,28 +500,24 @@ String baseUrl='http://192.0.0.2:8000/storage';
                           'Gallery',
                           style: TextStyle(
                             fontSize: 22 * ffem,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xff1c0c11),
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black,
                           ),
                         ),
                         SizedBox(height: 12 * fem),
                         // GridView builder for the gallery
-                        GridView.builder(
-                          shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
-                          itemCount: imagePathsFromBackend.length , // Total count including placeholders
-                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            mainAxisSpacing: 12 * fem,
-                            crossAxisSpacing: 12 * fem,
-                            childAspectRatio: 1, // Aspect ratio of each grid item
-                          ),
+                    SizedBox(
+                      height: 220 * fem,
+
+                      child:ListView.builder(
+                          scrollDirection: Axis.horizontal, // Set scroll direction to horizontal
+                          itemCount: imagePathsFromBackend.length, // Total count
                           itemBuilder: (context, index) {
                             if (index < imagePathsFromBackend.length) {
-                              // If index is within the number of actual images
+                              // Display images in the carousel
                               return GestureDetector(
                                 onTap: () {
-                                  // Navigate to fullscreen view
+                                  // Navigate to fullscreen view on image tap
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
@@ -614,28 +527,38 @@ String baseUrl='http://192.0.0.2:8000/storage';
                                     ),
                                   );
                                 },
-                                child: Image.network(
-                                  imagePathsFromBackend[index], // Network image path
-                                  fit: BoxFit.cover, // Fit the image within the container
+                                child: Container(
+                                  width: 155 * fem, // Set width of each item in the carousel
+                                  margin: EdgeInsets.symmetric(horizontal: 5.5 * fem), // Add margin between items
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(9 * fem), // Example border radius
+                                    child: Image.network(
+                                      imagePathsFromBackend[index], // Network image path
+                                      fit: BoxFit.cover, // Fit the image within the container
+                                    ),
+                                  ),
                                 ),
                               );
-
                             } else {
-                              // If index exceeds actual images, return empty containers
+                              // Placeholder when index exceeds the image list
                               return Container(
+                                width: 150 * fem, // Placeholder width
+                                margin: EdgeInsets.symmetric(horizontal: 5.5 * fem), // Placeholder margin
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(12 * fem),
+                                  borderRadius: BorderRadius.circular(9 * fem), // Example border radius
                                   color: Colors.grey[200], // Placeholder color
                                 ),
                               );
                             }
                           },
                         ),
+                    ),
                       ],
                     ),
                   ),
+                  //VideoPathsFromBackend.length
               Container(
-                margin: EdgeInsets.fromLTRB(16 * fem, 30, 16 * fem, 0),
+                margin: EdgeInsets.fromLTRB(15 * fem, 30, 16 * fem, 0),
                 width: double.infinity,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -644,50 +567,55 @@ String baseUrl='http://192.0.0.2:8000/storage';
                       'Video Samples',
                       style: TextStyle(
                         fontSize: 22 * ffem,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xff1c0c11),
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black,
                       ),
                     ),
                     SizedBox(height: 12 * fem),
                     // GridView builder for the gallery
-                    GridView.builder(
-                      shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
-                      itemCount: VideoPathsFromBackend.length, // Total count including placeholders
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        mainAxisSpacing: 12 * fem,
-                        crossAxisSpacing: 12 * fem,
-                        childAspectRatio: 1, // Aspect ratio of each grid item
-                      ),
-                      itemBuilder: (context, index) {
-                        if (index < VideoPathsFromBackend.length) {
-                          // If index is within the number of actual videos
-                          return GestureDetector(
-                            onTap: () {
-                              // Navigate to fullscreen view
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => FullScreenVideoView(
-                                    videoUrl: VideoPathsFromBackend[index],
-                                  ),
+                SizedBox(
+                  height: 220 * fem, // Set a fixed height for the carousel
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal, // Set scroll direction to horizontal
+                    itemCount: VideoPathsFromBackend.length, // Total count
+                    itemBuilder: (context, index) {
+                      if (index < VideoPathsFromBackend.length) {
+                        // Display video player in the carousel
+                        return GestureDetector(
+                          onTap: () {
+                            // Navigate to fullscreen video view on tap
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => FullScreenVideoView(
+                                  videoUrl: VideoPathsFromBackend[index],
                                 ),
-                              );
-                            },
-                            child: VideoPlayerWidget(url: VideoPathsFromBackend[index]),
-                          );
-                        } else {
-                          // If index exceeds actual videos, return empty containers
-                          return Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(50),
-                              color: Colors.grey[200], // Placeholder color
+                              ),
+                            );
+                          },
+                          child: Container(
+                            width: 155 * fem, // Set width of each item in the carousel
+                            margin: EdgeInsets.symmetric(horizontal: 5.5 * fem), // Add margin between items
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(9 * fem), // Example border radius
+                              child: VideoPlayerWidget(url: VideoPathsFromBackend[index]),
                             ),
-                          );
-                        }
-                      },
-                    ),
+                          ),
+                        );
+                      } else {
+                        // Placeholder when index exceeds the video list
+                        return Container(
+                          width: 160 * fem, // Placeholder width
+                          margin: EdgeInsets.symmetric(horizontal: 6 * fem), // Placeholder margin
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(9 * fem), // Example border radius
+                            color: Colors.grey[200], // Placeholder color
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                ),
                   ],
                 ),
               ),
@@ -707,14 +635,14 @@ String baseUrl='http://192.0.0.2:8000/storage';
                           // specialmessageforthehost2dV (15:2210)
                           margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 23.5 * fem),
                           child: Text(
-                            'Special Message for the Host',
+                            'Message for the Host',
                             style: SafeGoogleFont(
-                              'Epilogue',
+                              'Be Vietnam Pro',
                               fontSize: 22 * ffem,
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.w500,
                               height: 1.25 * ffem / fem,
                               letterSpacing: -0.3300000131 * fem,
-                              color: Color(0xff1c0c11),
+                              color: Colors.black,
                             ),
                           ),
                         ),
@@ -809,8 +737,46 @@ String baseUrl='http://192.0.0.2:8000/storage';
                       ),
                     ),
                   ),
-
-
+                  // Rating Bar
+                  // SizedBox(height: 20), // Add space above the rating bar
+                  // PanableRatingBar.builder(
+                  //   initialRating: _currentRating,
+                  //   minRating: 1,
+                  //   direction: Axis.horizontal,
+                  //   allowHalfRating: true,
+                  //   itemCount: 5,
+                  //   itemSize: 40.0, // Size of each star
+                  //   itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
+                  //   itemBuilder: (context, _) => Icon(
+                  //     Icons.star,
+                  //     color: Colors.amber,
+                  //   ),
+                  //   onRatingUpdate: (rating) {
+                  //     setState(() {
+                  //       _currentRating = rating;
+                  //     });
+                  //     print("Rating: $rating");
+                  //   },
+                  // ),
+                  //
+                  // // "See All Reviews" Button
+                  // SizedBox(height: 16), // Add space above the button
+                  // TextButton(
+                  //   onPressed: () {
+                  //     // Navigate to the all reviews page
+                  //     Navigator.push(
+                  //       context,
+                  //       MaterialPageRoute(
+                  //         builder: (context) => AllReviewsPage(),
+                  //       ),
+                  //     );
+                  //   },
+                  //   child: Text(
+                  //     'See All Reviews',
+                  //     style: TextStyle(color: Colors.blue),
+                  //   ),
+                  // ),
+                  //
 
                 ],
               ),

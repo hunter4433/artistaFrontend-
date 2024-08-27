@@ -159,13 +159,15 @@ class _BookingArtistState extends State<booking_artist> {
         // Parse the response JSON
         List<dynamic> userDataList = json.decode(response.body);
 
+        print(userDataList);
+
         // Assuming the response is a list, iterate over each user's data
         for (var userData in userDataList) {
           // Update text controllers with fetched data for each user
           setState(() {
             name = userData['name'] ?? ''; // Assign String to name
             price = userData['price_per_hour'] ?? ''; // Assign String to price
-            image = 'http://192.0.0.2:8000/storage/${userData['profile_photo']}' ;
+            image = '${userData['profile_photo']}' ;
             fcm_token=userData['fcm_token'] ?? '';
           });
 

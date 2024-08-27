@@ -196,7 +196,7 @@ class _AllBookingsState extends State<AllBookings> {
 
 
   Widget _buildRequestCard(
-      String category, String bookingDate, String BookingTime, int booking_id, int user_id,int artist_id, int index) {
+      String category, String bookingDate, String BookingTime, int booking_id, int user_id,int artist_id, String duration,int index) {
     final booking = bookings[index];
     final status = booking['status'];
 
@@ -230,7 +230,7 @@ class _AllBookingsState extends State<AllBookings> {
                     'You have got Booking for $category',
                     style: GoogleFonts.epilogue(
                       fontWeight: FontWeight.w500,
-                      fontSize: 16,
+                      fontSize: 16.5,
                       height: 1.5,
                       color: Colors.white,
                     ),
@@ -240,7 +240,7 @@ class _AllBookingsState extends State<AllBookings> {
                     'Booking Date: $bookingDate',
                     style: GoogleFonts.epilogue(
                       fontWeight: FontWeight.w400,
-                      fontSize: 14,
+                      fontSize: 16,
                       height: 1.5,
                       color: Color(0xFF9494C7),
                     ),
@@ -250,7 +250,17 @@ class _AllBookingsState extends State<AllBookings> {
                     'Booked From: $BookingTime',
                     style: GoogleFonts.epilogue(
                       fontWeight: FontWeight.w400,
-                      fontSize: 14,
+                      fontSize: 16,
+                      height: 1.5,
+                      color: Color(0xFF9494C7),
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Duration: $duration',
+                    style: GoogleFonts.epilogue(
+                      fontWeight: FontWeight.w400,
+                      fontSize: 16,
                       height: 1.5,
                       color: Color(0xFF9494C7),
                     ),
@@ -453,12 +463,22 @@ class _AllBookingsState extends State<AllBookings> {
 
     return Scaffold(
       backgroundColor: Color(0xFF121217),
-      appBar: AppBar(
-        backgroundColor: Color(0xFF121217),
-        title: Text(
-          'Booking Requests',
-          style: TextStyle(color: Colors.white),
+      appBar:  AppBar(
+        automaticallyImplyLeading: false,
+        title: Padding(
+          padding: const EdgeInsets.fromLTRB(0, 0, 8, 0),
+          child: Center(
+            child: Text(
+              'Booking Requests',
+              style: TextStyle(
+                fontSize: 20 ,
+                fontWeight: FontWeight.w400,
+                color: Colors.white,
+              ),
+            ),
+          ),
         ),
+        backgroundColor: Color(0xFF121217),
       ),
       body: isLoading
           ? Center(
@@ -486,6 +506,7 @@ class _AllBookingsState extends State<AllBookings> {
             booking['id'],
             booking['user_id'],
             booking['artist_id'],
+            booking['duration'],
             index,
           );
         },
