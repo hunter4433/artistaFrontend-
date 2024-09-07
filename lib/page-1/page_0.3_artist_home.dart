@@ -24,7 +24,7 @@ Future<String?> _getKind() async {
   return await storage.read(key: 'selected_value'); // Assuming you stored the token with key 'selected_value'
 }
 class _artist_home extends State<artist_home> {
-  bool? isAvailable;
+  bool? isAvailable=true;
   int? status;
   String? name;
   String? imageUrl;
@@ -204,7 +204,7 @@ class _artist_home extends State<artist_home> {
                                       ),
                                     ),
                                     Visibility(
-                                      visible: isAvailable!,
+                                      visible: isAvailable! ,
                                       child: Text(
                                         'I\'m available for bookings !',
                                         style: SafeGoogleFont(

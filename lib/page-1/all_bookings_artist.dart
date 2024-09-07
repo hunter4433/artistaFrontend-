@@ -288,8 +288,8 @@ class _AllBookingsState extends State<AllBookings> {
                             child: Text(
                               'Reject',
                               style: GoogleFonts.epilogue(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 16,
                                 height: 1.5,
                                 color: Colors.white,
                               ),
@@ -307,19 +307,23 @@ class _AllBookingsState extends State<AllBookings> {
                               });
                             },
                             style: OutlinedButton.styleFrom(
-                              backgroundColor: Color(0xFF340539),
+                              backgroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               padding: EdgeInsets.symmetric(vertical: 9.5),
+                              side: BorderSide(
+                                color: Colors.black, // Set the border color to black
+                                width: 2, // You can adjust the width of the border as needed
+                              ),
                             ),
                             child: Text(
                               'Accept',
                               style: GoogleFonts.epilogue(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 16,
                                 height: 1.5,
-                                color: Colors.white,
+                                color: Colors.black,
                               ),
                             ),
                           ),
@@ -338,8 +342,8 @@ class _AllBookingsState extends State<AllBookings> {
                               Text(
                                 'Booking Rejected',
                                 style: GoogleFonts.epilogue(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 16,
                                   height: 1.5,
                                   color: Colors.red,
                                 ),
@@ -354,19 +358,23 @@ class _AllBookingsState extends State<AllBookings> {
                               });
                             },
                             style: OutlinedButton.styleFrom(
-                              backgroundColor: Color(0xFF121217),
+                              backgroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               padding: EdgeInsets.symmetric(vertical: 9.5,horizontal:130),
+                              side: BorderSide(
+                                color: Colors.black, // Set the border color to black
+                                width: 2, // You can adjust the width of the border as needed
+                              ),
                             ),
                             child: Text(
                               'Undo',
                               style: GoogleFonts.epilogue(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 16,
                                 height: 1.5,
-                                color: Colors.white,
+                                color: Colors.black,
                               ),
                             ),
                           ),
@@ -378,24 +386,27 @@ class _AllBookingsState extends State<AllBookings> {
                       children: [
                         OutlinedButton(
                           onPressed: () {
-
                             _makePhoneCall(user_phonenumber!);
                           },
                           style: OutlinedButton.styleFrom(
-                            backgroundColor: Color(0xFF340539),
+                            backgroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
                             padding: EdgeInsets.symmetric(vertical: 9.5),
+                            side: BorderSide(
+                              color: Colors.black, // Set the border color to black
+                              width: 2, // You can adjust the width of the border as needed
+                            ),
                           ),
                           child: Center(
                             child: Text(
                               'Call User',
                               style: GoogleFonts.epilogue(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 16,
                                 height: 1.5,
-                                color: Colors.white,
+                                color: Colors.black,
                               ),
                             ),
                           ),
@@ -412,7 +423,7 @@ class _AllBookingsState extends State<AllBookings> {
                             fetchUser(context, user_id, false);
                           },
                           style: OutlinedButton.styleFrom(
-                            backgroundColor: Color(0xFFF57C00), // Orange color
+                            backgroundColor: Colors.black, // Orange color
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
@@ -422,8 +433,8 @@ class _AllBookingsState extends State<AllBookings> {
                             child: Text(
                               'Cancel Booking',
                               style: GoogleFonts.epilogue(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 16,
                                 height: 1.5,
                                 color: Colors.white,
                               ),

@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:test1/page-1/artist_showcase.dart';
 import 'package:test1/page-1/team_showcase.dart';
@@ -117,7 +118,7 @@ print(data);
           print(featuredArtists);
         });
 
-        print(featuredArtists);
+        print('fetauredartist rae as follows:$featuredArtists');
       } else {
         print('Failed to load data: ${response.body}');
       }
@@ -304,7 +305,7 @@ print(data);
         .width / baseWidth;
     double ffem = fem * 0.97;
 
-    return Scaffold(backgroundColor: Color(0xFF0D0D0F),
+    return Scaffold(backgroundColor: Color(0xFF121217),
       appBar: AppBar(
         automaticallyImplyLeading: false,
         title: Padding(
@@ -320,7 +321,7 @@ print(data);
             ),
           ),
         ),
-        backgroundColor: Color(0xFF0D0D0F),
+        backgroundColor: Color(0xFF121217),
       ),
       body: FutureBuilder(
           future: fetchAssets(), // Replace with your actual API call
@@ -347,7 +348,7 @@ print(data);
               // }
               // print(data);
               return Container(
-                color: Color(0xFF0D0D0F),
+                color: Color(0xFF121217),
                 child: SafeArea(
                   child: SingleChildScrollView(
                     child: Column(
@@ -366,7 +367,7 @@ print(data);
                           ),
                         ),
                         GridView.builder(padding: EdgeInsets.fromLTRB(12 * fem, 0 * fem,
-                            12 * fem, 0 * fem),
+                            12 * fem, 30 * fem),
                           shrinkWrap: true,
                           physics: NeverScrollableScrollPhysics(),
                           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -417,78 +418,121 @@ print(data);
                             );
                           },
                         ),
-                        Container(
-                          padding: EdgeInsets.fromLTRB(12 * fem, 50 * fem,
-                              0 * fem, 0 * fem),
-                          child: Text(
-                            'Recommended',
-                            style: TextStyle(
-                              fontSize: 22 * ffem,
-                              fontWeight: FontWeight.w400,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                        Container(
-                          height: 430 * fem,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: recommended?.length,
-                            itemBuilder: (context, index) {
-                              return Container(
-                                width: 305 * fem,
-                                padding: EdgeInsets.fromLTRB(
-                                    12 * fem, 16 * fem, 0 * fem, 16 * fem),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      margin: EdgeInsets.only(bottom: 12 * fem),
-                                      width: 305 * fem,
-                                      height: 313 * fem,
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(
-                                            8 * fem),
-                                        child: recommended?[index]['type'] ==
-                                            'image'
-                                            ? Image.network(
-                                          recommended?[index]['image'],
-                                          fit: BoxFit.cover,
-                                        )
-                                            : CustomVideoPlayer(
-                                            source: recommended?[index]['image'],
-                                           isAsset: false ),
-                                      ),
-                                    ),
-                                    Text(
-                                      recommended?[index]['subheading'],
-                                      style: TextStyle(
-                                        fontSize: 14 * ffem,
-                                        fontWeight: FontWeight.w500,
-                                        height: 1.5 * ffem / fem,
-                                        color: Color(0xFF9E9EB8),
-                                      ),
-                                    ),
-                                    SizedBox(height: 5),
-                                    Container(
-                                      width: 260 * fem,
-                                      // Set the desired width here
-                                      child: Text(
-                                        recommended?[index]['name'],
-                                        style: TextStyle(
-                                          fontSize: 18 * ffem,
-                                          fontWeight: FontWeight.w400,
-                                          height: 1.3625 * ffem / fem,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+
+
+                        Stack(
+                          children: [
+                            // Background image with semi-transparent overlay
+                            Positioned.fill(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                    image: AssetImage('assets/page-1/images/bulbs.jpg'), // Replace with your background image path
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
-                              );
-                            },
-                          ),
+                                child: Container(
+                                  color: Colors.black.withOpacity(0.7), // Semi-transparent overlay, adjust opacity here
+                                ),
+                              ),
+                            ),
+
+                            // Content stacked on top of the background and overlay
+                            Column(
+                              children: [
+                                Container(
+                                  padding: EdgeInsets.fromLTRB(16 * fem, 50 * fem, 0 * fem, 18 * fem),
+                                  alignment: Alignment.centerLeft,  // Align the text to the left
+                                  child: Text(
+                                    'Wedding Special',
+                                    style: TextStyle(
+                                      fontSize: 22 * ffem,
+                                      fontWeight: FontWeight.w400,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  height: 575,
+                                  margin: EdgeInsets.zero,
+                                  child: PageView.builder(
+                                    controller: PageController(viewportFraction: 0.87),
+                                    scrollDirection: Axis.horizontal,
+                                    itemCount: best.length,
+                                    itemBuilder: (context, index) {
+                                      final artist = best[index];
+                                      if (artist == null) {
+                                        return SizedBox(); // Return an empty SizedBox if the artist is null
+                                      }
+                                      return Container(
+                                        margin: EdgeInsets.symmetric(horizontal: 6),
+                                        child: GestureDetector(
+                                          onTap: () async {
+                                            String team_id = artist['id']; // Use artist ID if needed
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) => TeamProfile(),
+                                              ),
+                                            );
+                                          },
+                                          child: Stack(
+                                            children: [
+                                              // Main image or video
+                                              Container(
+                                                width: 330,
+                                                height: 495,
+                                                child: ClipRRect(
+                                                  borderRadius: BorderRadius.circular(12),
+                                                  child: artist['type'] == 'image'
+                                                      ? Image.asset(
+                                                    artist['url'] ?? '', // Image from assets
+                                                    fit: BoxFit.cover,
+                                                  )
+                                                      : CustomVideoPlayer(
+                                                    source: artist['url'] ?? '', // Video from assets
+                                                    isAsset: true,
+                                                  ),
+                                                ),
+                                              ),
+                                              // Semi-transparent overlay on individual cards
+                                              Positioned.fill(
+                                                child: Container(
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.black.withOpacity(0.2), // Adjust transparency for individual items
+                                                    borderRadius: BorderRadius.circular(10),
+                                                  ),
+                                                ),
+                                              ),
+                                              // Artist name text
+                                              Positioned(
+                                                bottom: 100,
+                                                left: 16,
+                                                right: 34,
+                                                child: Text(
+                                                  artist['name'] ?? '',
+                                                  style: TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.w400,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            )
+                          ],
                         ),
+
+
+
+
 
 
                         Container(
@@ -504,7 +548,7 @@ print(data);
                           ),
                         ),
                         Container(
-                          height: 340,
+                          height: 350,
                           // Set a specific height for the Container
                           child: ListView.builder(
                             scrollDirection: Axis.horizontal,
@@ -593,11 +637,13 @@ print(data);
 
 
 
+
+
                         Container(
-                          padding: EdgeInsets.fromLTRB(25 * fem, 0 * fem,
-                              25 * fem, 18 * fem),
+                          padding: EdgeInsets.fromLTRB(12 * fem, 20 * fem,
+                              0 * fem, 0 * fem),
                           child: Text(
-                            'Wedding Special',
+                            'Recommended',
                             style: TextStyle(
                               fontSize: 22 * ffem,
                               fontWeight: FontWeight.w400,
@@ -605,79 +651,81 @@ print(data);
                             ),
                           ),
                         ),
-                    Container(
-                      height: 495,
-                      margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                      child: PageView.builder(
-                        controller: PageController(viewportFraction: 0.87),
-                        scrollDirection: Axis.horizontal,
-                        itemCount: best.length,
-                        itemBuilder: (context, index) {
-                          final artist = best[index];
-                          if (artist == null) {
-                            return SizedBox(); // Return an empty SizedBox if the artist is null
-                          }
-                          return Container(
-                            margin: EdgeInsets.symmetric(horizontal: 6),
-                            child: GestureDetector(
-                              onTap: () async {
-                                String team_id = artist['id']; // Use artist ID if needed
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => TeamProfile(),
-                                  ),
-                                );
-                              },
-                              child: Stack(
-                                children: [
-                                  // Main image or video
-                                  Container(
-                                    width: 330,
-                                    height: 495,
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(12),
-                                      child: artist['type'] == 'image'
-                                          ? Image.asset(
-                                        artist['url'] ?? '', // Image from assets
-                                        fit: BoxFit.cover,
-                                      )
-                                          : CustomVideoPlayer(
-                                        source: artist['url'] ?? '', // Video from assets
-                                          isAsset:true
+                        Container(
+                          height: 430 * fem,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: recommended?.length,
+                            itemBuilder: (context, index) {
+                              return Container(
+                                width: 300 * fem,
+                                padding: EdgeInsets.fromLTRB(
+                                    12 * fem, 16 * fem, 0 * fem, 16 * fem),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      margin: EdgeInsets.only(bottom: 12 * fem),
+                                      width: 305 * fem,
+                                      height: 313 * fem,
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(
+                                            8 * fem),
+                                        child: recommended?[index]['type'] ==
+                                            'image'
+                                            ? Image.network(
+                                          recommended?[index]['image'],
+                                          fit: BoxFit.cover,
+                                        )
+                                            : CustomVideoPlayer(
+                                            source: recommended?[index]['image'],
+                                            isAsset: false ),
                                       ),
                                     ),
-                                  ),
-                                  // Semi-transparent overlay
-                                  Positioned.fill(
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.black.withOpacity(0.2), // Adjust transparency
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                    ),
-                                  ),
-                                  // Artist name text
-                                  Positioned(
-                                    bottom: 30,
-                                    left: 16,
-                                    right: 34,
-                                    child: Text(
-                                      artist['name'] ?? '',
+                                    Text(
+                                      recommended?[index]['subheading'],
                                       style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w400,
-                                        color: Colors.white,
+                                        fontSize: 14 * ffem,
+                                        fontWeight: FontWeight.w500,
+                                        height: 1.5 * ffem / fem,
+                                        color: Color(0xFF9E9EB8),
                                       ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
+                                    SizedBox(height: 5),
+                                    Container(
+                                      width: 260 * fem,
+                                      // Set the desired width here
+                                      child: Text(
+                                        recommended?[index]['name'],
+                                        style: TextStyle(
+                                          fontSize: 18 * ffem,
+                                          fontWeight: FontWeight.w400,
+                                          height: 1.3625 * ffem / fem,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
                         Container(

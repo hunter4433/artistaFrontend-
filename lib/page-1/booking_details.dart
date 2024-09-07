@@ -184,91 +184,93 @@ String calculateTotalAmount(String duration, String pricePerHour) {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor:Color(0xFF121217),
-      appBar: AppBar(
-        backgroundColor: Color(0xFF121217),
-        title: Text(
-          'Event Details',
-          style: GoogleFonts.epilogue(
-            fontWeight: FontWeight.w700,
-            fontSize: 18,
-            height: 1.3,
-            color: Color(0xFFFFFFFF),
+      appBar:AppBar(
+        automaticallyImplyLeading: false,
+        title: Padding(
+          padding: const EdgeInsets.fromLTRB(0, 0, 8, 0),
+          child: Center(
+            child: Text(
+              'Event Details',
+              style: TextStyle(
+                fontSize: 20 ,
+                fontWeight: FontWeight.w400,
+                color: Colors.white,
+              ),
+            ),
           ),
         ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-          ),
-        ],
+        backgroundColor: Color(0xFF121217),
+
+
       ),
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: 16),
         child: ListView(
           children: [
-            SizedBox(height: 20),
+            SizedBox(height: 15),
             Text(
-              'DJ set at a private party',
+              'Congrats, you’ve received a booking!',
               style: GoogleFonts.epilogue(
-                fontWeight: FontWeight.w700,
-                fontSize: 22,
+                fontWeight: FontWeight.w400,
+                fontSize: 21,
                 height: 1.3,
                 color: Color(0xFFFFFFFF),
               ),
             ),
-            SizedBox(height: 12),
-            Text(
-              BookingDate!,
+            SizedBox(height: 23),
+            Text('On Date:   $BookingDate',
               style: GoogleFonts.epilogue(
                 fontWeight: FontWeight.w400,
-                fontSize: 16,
+                fontSize: 17,
+                height: 1.5,
+                color: Color(0xFFFFFFFF),
+              ),
+            ),
+            SizedBox(height: 10),
+            Text('From:   $BookingDate    To:    $BookingDate ',
+              style: GoogleFonts.epilogue(
+                fontWeight: FontWeight.w400,
+                fontSize: 17,
+                height: 1.5,
+                color: Color(0xFFFFFFFF),
+              ),
+            ),
+            SizedBox(height: 10),
+            Text('Duration:   $duration',
+              style: GoogleFonts.epilogue(
+                fontWeight: FontWeight.w400,
+                fontSize: 17,
                 height: 1.5,
                 color: Color(0xFFFFFFFF),
               ),
             ),
             SizedBox(height: 16),
             _buildInfoSection(
-              title: 'Location',
-              info: location!,
+              title: 'Offer Amount',
+              info:   TotalAmount = calculateTotalAmount(duration!, amount!),
+            ),
+            _buildInfoSection(
+              title: 'Type of Booking',
+              info: Category!,
             ),
             _buildInfoSection(
               title: 'Audience Size',
               info: '500 people',
             ),
             _buildInfoSection(
-              title: 'Type',
-              info: Category!,
+              title: 'Location',
+              info: location!,
             ),
-            _buildInfoSection(
-              title: 'Offer Amount',
-              info:   TotalAmount = calculateTotalAmount(duration!, amount!),
-            ),
-            SizedBox(height: 20),
-            Text(
-              'Description',
-              style: GoogleFonts.epilogue(
-                fontWeight: FontWeight.w700,
-                fontSize: 22,
-                height: 1.3,
-                color: Color(0xFFFFFFFF),
-              ),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'We\'re hosting a private party for our employees. We\'d love to have you DJ the event.',
-              style: GoogleFonts.epilogue(
-                fontWeight: FontWeight.w400,
-                fontSize: 16,
-                height: 1.5,
-                color: Color(0xFFFFFFFF),
-              ),
-            ),
-            SizedBox(height: 32),
+
+
+
+            SizedBox(height: 16),
             Text(
               'Special Requests',
               style: GoogleFonts.epilogue(
-                fontWeight: FontWeight.w700,
-                fontSize: 22,
-                height: 1.3,
+                fontWeight: FontWeight.w400,
+                fontSize: 18,
+                height: 1.5,
                 color: Color(0xFFFFFFFF),
               ),
             ),
@@ -277,7 +279,7 @@ String calculateTotalAmount(String duration, String pricePerHour) {
               SpecialRequest!,
               style: GoogleFonts.epilogue(
                 fontWeight: FontWeight.w400,
-                fontSize: 16,
+                fontSize: 18,
                 height: 1.5,
                 color: Color(0xFFFFFFFF),
               ),
@@ -290,7 +292,7 @@ String calculateTotalAmount(String duration, String pricePerHour) {
 
   Widget _buildInfoSection({required String title, required String info}) {
     return Container(
-      margin: EdgeInsets.only(bottom: 12),
+      margin: EdgeInsets.only(bottom: 1),
       padding: EdgeInsets.symmetric(vertical: 13.5),
       color: Color(0xFF121217),
       child: Column(
@@ -299,8 +301,8 @@ String calculateTotalAmount(String duration, String pricePerHour) {
           Text(
             title,
             style: GoogleFonts.epilogue(
-              fontWeight: FontWeight.w500,
-              fontSize: 16,
+              fontWeight: FontWeight.w400,
+              fontSize: 18,
               height: 1.5,
               color: Color(0xFFFFFFFF),
             ),
@@ -310,7 +312,7 @@ String calculateTotalAmount(String duration, String pricePerHour) {
             info,
             style: GoogleFonts.epilogue(
               fontWeight: FontWeight.w400,
-              fontSize: 14,
+              fontSize: 18,
               height: 1.5,
               color: Color(0xFF9494C7),
             ),

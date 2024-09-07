@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
 import 'package:audioplayers/audioplayers.dart';
+import '../config.dart';
 import '../utils.dart';
 // import 'team1.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -12,6 +13,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 // import 'team1.dart';
 import 'package:test1/page-1/team1.dart';
+
+import 'bottomNav_artist.dart';
 
 
 
@@ -27,12 +30,18 @@ class team2signup extends StatefulWidget {
 }
 
 class _ArtistCredentials2State extends State<team2signup> {
+  TextEditingController _subskillController = TextEditingController();
   TextEditingController _experienceController = TextEditingController();
   TextEditingController _hourlyPriceController = TextEditingController();
   TextEditingController _messageController = TextEditingController();
+  String? selectedOption;
 
   List<String> _skills = ['Musician', 'Comedian', 'Visual Artist', 'Dancer', 'Chef', 'Magician'];
   String? selectedSkill;
+  // List of skills
+  String _selectedSubSkill = ''; // Variable to store the selected sub-skill
+  List<String> _subSkills = ['sufi','punjabi']; // List of sub-skills based on the selected skill
+
 
   File? _image1;
   File? _image3;
@@ -40,12 +49,16 @@ class _ArtistCredentials2State extends State<team2signup> {
   File? _image2;
   File? _video1;
   File? _video2;
+  File? _video3;
+  File? _video4;
   VideoPlayerController? _controller1;
   VideoPlayerController? _controller2;
+  VideoPlayerController? _controller3;
+  VideoPlayerController? _controller4;
   AudioPlayer _audioPlayer = AudioPlayer();
   File? _audioFile;
   File? _imageForSearchedSection; // Variable to store the selected image for the searched section
-
+bool _isLoading=false;
   final storage = FlutterSecureStorage();
   Future<Map<String, String?>> getAllSharedPreferences() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -53,12 +66,17 @@ class _ArtistCredentials2State extends State<team2signup> {
       'alt_phone_number': prefs.getString('alt_phone_number'),
       'team_name': prefs.getString('name'),
       'address': prefs.getString('address'),
-      'phone_number': prefs.getString('phone_number'),
+      // 'phone_number': prefs.getString('phone_number'),
       'profile_photo': prefs.getString('imageFilePath'),
     };
   }
 
-
+Future<String?>_getPhoneNumber()async {
+    return await storage.read(key: 'phone_number');
+}
+  Future<String?>_getFCMToken()async {
+    return await storage.read(key: 'fCMToken');
+  }
 
 
   // Function to pick an image for the searched section
@@ -74,127 +92,201 @@ class _ArtistCredentials2State extends State<team2signup> {
       }
     });
   }
+  // String? profilePhotoPath = widget.profilePhoto?.path;
+  //
+  // File profilePhotoFile = File(profilePhotoPath!);
 
-  Future<void> _sendDataToBackend() async {
+  Future<bool> _onFinishButtonClicked() async {
+    try {
+      // Send data to the backend and get the ID
+      bool dataSent = await _sendDataToBackend();
 
+      // if (!dataSent) {
+      //   print('Failed to send data to backend. mohit ');
+      //   return false;
+      // }
+
+      // Retrieve the stored ID
+      String? id = await storage.read(key: 'team_id');
+      print(id);
+      if (id == null) {
+        print('Failed to retrieve ID from storage.');
+        return false;
+      }
+
+      List<File?> imageFiles = [_image1, _image2, _image3, _image4, widget.profilePhoto];
+      List<File?> videoFiles = [_video1, _video2, _video3, _video4];
+
+      // Run upload functions in parallel with ID
+      final results = await Future.wait([
+        uploadImages(imageFiles, id),      // Upload images with ID
+        uploadVideos(videoFiles, id)         // Upload videos with ID
+      ]);
+
+      bool imagesUploaded = results[0] as bool; // Result from _uploadImages
+      bool videosUploaded = results[1] as bool; // Result from uploadVideo
+
+      // Handle the results
+      if (imagesUploaded && videosUploaded) {
+        print('All operations completed successfully.');
+        return true;
+      } else {
+        print('Some operations failed.');
+      }
+    } catch (e) {
+      // Handle any errors that occur during the process
+      print('An error occurred: $e');
+    }
+    return false;
+  }
+
+
+  Future<bool> _sendDataToBackend() async {
     String? profilePhotoPath = widget.profilePhoto?.path;
-
     File profilePhotoFile = File(profilePhotoPath!);
-    Future<String?> _getToken() async {
-      return await storage.read(key: 'token'); // Assuming you stored the token with key 'token'
-    }
-
-    Future<String?> _getFCMToken() async {
-      return await storage.read(key: 'fCMToken'); // Assuming you stored the token with key 'token'
-    }
+    String? phoneNumber = await _getPhoneNumber();
+    print('phone number is :$phoneNumber');
 
     try {
       // Get shared preferences data
-      Map<String, String?> sharedPreferencesData = await getAllSharedPreferences();
+      Map<String, dynamic?> sharedPreferencesData = await getAllSharedPreferences();
+      // Map<String, String?> profilePreferencesData = await profileSharedPreferences();
 
+      // Get authentication token and FCM token
+      // String? token = await _getToken();
+      String? fCMToken = await _getFCMToken();
 
-      // var profilePhoto=profilePreferencesData['profile_photo'];
-      // File profilePhotoFile = File(profilePhoto!);
-      // print(profilePhotoFile);
+      // Prepare data to send to the backend
+      Map<String, String> artistData = {
+        'phone_number': phoneNumber!,
+        'price_per_hour': _hourlyPriceController.text,
+        'skill_category': selectedSkill!,
+        'special_message': _messageController.text,
+        'fcm_token': fCMToken!,
+      };
 
-      // print(profile_photo);
+      // Merge sharedPreferencesData with artistData
+      Map<String, String?> mergedData = {...sharedPreferencesData, ...artistData};
 
-      // Get authentication token
-      String? token = await _getToken();
-      String? fCMToken= await _getFCMToken();
-      // Check if token is not null
-      if (token != null) {
-        // Select images from gallery
-        List<File?> imageFiles = [_image1, _image2, _image3, _image4,profilePhotoFile];
-        print(_skills);
+      // Ensure that the images and videos were successfully uploaded
+      // if (profilePhotoPath != null) {
+      //   mergedData['profile_photo'] = profilePhotoPath;
+      // }
 
+      // Convert data to JSON format
+      String jsonData = json.encode(mergedData);
+      print(jsonData);
 
-        // Check if images are selected
-        if (true) {
-          // Prepare data to send to the backend
-          Map<String, dynamic> artistData = {
-            // 'skills': _selectedSubSkill,
-            'about_team': _experienceController.text,
-            'price_per_hour': _hourlyPriceController.text,
-            'skill_category': selectedSkill,
-            'special_message': _messageController.text,
-            'fcm_token':fCMToken,
-          };
+      // Example URL, replace with your actual API endpoint
+      String apiUrl = '${Config().apiDomain}/artist/team_info';
 
-          // Merge sharedPreferencesData with artistData
-          Map<String, String?> mergedData = {...sharedPreferencesData, ...artistData};
-          // Upload images and store paths
-          print(imageFiles.length);
-          List<String> imagePaths = await _uploadImages(imageFiles);
-          // print(imageFiles.length);
-          //
-          // Ensure imagePaths contains the profile photo path
-          if (imagePaths.length == imageFiles.length) {
-            // If it does, proceed to merge data
-            for (int i = 0; i < imageFiles.length; i++) {
-              if (i == imageFiles.length - 1) {
-                // Last item (profile photo)
-                mergedData['profile_photo'] = imagePaths[i];
-              } else {
-                // Other image files
-                mergedData['image${i + 1}'] = imagePaths[i];
-              }
-            }
-          } else {
-            print('this side mohit');
-            // Handle the case where imagePaths length doesn't match imageFiles length
-          }
+      // Make POST request to the API
+      var response = await http.post(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/vnd.api+json',
+          'Accept': 'application/vnd.api+json',
+          // 'Authorization': 'Bearer $token', // Include the token in the header
+        },
+        body: jsonData,
+      );
 
-          // Convert data to JSON format
-          String jsonData = json.encode(mergedData);
-          print(jsonData);
+      // Check if the request was successful (status code 201)
+      if (response.statusCode == 201) {
+        // Data sent successfully, handle response if needed
+        print('Data sent successfully');
+        print('Response: ${response.body}');
 
-          // Example URL, replace with your actual API endpoint
-          String apiUrl = 'http://192.0.0.2:8000/api/artist/team_info';
-          // await Future.delayed(Duration(seconds: 3));
+        Map<String, dynamic> responseData = jsonDecode(response.body);
+        int id = responseData['id'];
+        await storage.write(key: 'team_id', value: id.toString());
 
-          // Make POST request to the API
-          var response = await http.post(
-            Uri.parse(apiUrl),
-            headers: <String, String>{
-              'Content-Type': 'application/vnd.api+json',
-              'Accept': 'application/vnd.api+json',
-              'Authorization': 'Bearer $token', // Include the token in the header
-            },
-            body: jsonData,
-          );
+        String skill = responseData['skill_category'];
+        print(id);
+        print(skill);
 
-          // Check if request was successful (status code 200)
-          if (response.statusCode == 201) {
-            // Data sent successfully, handle response if needed
-            print('Data sent successfully');
-            // Example response handling
-            print('Response: ${response.body}');
-
-            Map<String, dynamic> responseData = jsonDecode(response.body);
-            int id = responseData['id']; // Assuming 'id' is of type int in the JSON response
-            await storage.write(key: 'id', value: id.toString()); // Convert int to String before storing
-            print(id.toString()); // Convert int to String before printing
-
-          } else {
-            // Request failed, handle error
-            print('Failed to send data. Status code: ${response.statusCode}');
-            // Example error handling
-            print('Error response: ${response.body}');
-          }
-        } else {
-          print('No images selected');
-        }
+        return true;
       } else {
-        // Handle the case where token is null, perhaps by showing an error message
-        print("Token is null");
+        // Request failed, handle error
+        print('Failed to send data. Status code: ${response.statusCode}');
+        print('Error response: ${response.body}');
       }
     } catch (e) {
       // Handle network errors
       print('Error sending data: $e');
     }
+
+    return false;
   }
 
+
+
+
+  Future<bool> uploadVideos(List<File?> videoFiles, String id) async {
+    try {
+      for (File? videoFile in videoFiles) {
+        if (videoFile != null) {
+          bool uploadSuccess = await uploadVideo(videoFile, id);
+          if (!uploadSuccess) {
+            print('Failed to upload video: ${videoFile.path}');
+            return false; // If any video fails to upload, return false
+          }
+        }
+      }
+      return true; // All videos uploaded successfully
+    } catch (e) {
+      // Handle errors if needed
+      print('Error uploading videos: $e');
+      return false;
+    }
+  }
+
+  Future<bool> uploadVideo(File? videoFile, String id) async {
+    if (videoFile == null) {
+      throw ArgumentError('Video file cannot be null');
+    }
+
+    try {
+      // Your video upload API endpoint
+      var uploadUrl = Uri.parse('${Config().apiDomain}/upload-video/$id'); // Include ID in URL
+
+      // Create a multipart request
+      var request = http.MultipartRequest('POST', uploadUrl);
+
+      // Add the user type as a field
+      request.fields['user_type'] = 'team';
+
+      // Add the video file to the request
+      var videoStream = http.ByteStream(videoFile.openRead());
+      var videoLength = await videoFile.length();
+
+      var multipartFile = http.MultipartFile(
+        'video',
+        videoStream,
+        videoLength,
+        filename: videoFile.path.split('/').last,
+      );
+
+      request.files.add(multipartFile);
+
+      // Send the request to upload the video
+      var streamedResponse = await request.send();
+
+      // Check if the video upload was successful
+      if (streamedResponse.statusCode == 201) {
+        var response = await streamedResponse.stream.bytesToString();
+        print(response);
+        return true;
+      } else {
+        print('Video upload failed with status: ${streamedResponse.statusCode}');
+        return false;
+      }
+    } catch (e) {
+      // Handle errors if needed
+      print('Error uploading video: $e');
+      return false;
+    }
+  }
 
 
   @override
@@ -308,29 +400,55 @@ class _ArtistCredentials2State extends State<team2signup> {
       });
     }
   }
+  Future<void> _pickVideo3() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.video,
+    );
+
+    if (result != null) {
+      setState(() {
+        _video3 = File(result.files.single.path!);
+        _controller3 = VideoPlayerController.file(_video3!);
+        _controller3!.initialize();
+      });
+    }
+  }
+  Future<void> _pickVideo4() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.video,
+    );
+
+    if (result != null) {
+      setState(() {
+        _video4 = File(result.files.single.path!);
+        _controller4 = VideoPlayerController.file(_video4!);
+        _controller4!.initialize();
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     double baseWidth = 390;
     double fem = MediaQuery.of(context).size.width / baseWidth;
     double ffem = fem * 0.97;
-    return Scaffold(
+    return Scaffold(backgroundColor: Color(0xFF121217),
       appBar: AppBar(
         title: Text(
           'Sign up',
           textAlign: TextAlign.center,
           style: SafeGoogleFont(
             'Be Vietnam Pro',
-            fontSize: 19 * ffem,
-            fontWeight: FontWeight.w700,
+            fontSize: 21 * ffem,
+            fontWeight: FontWeight.w500,
             height: 1.25 * ffem / fem,
             letterSpacing: -0.8000000119 * fem,
-            color: Color(0xff1e0a11),
+            color: Colors.white,
           ),
         ),
-        backgroundColor: Color(0xffffffff),
+        backgroundColor:  Color(0xFF121217),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back_ios),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -344,7 +462,7 @@ class _ArtistCredentials2State extends State<team2signup> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Container(
-                  color: Colors.white,
+
                   padding: EdgeInsets.fromLTRB(16 * fem, 12 * fem, 16 * fem, 12 * fem),
                   width: double.infinity,
                   child: Column(
@@ -364,7 +482,7 @@ class _ArtistCredentials2State extends State<team2signup> {
                                   fontSize: 18 * ffem,
                                   fontWeight: FontWeight.w500,
                                   height: 1.5 * ffem / fem,
-                                  color: Color(0xff1e0a11),
+                                  color: Colors.white,
                                 ),
                               ),
                             ),
@@ -372,32 +490,72 @@ class _ArtistCredentials2State extends State<team2signup> {
                               width: double.infinity,
                               height: 60 * fem,
                               child: DropdownButtonFormField<String>(
-                                value: _skills.first,
+                                value: (_skills.isNotEmpty && _skills.contains(selectedSkill))
+                                    ? selectedSkill
+                                    : null, // Ensure value exists in _skills list
                                 items: _skills.map((String skill) {
                                   return DropdownMenuItem<String>(
                                     value: skill,
-                                    child: Text(skill),
+                                    child: Text(skill, style: TextStyle(color: Colors.black)),
                                   );
                                 }).toList(),
                                 onChanged: (String? value) {
                                   setState(() {
                                     selectedSkill = value; // Update selected skill when it changes
                                   });
-                                  // No need to update sub-skills here
                                 },
                                 decoration: InputDecoration(
                                   hintText: 'Choose Skill',
+                                  hintStyle: TextStyle(color: Color(0xFF9E9EB8)),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12 * fem),
-                                    borderSide: BorderSide(width: 1.25, color: Color(0xffeac6d3)),
+                                    borderSide: BorderSide(width: 1.25, color: Color(0xFF9E9EB8)),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12 * fem),
-                                    borderSide: BorderSide(width: 1.25, color: Color(0xffe5195e)),
+                                    borderSide: BorderSide(width: 1.25, color: Colors.white),
                                   ),
                                 ),
                               ),
                             ),
+                            SizedBox(height: 14 * fem),
+                            Container(
+                              width: double.infinity,
+                              height: 60 * fem,
+                              child: DropdownButtonFormField<String>(
+                                value: (_subSkills.isNotEmpty && _subSkills.contains(_selectedSubSkill))
+                                    ? _selectedSubSkill
+                                    : null, // Ensure value exists in _subSkills list
+                                items: _subSkills.map((String subSkill) {
+                                  return DropdownMenuItem<String>(
+                                    value: subSkill,
+                                    child: Text(subSkill, style: TextStyle(fontSize: 18, color: Colors.white)),
+                                  );
+                                }).toList(),
+                                onChanged: (String? value) {
+                                  setState(() {
+                                    _selectedSubSkill = value!;
+                                  });
+                                },
+                                //Color(0xFF9E9EB8
+                                decoration: InputDecoration(
+                                  hintText: 'Sub-Skill',
+                                  hintStyle: TextStyle(color: Color(0xFF9E9EB8)),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12 * fem),
+                                    borderSide: BorderSide(width: 1.25, color: Color(0xFF9E9EB8)),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12 * fem),
+                                    borderSide: BorderSide(width: 1.25, color: Colors.white),
+                                  ),
+                                ),
+                                style: TextStyle(color: Color(0xFF9E9EB8)),
+                                dropdownColor: Color(0xFF292938),
+                              ),
+                            ),
+
+
                           ],
                         ),
                       ),
@@ -415,32 +573,90 @@ class _ArtistCredentials2State extends State<team2signup> {
                                 'Tell Users about Yourself',
                                 style: SafeGoogleFont(
                                   'Plus Jakarta Sans',
-                                  fontSize: 18 * ffem,
-                                  fontWeight: FontWeight.w500,
+                                  fontSize: 20 * ffem,
+                                  fontWeight: FontWeight.w400,
                                   height: 1.5 * ffem / fem,
-                                  color: Color(0xff1e0a11),
+                                  color: Colors.white,
                                 ),
                               ),
                             ),
                             Container(
+
                               width: double.infinity,
-                              height: 80 * fem,
+                              // Adjusted height to match the height of the outer container
+                              height: 70 * fem,
+
                               child: TextField(
                                 controller: _experienceController,
-                                maxLines: null,
                                 decoration: InputDecoration(
-                                  hintText: 'Summary of your experience',
+                                  hintText: 'Years of Experience you have',
+                                  hintStyle: TextStyle(color:  Color(0xFF9E9EB8)),
                                   enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12 * fem),
-                                    borderSide: BorderSide(width: 1.25, color: Color(0xffeac6d3)),
+                                    borderRadius: BorderRadius.circular(10 * fem),
+                                    borderSide: BorderSide(width: 1.25, color:Color(0xFF9E9EB8),),
                                   ),
                                   focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12 * fem),
-                                    borderSide: BorderSide(width: 1.25, color: Color(0xffe5195e)),
+                                    borderRadius: BorderRadius.circular(10 * fem),
+                                    borderSide: BorderSide(width: 1.25, color: Colors.white ),
                                   ),
+                                ),
+                                style: TextStyle(color: Colors.white, fontSize: 16),
+                              ),
+                            ),
+
+                            SizedBox(height: 10,),
+                            Container(
+                              margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 11 * fem),
+                              child: Text(
+                                'Do you have your own equipment  (microphone, speakers, etc.) for the performance?',
+                                style: SafeGoogleFont(
+                                  'Plus Jakarta Sans',
+                                  fontSize: 16 * ffem,
+                                  fontWeight: FontWeight.w400,
+                                  height: 1.5 * ffem / fem,
+                                  color: Colors.white,
                                 ),
                               ),
                             ),
+
+                            Container(
+                              width: double.infinity,
+                              height: 70 * fem, // Adjusted height to match the outer container
+                              child: DropdownButtonFormField<String>(
+                                decoration: InputDecoration(
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10 * fem),
+                                    borderSide: BorderSide(width: 1.25, color: Color(0xFF9E9EB8)),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10 * fem),
+                                    borderSide: BorderSide(width: 1.25, color: Colors.white),
+                                  ),
+                                  hintText: 'Your Answer',
+                                  hintStyle: TextStyle(color: Color(0xFF9E9EB8)),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10 * fem),
+                                    borderSide: BorderSide(width: 1.25, color: Color(0xFF9E9EB8)),
+                                  ),
+                                ),
+                                value: selectedOption, // The currently selected value (nullable)
+                                items: ['Yes', 'No'].map((String value) {
+                                  return DropdownMenuItem<String>(
+                                    value: value,
+                                    child: Text(value, style: TextStyle(color: Colors.white,fontSize: 16)), // Dropdown item text
+                                  );
+                                }).toList(),
+                                dropdownColor: Color(0xff1a1a1a), // Background color of dropdown menu
+                                onChanged: (String? newValue) {
+                                  setState(() {
+                                    selectedOption = newValue; // Update selected option
+                                  });
+                                },
+                              ),
+                            )
+
+
+
                           ],
                         ),
                       ),
@@ -461,20 +677,22 @@ class _ArtistCredentials2State extends State<team2signup> {
                                   fontSize: 18 * ffem,
                                   fontWeight: FontWeight.w500,
                                   height: 1.5 * ffem / fem,
-                                  color: Color(0xff1e0a11),
+                                  color: Colors.white,
                                 ),
                               ),
                             ),
                             Container(
-                              margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 8 * fem),
+                              margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 18 * fem),
                               child: Text(
-                                '(Please Include Transportation Charges in this Price Only)',
+                                '⦾ Include transportation in the total price for city bookings.'
+                                    ' For out-of-city bookings, charges can be discussed with the host \n\n'
+                                    '⦾ HomeStage will charge a 20% fee on the total price.',
                                 style: SafeGoogleFont(
                                   'Be Vietnam Pro',
-                                  fontSize: 15 * ffem,
+                                  fontSize: 16.5 * ffem,
                                   fontWeight: FontWeight.w400,
                                   height: 1.5 * ffem / fem,
-                                  color: Colors.redAccent,
+                                  color: Colors.blue,
                                 ),
                               ),
                             ),
@@ -483,34 +701,45 @@ class _ArtistCredentials2State extends State<team2signup> {
                               height: 56 * fem,
                               child: TextField(
                                 controller: _hourlyPriceController,
+                                keyboardType: TextInputType.number, // Ensures that only numbers are entered
                                 decoration: InputDecoration(
-                                  hintText: 'Your Total Per Hour Price ',
+                                  hintText: _hourlyPriceController.text.isEmpty ? 'Your Total Per Hour Price' : null, // Hint text only when the field is empty
+                                  hintStyle: TextStyle(color: Color(0xFF9E9EB8)),
+                                  prefixText: 'Rs ', // Prefix Rs that stays in place as user types
+                                  prefixStyle: TextStyle(color: Colors.white, fontSize: 19), // Style for the Rs
                                   enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12 * fem),
-                                    borderSide: BorderSide(width: 1.25, color: Color(0xffeac6d3)),
+                                    borderRadius: BorderRadius.circular(10 * fem),
+                                    borderSide: BorderSide(width: 1.25, color: Color(0xFF9E9EB8)),
                                   ),
                                   focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12 * fem),
-                                    borderSide: BorderSide(width: 1.25, color: Color(0xffe5195e)),
+                                    borderRadius: BorderRadius.circular(10 * fem),
+                                    borderSide: BorderSide(width: 1.25, color: Colors.white),
                                   ),
                                 ),
+                                style: TextStyle(color: Colors.white, fontSize: 19), // Style for the text entered by the user
+                                onChanged: (value) {
+                                  // Rebuild the widget when the text changes to manage the hintText visibility
+                                  (context as Element).markNeedsBuild();
+                                },
                               ),
-                            ),
+                            )
                           ],
                         ),
                       ),
                       Padding(
-                        padding: EdgeInsets.fromLTRB(1 * fem, 20 * fem, 16 * fem, 0 * fem),
+                        padding: EdgeInsets.fromLTRB(1 * fem, 30 * fem, 16 * fem, 0 * fem),
+
                         child: const SizedBox(
                           height: 23,
+
                           child: Text(
-                            'Upload Your Work samples',
+                            'Upload Your Work Samples',
                             textAlign: TextAlign.left,
                             style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
-                              height: 1.5,
-                              color: Color(0xff1e0a11),
+                              fontSize: 20 ,
+                              fontWeight: FontWeight.w400,
+                              height: 1.5 ,
+                              color: Colors.white,
                               fontFamily: 'Be Vietnam Pro',
                             ),
                           ),
@@ -523,88 +752,30 @@ class _ArtistCredentials2State extends State<team2signup> {
                 Container(
                   padding: EdgeInsets.fromLTRB(16 * fem, 0 * fem, 16 * fem, 1 * fem),
                   width: double.infinity,
-                  height: 970 * fem,
+                  height: 850 * fem,
                   decoration: BoxDecoration(
-                    color: Color(0xffffffff),
+
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Upload Audio',
-                              style: TextStyle(fontSize: 18),
-                            ),
-                            ElevatedButton(
-                              onPressed: _audioFile == null ? _pickAudio : _playAudio,
-                              style: ButtonStyle(
-                                backgroundColor: MaterialStateProperty.all<Color>(
-                                  Color(0xffe5195e), // Adjust background color if needed
-                                ),
-                                foregroundColor: MaterialStateProperty.all<Color>(
-                                  Colors.white, // Change the text color here
-                                ),
-                              ),
-                              child: Text(
-                                _audioFile == null ? 'Upload' : 'Play',
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+
+
+
+
 
                       const Padding(
                         padding: EdgeInsets.all(8.0),
                         child: SizedBox(
-                          height: 20,
-                          child: Text(
-                            'Photo For the Searched Section',
-                            textAlign: TextAlign.left,
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w300,
-                              color: Colors.black,
-                              fontFamily: 'Be Vietnam Pro',
-                            ),
-                          ),
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          _pickImageForSearchedSection(); // Call the function to pick an image for the searched section
-                        },
-                        child: Container(
-                          margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 10 * fem),
-                          width: 358 * fem,
-                          height: 238.66 * fem,
-                          color: Colors.grey.withOpacity(0.3),
-                          child: _imageForSearchedSection != null
-                              ? Image.file(_imageForSearchedSection!, fit: BoxFit.cover)
-                              : Center(
-                            child: Icon(
-                              Icons.upload_outlined,
-                              size: 48.0 * fem,
-                              color: Colors.black.withOpacity(0.5),
-                            ),
-                          ),
-                        ),
-                      ),
+                          height: 30,
 
-                      const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: SizedBox(
-                          height: 20,
                           child: Text(
                             'Photos For the Portfolio',
                             textAlign: TextAlign.left,
                             style: TextStyle(
                               fontSize: 16,
-                              fontWeight: FontWeight.w300,
-                              color: Colors.black,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.white,
                               fontFamily: 'Be Vietnam Pro',
                             ),
                           ),
@@ -619,66 +790,67 @@ class _ArtistCredentials2State extends State<team2signup> {
                           GestureDetector(
                             onTap: _pickImage1,
                             child: Container(
-                              decoration: BoxDecoration(
+                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10*fem),
                                 border: Border.all(color: Colors.grey),
                               ),
                               child: _image1 != null
                                   ? Image.file(_image1!, fit: BoxFit.cover)
-                                  : Icon(Icons.add),
+                                  : Icon(Icons.add,color: Colors.white,),
                             ),
                           ),
                           GestureDetector(
                             onTap: _pickImage2,
                             child: Container(
-                              decoration: BoxDecoration(
+                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10*fem),
                                 border: Border.all(color: Colors.grey),
                               ),
                               child: _image2 != null
                                   ? Image.file(_image2!, fit: BoxFit.cover)
-                                  : Icon(Icons.add),
+                                  : Icon(Icons.add,color: Colors.white,),
                             ),
                           ),
                           GestureDetector(
                             onTap: _pickImage3,
                             child: Container(
-                              decoration: BoxDecoration(
+                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10*fem),
                                 border: Border.all(color: Colors.grey),
                               ),
                               child: _image3 != null
                                   ? Image.file(_image3!, fit: BoxFit.cover)
-                                  : Icon(Icons.add),
+                                  : Icon(Icons.add,color: Colors.white,),
                             ),
                           ),
                           GestureDetector(
                             onTap: _pickImage4,
                             child: Container(
-                              decoration: BoxDecoration(
+                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10*fem),
                                 border: Border.all(color: Colors.grey),
                               ),
                               child: _image4 != null
                                   ? Image.file(_image4!, fit: BoxFit.cover)
-                                  : Icon(Icons.add),
+                                  : Icon(Icons.add,color: Colors.white,),
                             ),
                           ),
                         ],
                       ),
                       const Padding(
-                        padding: EdgeInsets.all(8.0),
+                        padding: EdgeInsets.fromLTRB(0,20,0,0),
                         child: SizedBox(
-                          height: 20,
+                          height: 40,
+
                           child: Text(
                             'Upload Your Videos Here',
                             textAlign: TextAlign.left,
                             style: TextStyle(
                               fontSize: 16,
-                              fontWeight: FontWeight.w300,
-                              color: Colors.black,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.white,
                               fontFamily: 'Be Vietnam Pro',
                             ),
                           ),
                         ),
                       ),
-                      GridView.count(
+                      GridView.count(physics: const NeverScrollableScrollPhysics(),
                         shrinkWrap: true,
                         crossAxisCount: 2,
                         mainAxisSpacing: 16.0,
@@ -687,23 +859,34 @@ class _ArtistCredentials2State extends State<team2signup> {
                           GestureDetector(
                             onTap: _pickVideo1,
                             child: Container(
-                              decoration: BoxDecoration(
+                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10*fem),
                                 border: Border.all(color: Colors.grey),
                               ),
                               child: _controller1 != null
                                   ? VideoPlayer(_controller1!)
-                                  : Icon(Icons.add),
+                                  : Icon(Icons.add,color: Colors.white,),
                             ),
                           ),
                           GestureDetector(
                             onTap: _pickVideo2,
                             child: Container(
-                              decoration: BoxDecoration(
+                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10*fem),
                                 border: Border.all(color: Colors.grey),
                               ),
                               child: _controller2 != null
                                   ? VideoPlayer(_controller2!)
-                                  : Icon(Icons.add),
+                                  : Icon(Icons.add,color: Colors.white,),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: _pickVideo3,
+                            child: Container(
+                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10*fem),
+                                border: Border.all(color: Colors.grey),
+                              ),
+                              child: _controller3 != null
+                                  ? VideoPlayer(_controller3!)
+                                  : Icon(Icons.add,color: Colors.white,),
                             ),
                           ),
                         ],
@@ -717,84 +900,72 @@ class _ArtistCredentials2State extends State<team2signup> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Container(
-                        color: Colors.white,
-                        margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 24 * fem),
-                        width: double.infinity,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 8 * fem),
-                              child: Text(
-                                'Leave a special message for the host',
-                                style: SafeGoogleFont(
-                                  'Be Vietnam Pro',
-                                  fontSize: 17 * ffem,
-                                  fontWeight: FontWeight.w500,
-                                  height: 1.5 * ffem / fem,
-                                  color: Color(0xff1e0a11),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 8 * fem),
+                            child: Text(
+                              'Leave a special message for the host',
+                              style: SafeGoogleFont(
+                                'Be Vietnam Pro',
+                                fontSize: 17 * ffem,
+                                fontWeight: FontWeight.w500,
+                                height: 1.5 * ffem / fem,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          Container(
+                            width: double.infinity,
+                            height: 80 * fem,
+                            child: TextField(
+                              controller: _messageController,
+                              maxLines: null,
+                              decoration: InputDecoration(
+                                hintText: 'I don\'t work after 11 !',
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12 * fem),
+                                  borderSide: BorderSide(width: 1.25, color: Color(0xffeac6d3)),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12 * fem),
+                                  borderSide: BorderSide(width: 1.25, color: Color(0xffe5195e)),
                                 ),
                               ),
                             ),
-                            Container(
-                              width: double.infinity,
-                              height: 80 * fem,
-                              child: TextField(
-                                controller: _messageController,
-                                maxLines: null,
-                                decoration: InputDecoration(
-                                  hintText: 'I don\'t work after 11 !',
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12 * fem),
-                                    borderSide: BorderSide(width: 1.25, color: Color(0xffeac6d3)),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12 * fem),
-                                    borderSide: BorderSide(width: 1.25, color: Color(0xffe5195e)),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                       Padding(
                         padding: const EdgeInsets.only(left: 20, right: 20),
                         child: ElevatedButton(
-                          onPressed: () {
-                            _sendDataToBackend();
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => team1signup()),
-                            );
-                          },
+                          onPressed: _isLoading ? null : _handleButtonClick, // Disable button when loading
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Color(0xffe5195e),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12 * fem),
+                              borderRadius: BorderRadius.circular(12),
                             ),
                             padding: EdgeInsets.symmetric(
-                              horizontal: 16 * fem,
-                              vertical: 12 * fem,
+                              horizontal: 16,
+                              vertical: 12,
                             ),
-                            minimumSize: Size(double.infinity, 14 * fem),
+                            minimumSize: Size(double.infinity, 14),
                           ),
                           child: Center(
                             child: Text(
-                              'Finish',
-                              style: SafeGoogleFont(
-                                'Be Vietnam Pro',
-                                fontSize: 16 * ffem,
+                              _isLoading ? 'Loading...' : 'Finish', // Show 'Loading...' if loading
+                              style: TextStyle(
+                                fontSize: 16,
                                 fontWeight: FontWeight.w700,
-                                height: 1.5 * ffem / fem,
-                                letterSpacing: 0.2399999946 * fem,
+                                height: 1.5,
+                                letterSpacing: 0.24,
                                 color: Color(0xffffffff),
                               ),
                             ),
                           ),
                         ),
-                      ),
+                      )
                     ],
                   ),
                 ),
@@ -805,57 +976,120 @@ class _ArtistCredentials2State extends State<team2signup> {
       ),
     );
   }
-  Future<List<String>> _uploadImages( imageFiles) async {
-    List<String> imagePaths = [];
-    // print(imageFiles.length);
-    for (int i = 0; i < imageFiles.length; i++) {
-      if (imageFiles[i] != null) {
-        // Upload the image and store its path
-        String paths = await uploadImagesAndStorePaths(imageFiles[i]);
-        // for (String imagePath in paths) {
-        imagePaths.add(paths);
+  Future<void> _handleButtonClick() async {
+    setState(() {
+      _isLoading = true;
+    });
+    // double _progress = 0.0;
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Prevents dismissing the dialog by tapping outside
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              backgroundColor: Color(0xfff5f5f5),
+              content: SizedBox(
+                height: 150,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xffe5195e)),
+                    ),
+                    SizedBox(height: 20),
+                    Text(
+                      'Your profile is generating...'
+                          'It may take upto few minutes',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xff333333),
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    // Percentage text
+                    // Text(
+                    //   '${_progress.toInt()}%', // Display the percentage
+                    //   style: TextStyle(
+                    //     fontSize: 16,
+                    //     fontWeight: FontWeight.w600,
+                    //     color: Color(0xff333333),
+                    //   ),
+                    // ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
 
-      }
-    }
-    return imagePaths;
+    // // Simulate the process and update the percentage
+    // for (int i = 0; i <= 100; i++) {
+    //   await Future.delayed(Duration(milliseconds: 50)); // Adjust the speed
+    //   setState(() {
+    //     _progress = i.toDouble();
+    //   });
+    // }
+    bool wait = await _onFinishButtonClicked();
+    // Close the dialog once the process is complete
+    Navigator.of(context).pop();
+
+    // bool wait = await _onFinishButtonClicked();
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => team1signup()),
+    );
   }
 
 
-  Future<String> uploadImagesAndStorePaths(File? imageFile) async {
-    if (imageFile == null) {
-      throw ArgumentError('Image file cannot be null');
+  Future<bool> uploadImages(List<File?> imageFiles, String id) async {
+    try {
+      // Your image upload API endpoint
+      var uploadUrl = Uri.parse('${Config().apiDomain}/upload-images/$id');
+      var request = http.MultipartRequest('POST', uploadUrl);
+
+      // Add user type as a field in the request
+      request.fields['user_type'] = 'team';
+
+      // Add images to the request
+      for (int i = 0; i < imageFiles.length; i++) {
+        var imageFile = imageFiles[i];
+        if (imageFile != null) {
+          // Use 'profile_photo' for the last image, otherwise use 'image{i + 1}'
+          String fieldName = (i == imageFiles.length - 1) ? 'profile_photo' : 'image${i + 1}';
+          var image = await http.MultipartFile.fromPath(fieldName, imageFile.path);
+          request.files.add(image);
+        }
+      }
+
+      // Send the request to upload the images
+      var streamedResponse = await request.send();
+
+      // Check if the image upload was successful
+      if (streamedResponse.statusCode == 200) {
+        var response = await streamedResponse.stream.bytesToString();
+        print('Upload successful: $response');
+        return true;
+      } else {
+        print('Upload failed with status: ${streamedResponse.statusCode}');
+        return false;
+      }
+    } catch (e) {
+      // Handle errors if needed
+      print('Error uploading images: $e');
+      return false;
     }
-    String imagePath = '';
-    // Your image upload API endpoint
-    var uploadUrl = Uri.parse('http://127.0.0.1:8000/api/upload-image');
-
-    // Create a multipart request
-    var request = http.MultipartRequest('POST', uploadUrl);
-
-    // Add the image file to the request
-    var image = await http.MultipartFile.fromPath('image', imageFile.path);
-
-    request.files.add(image);
-
-    // Send the request to upload the image
-    var streamedResponse = await request.send();
-    print(streamedResponse);
-
-    // Check if the image upload was successful
-    if (streamedResponse.statusCode == 200) {
-      // Parse the response to get the image URL or file path
-      var response = await streamedResponse.stream.bytesToString();
-
-      imagePath = json.decode(response)['imagePath'];
-    }
-    //   else {
-    //     throw Exception('Failed to upload image');
-    //   }
-    // } catch (e) {
-    //   // Handle errors if needed
-    //   print('Error uploading image: $e');
-    //   throw Exception('Error uploading image: $e');
-    // }
-    return imagePath;
   }
 }

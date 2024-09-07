@@ -259,7 +259,7 @@ class account_managment extends StatelessWidget {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => customer_support()),
+                        MaterialPageRoute(builder: (context) =>SupportScreen()),
                       );
                     },
                     child: Container(

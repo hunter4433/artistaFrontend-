@@ -51,17 +51,17 @@ class _TeamProfileState extends State<TeamProfile> {
   Future<void> fetchArtistWorkInformation() async {
     // String baseUrl = 'http://127.0.0.1:8000/storage/';
     String? token = await _getToken();
-    String? id = await _getId();
+    String? artist_id = await _getId();
     String? kind = await _getKind();
 
     print(token);
-    print(id);
+    // print(id);
     print(kind);
 
     // Initialize API URLs for different kinds
     String apiUrl;
 
-    apiUrl = 'http://127.0.0.1:8000/api/featured/team/$id';
+    apiUrl = 'http://127.0.0.1:8000/api/featured/team/$artist_id';
 
 // Declare a variable to store the name outside the loop
 
@@ -441,8 +441,9 @@ class _TeamProfileState extends State<TeamProfile> {
                           Padding(
                             padding: const EdgeInsets.only(left: 25, right: 25, bottom: 25),
                             child: ElevatedButton(
-                              onPressed: () {
-                                Navigator.push(context, MaterialPageRoute(builder: (context)=>booking_artist()));
+                              onPressed: () async{
+                                String? artist_id = await _getId();
+                                Navigator.push(context, MaterialPageRoute(builder: (context)=>booking_artist(artist_id : artist_id!)));
                                 // Handle button press
                               },
                               style: ElevatedButton.styleFrom(
@@ -827,8 +828,9 @@ class _TeamProfileState extends State<TeamProfile> {
                     Padding(
                       padding: const EdgeInsets.only(left: 25, right: 25, bottom: 45),
                       child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context)=>booking_artist()));
+                        onPressed: ()  async{
+                          String? artist_id = await _getId();
+                          Navigator.push(context, MaterialPageRoute(builder: (context)=>booking_artist(artist_id: artist_id!)));
                           // Handle button press
                         },
                         style: ElevatedButton.styleFrom(

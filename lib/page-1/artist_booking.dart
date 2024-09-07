@@ -1,3 +1,6 @@
+import 'dart:ffi';
+
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -10,10 +13,13 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'booked_artist.dart';
+import 'customer_support.dart';
 import'google_map_page.dart';
 
 
 class booking_artist extends StatefulWidget {
+  late String  artist_id;
+  booking_artist({required this.artist_id});
   @override
   _BookingArtistState createState() => _BookingArtistState();
 }
@@ -37,9 +43,18 @@ class _BookingArtistState extends State<booking_artist> {
  late double? latitude;
   late double? longitude;
   final FocusNode locationFocusNode = FocusNode();
-  String? selectedToTime; // Define selectedToTime variable here
+  String? selectedToTime;
+  String? selectedAudienceSize;// Define selectedToTime variable here
+  double? artistPrice=10.0;
+  String? crowdSize;
+double? soundSystemPrice=20.0;
+  bool hasSoundSystem = true;
+  // Place this outside the build method in your widget tree
+
+
 
   // Define TextEditingController instances
+  TextEditingController nameController = TextEditingController();
   TextEditingController durationController = TextEditingController();
   TextEditingController locationController = TextEditingController();
   TextEditingController specialRequestController = TextEditingController();
@@ -67,7 +82,7 @@ class _BookingArtistState extends State<booking_artist> {
   @override
   void initState() {
     super.initState();
-    fetchArtistInformation();
+    fetchArtistInformation(widget.artist_id);
 
   }
 
@@ -135,16 +150,16 @@ class _BookingArtistState extends State<booking_artist> {
 
 
 
-    Future<void> fetchArtistInformation() async {
+    Future<void> fetchArtistInformation(String artist_id) async {
     String? token = await _getToken();
     String? id = await _getid();
     String? kind = await _getKind();
-
+     print(widget.artist_id);
 
     // Initialize API URLs for different kinds
     String apiUrl;
     // if (kind == 'solo_artist') {
-      apiUrl = '${Config().apiDomain}/featured/artist_info/$id';
+      apiUrl = '${Config().apiDomain}/featured/artist_info/$artist_id';
 
     try {
       var response = await http.get(
@@ -328,637 +343,808 @@ class _BookingArtistState extends State<booking_artist> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Booking Details',style: SafeGoogleFont('Be Vietnam Pro')
-
-
-          ),
+        title: Text('Booking Details',style: SafeGoogleFont('Be Vietnam Pro',color: Colors.black,
+        fontWeight: FontWeight.w500,fontSize: 22*fem),
+        ),
+        leading: IconButton(color: Colors.black,
+          icon: Icon(Icons.arrow_back_ios_new_rounded),
+          onPressed: () {
+            // Use Navigator.pop() to close the current screen (Scene2) and go back to the previous screen (Scene1)
+            Navigator.pop(context);
+          },
+        ),
       ),
       body: SafeArea(
       child: Container(
         width: double.infinity,
         child: Container(
+          // depth0frame0uCT (9:1570)
           width: double.infinity,
-          height: 1232.16*fem,
+          height: double.infinity,
           decoration: BoxDecoration (
             color: Color(0xffffffff),
           ),
-          child: Container(
-            // depth0frame0uCT (9:1570)
-            width: double.infinity,
-            height: double.infinity,
-            decoration: BoxDecoration (
-              color: Color(0xffffffff),
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    // depth1frame28cw (9:1588)
-                    padding: EdgeInsets.fromLTRB(16 * fem, 0 * fem, 16 * fem, 1 * fem),
-                    width: double.infinity,
-                    height: 148.66 * fem,
-                    decoration: BoxDecoration(),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Container(
-                          // depth2frame03V1 (9:1589)
-                          margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 7.39 * fem, 0 * fem),
-                          height: double.infinity,
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Container(
-                                margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 7.39 * fem, 0 * fem),
-                                width: 128 * fem,
-                                height: 128 * fem,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Container(
-                                  margin: EdgeInsets.fromLTRB(10 * fem, 0 * fem, 10 * fem, 0 * fem),
-                                  width: 128 * fem,
-                                  height: 128 * fem,
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(64 * fem),
-                                    child: Image.network(
-                                      image ?? '',
-                                      width: 128 * fem,
-                                      height: 128 * fem,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  // depth1frame28cw (9:1588)
+                  padding: EdgeInsets.fromLTRB(16 * fem, 0 * fem, 0 * fem, 1 * fem),
+                  width: double.infinity,
+                  height: 148.66 * fem,
+                  decoration: BoxDecoration(),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+
+                        height: double.infinity,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Container(
+                              margin: EdgeInsets.fromLTRB(0* fem, 0* fem, 10 * fem, 0 * fem),
+                              width: 110 * fem,
+                              height: 130 * fem,
+                              decoration: BoxDecoration(
+                                color: Colors.grey,
+                                shape: BoxShape.circle,
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(10 * fem),
+                                child: Image.network(
+                                  image ?? '',
+                                  width: 110 * fem,
+                                  height: 130 * fem,
+                                  fit: BoxFit.cover,
                                 ),
                               ),
-                              Container(
-                                // depth3frame26CP (9:1591)
-                                margin: EdgeInsets.fromLTRB(10 * fem, 44.83 * fem, 0 * fem, 1.83 * fem),
-                                width: 202.61 * fem,
-                                height: double.infinity,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      name ?? '', // Use fetched name
-                                      style: SafeGoogleFont(
-                                        'Be Vietnam Pro',
-                                        fontSize: 16 * ffem,
-                                        fontWeight: FontWeight.w500,
-                                        height: 1.5 * ffem / fem,
-                                        color: Color(0xff1e0a11),
-                                      ),
-                                    ),
-                                    SizedBox(height: 4),
-                                    Text(
-                                      '₹${price ?? ''}   Per Hour\n(Includes all the Charges)', // Use fetched price
-                                      style: SafeGoogleFont(
-                                        'Be Vietnam Pro',
-                                        fontSize: 16 * ffem,
-                                        fontWeight: FontWeight.w400,
-                                        height: 1.5 * ffem / fem,
-                                        color: Color(0xffa53a5e),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                  // autogroupe7afD43 (JkRkRPf57vHepTRWamE7AF)
-                  padding: EdgeInsets.fromLTRB(16 * fem, 20 * fem, 16 * fem, 12 * fem),
-                   width: double.infinity,
-                    child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                     children: [
-                  // Add Category Dropdown here
-                       Container(
-                        margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 16 * fem),
-                         child: DropdownButtonFormField<String>(
-                          value: selectedCategory,
-                          hint: Text(
-                          'Select Booking Category',
-                         style: SafeGoogleFont(
-                          'Be Vietnam Pro',
-                          fontSize: 16 * ffem,
-                          fontWeight: FontWeight.w500,
-                          height: 1.5 * ffem / fem,
-                          color: Color(0xff1e0a11),
-                           ),
-                         ),
-                          items: categories.map((String category) {
-                            return DropdownMenuItem<String>(
-                          value: category,
-                          child: Text(
-                            category,
-                            style: SafeGoogleFont(
-                              'Be Vietnam Pro',
-                              fontSize: 16 * ffem,
-                              fontWeight: FontWeight.w500,
-                              height: 1.5 * ffem / fem,
-                              color: Color(0xff1e0a11),
                             ),
-                           ),
-                            );
-                          }).toList(),
-                      onChanged: (newValue) {
-                        setState(() {
-                          selectedCategory = newValue;
-                        });
-                         },
-                      decoration: InputDecoration(
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12 * fem),
-                          borderSide: BorderSide(width: 1.25, color: Color(0xffeac6d3)),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12 * fem),
-                          borderSide: BorderSide(width: 1.25, color: Color(0xffe5195e)),
-                        ),
-                      ),
-                    ),
-                  ),
-                 ],
-                 ),
-                  ),
-                   Container(
-                    // autogroupe7afD43 (JkRkRPf57vHepTRWamE7AF)
-                    padding: EdgeInsets.fromLTRB(16*fem, 20*fem, 16*fem, 12*fem),
-                    width: double.infinity,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          // datetimevj9 (9:1606)
-                          margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 0*fem, 23.5*fem),
-                          child: Text(
-                            'Date & Time',
-                            style: SafeGoogleFont (
-                              'Be Vietnam Pro',
-                              fontSize: 22*ffem,
-                              fontWeight: FontWeight.w700,
-                              height: 1.25*ffem/fem,
-                              letterSpacing: -0.3300000131*fem,
-                              color: Color(0xff1e0a11),
-                            ),
-                          ),
-                        ),
-                        Container(
-                          // depth3frame0ppX (9:1609)
-                          margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 0*fem, 14*fem),
-                          width: double.infinity,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-
-                              Container(
-                                margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 8 * fem),
-                                child: Text(
-                                  'Select Date',
-                                  style: SafeGoogleFont(
-                                    'Be Vietnam Pro',
-                                    fontSize: 16 * ffem,
-                                    fontWeight: FontWeight.w500,
-                                    height: 1.5 * ffem / fem,
-                                    color: Color(0xff1e0a11),
-                                  ),
-                                ),
-                              ),
-                              Container(
-                                margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 8 * fem),
-                                width: double.infinity,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      isContainerTapped = !isContainerTapped;
-                                    });
-                                    _selectDate(context);
-                                  },
-                                  child: Container(
-                                    height: 56 * fem,
-                                    decoration: BoxDecoration(
-                                      border: Border.all(
-                                        color: isContainerTapped ? Color(0xffe5195e) : Color(0xffeac6d3),
-                                      ),
-                                      borderRadius: BorderRadius.circular(12 * fem),
-                                    ),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Padding(
-                                          padding: EdgeInsets.symmetric(horizontal: 16 * fem),
-                                          child: Text(
-                                            selectedDate != null
-                                                ? '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}'
-                                                : 'Choose Event Date',
-                                            style: TextStyle(
-                                              fontSize: 16 * ffem,
-                                              color: Color(0xff1e0a11),
-                                            ),
-                                          ),
-                                        ),
-                                        Icon(Icons.calendar_today,
-                                            color: isContainerTapped ? Color(0xffe5195e) : Color(0xffeac6d3)),
-                                      ],
+                            Container(
+                              // depth3frame26CP (9:1591)
+                              margin: EdgeInsets.fromLTRB(10 * fem, 0 * fem, 0 * fem, 1.83 * fem),
+                              padding: EdgeInsets.fromLTRB( 0* fem, 30 * fem, 0 * fem, 0 * fem),
+                              width: 222.61 * fem,
+                              height: double.infinity,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    name ?? '', // Use fetched name
+                                    style: SafeGoogleFont(
+                                      'Be Vietnam Pro',
+                                      fontSize: 19 * ffem,
+                                      fontWeight: FontWeight.w500,
+                                      height: 1.5 * ffem / fem,
+                                      color: Color(0xff1e0a11),
                                     ),
                                   ),
-                                ),
-                              ),
-                              SizedBox(
-                                height: 14*fem,
-                              ),
-                              Container(
-                                margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 12 * fem),
-                                child: Text(
-                                  'Select Time   (From-To)',
-                                  style: SafeGoogleFont(
-                                    'Be Vietnam Pro',
-                                    fontSize: 16 * ffem,
-                                    fontWeight: FontWeight.w500,
-                                    height: 1.5 * ffem / fem,
-                                    color: Color(0xff1e0a11),
-                                  ),
-                                ),
-                              ),
-
-                              Row(
-                                children:[
-                                  Container(
-                                    width: 175,
-                                    height: 56 * fem,
-                                    child: TextField(
-                                      controller: fromTimeController,
-                                      onTap: () async {
-                                        final TimeOfDay? pickedTime = await showTimePicker(
-                                          context: context,
-                                          initialTime: TimeOfDay.now(),
-                                        );
-
-                                        if (pickedTime != null) {
-                                          setState(() {
-                                            // Store the selected time in selectedFromTime variable
-                                            selectedFromTime = pickedTime.format(context);
-                                            String formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate!);
-                                            selectedFromTimeBack = '$formattedDate ${pickedTime.hour}:${pickedTime.minute}:00';
-                                            print(selectedFromTimeBack);
-                                            fromTimeController.text = selectedFromTime ?? ''; // Update the text field
-                                          });
-                                        }
-                                      },
-                                      decoration: InputDecoration(
-                                        suffixIcon: Icon(Icons.access_time, color: Color(0xffeac6d3)),
-                                        hintText: 'From',
-                                        enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12 * fem),
-                                          borderSide: BorderSide(width: 1.25, color: Color(0xffeac6d3)),
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12 * fem),
-                                          borderSide: BorderSide(width: 1.25, color: Color(0xffe5195e)),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: 10,
-                                  ),
-                                  Container(
-                                    width: 175,
-                                    height: 56 * fem,
-                                    child: TextField(
-                                      controller: toTimeController,
-                                      onTap: () async {
-                                        final TimeOfDay? pickedTime = await showTimePicker(
-                                          context: context,
-                                          initialTime: TimeOfDay.now(),
-                                        );
-
-                                        if (pickedTime != null) {
-                                          setState(() {
-                                            // Store the selected time in selectedToTime variable
-                                            selectedToTime = pickedTime.format(context);
-                                            // Format the selected date and time
-                                            String formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate!);
-                                            selectedToTimeBack = '$formattedDate ${pickedTime.hour}:${pickedTime.minute}:00';
-                                            print(selectedToTimeBack);
-                                            toTimeController.text = selectedToTime ?? ''; // Update the text field
-                                            calculateDuration(); // Calculate duration whenever "To" time is selected
-                                          });
-                                        }
-                                      },
-                                      decoration: InputDecoration(
-                                        suffixIcon: Icon(Icons.access_time, color: Color(0xffeac6d3)),
-                                        hintText: 'To',
-                                        enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12 * fem),
-                                          borderSide: BorderSide(width: 1.25, color: Color(0xffeac6d3)),
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12 * fem),
-                                          borderSide: BorderSide(width: 1.25, color: Color(0xffe5195e)),
-                                        ),
-                                      ),
+                                  SizedBox(height: 4),
+                                  Text(
+                                    '₹ ${price ?? ''}  Per Hour\n(Includes all the Taxes)', // Use fetched price
+                                    style: SafeGoogleFont(
+                                      'Be Vietnam Pro',
+                                      fontSize: 17 * ffem,
+                                      fontWeight: FontWeight.w400,
+                                      height: 1.5 * ffem / fem,
+                                      color: Color(0xffa53a5e),
                                     ),
                                   ),
                                 ],
                               ),
-
-                            ],
-                          ),
-                        ),
-
-                        Container(
-                          margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 8 * fem),
-                          child: Text(
-                            'Event Duration',
-                            style: SafeGoogleFont(
-                              'Be Vietnam Pro',
-                              fontSize: 16 * ffem,
-                              fontWeight: FontWeight.w500,
-                              height: 1.5 * ffem / fem,
-                              color: Color(0xff1e0a11),
-                            ),
-                          ),
-                        ),
-                        Container(
-                          width: double.infinity,
-                          height: 56 * fem,
-                          child: TextField(
-                            controller: durationController, // Connect the controller here
-                            decoration: InputDecoration(
-                              hintText: 'Event Duration',
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12 * fem),
-                                borderSide: BorderSide(width: 1.25, color: Color(0xffeac6d3)),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12 * fem),
-                                borderSide: BorderSide(width: 1.25, color: Color(0xffe5195e)),
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 18 * fem),
-                        Container(
-                          margin: EdgeInsets.symmetric(vertical: 8 * fem),
-                          child: FutureBuilder<double>(
-                            future: Future.delayed(Duration(seconds: 1), () => calculateTotalAmount( price!  ,hours!, minutes!)), // Replace 1000 with the actual amount
-                            builder: (BuildContext context, AsyncSnapshot<double> snapshot) {
-                              if (snapshot.connectionState == ConnectionState.waiting) {
-                                return Text(
-                                  '',
-                                  style: SafeGoogleFont(
-                                    'Be Vietnam Pro',
-                                    fontSize: 16 * ffem,
-                                    fontWeight: FontWeight.w500,
-                                    height: 1.5 * ffem / fem,
-                                    color: Color(0xff1e0a11),
-                                  ),
-                                );
-                              } else if (snapshot.hasError) {
-                                return Text(
-                                  '',
-                                  style: SafeGoogleFont(
-                                    'Be Vietnam Pro',
-                                    fontSize: 16 * ffem,
-                                    fontWeight: FontWeight.w500,
-                                    height: 1.5 * ffem / fem,
-                                    color: Color(0xff1e0a11),
-                                  ),
-                                );
-                              } else {
-                                return Text(
-                                  'Total Amount Excluding GST: ${snapshot.data!.toStringAsFixed(2)}',
-                                  style: SafeGoogleFont(
-                                    'Be Vietnam Pro',
-                                    fontSize: 16 * ffem,
-                                    fontWeight: FontWeight.w500,
-                                    height: 1.5 * ffem / fem,
-                                    color: Color(0xff1e0a11),
-                                  ),
-                                );
-                              }
-                            },
-                          ),
-                        ),
-
-                        Container(
-                          margin: EdgeInsets.only(bottom: 16.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Event Location',
-                                style: TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w700,
-                                  height: 1.25,
-                                  letterSpacing: -0.33,
-                                  color: Color(0xff1e0a11),
-                                ),
-                              ),
-                              IconButton(
-                                icon: Icon(Icons.edit, color: Color(0xffe5195e)),
-                                onPressed: () {
-                                  // Focus on the TextField to allow editing
-                                  locationFocusNode.requestFocus();
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                        Stack(
-                          children: [
-                            Container(
-                              width: double.infinity,
-                              height: 156,
-                              child: InkWell(
-                                onTap: () {
-                                  _showLocationDialog(context);
-                                },
-                                child: IgnorePointer(
-                                  child: TextField(
-                                    controller: locationController,
-                                    focusNode: locationFocusNode,
-                                    maxLines: null,
-                                    decoration: InputDecoration(
-                                      hintText: 'Full Address',
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12.0),
-                                        borderSide: BorderSide(
-                                          width: 1.25,
-                                          color: Color(0xffeac6d3),
-                                        ),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12.0),
-                                        borderSide: BorderSide(
-                                          width: 1.25,
-                                          color: Color(0xffe5195e),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
                             ),
                           ],
                         ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                // autogroupe7afD43 (JkRkRPf57vHepTRWamE7AF)
+                padding: EdgeInsets.fromLTRB(16 * fem, 20 * fem, 16 * fem, 12 * fem),
+                 width: double.infinity,
+                  child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                   children: [
+                     Container(
+                       margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 16 * fem),
+                       child: TextFormField(
+                         controller: nameController,  // TextEditingController for name input
+                         decoration: InputDecoration(
+                           contentPadding: EdgeInsets.symmetric(vertical: 17.0, horizontal: 12.0),
+                           hintText: 'Enter Your Name',
+                           hintStyle: SafeGoogleFont(
+                             'Be Vietnam Pro',
+                             fontSize: 16 * ffem,
+                             fontWeight: FontWeight.w400,
+                             height: 1.5 * ffem / fem,
+                             color: Color(0xff1e0a11),
+                           ),
+                           enabledBorder: OutlineInputBorder(
+                             borderRadius: BorderRadius.circular(12 * fem),
+                             borderSide: BorderSide(width: 1.25, color: Color(0xffeac6d3)),
+                           ),
+                           focusedBorder: OutlineInputBorder(
+                             borderRadius: BorderRadius.circular(12 * fem),
+                             borderSide: BorderSide(width: 1.25, color: Color(0xffe5195e)),
+                           ),
+                         ),
+                         style: SafeGoogleFont(
+                           'Be Vietnam Pro',
+                           fontSize: 16 * ffem,
+                           fontWeight: FontWeight.w500,
+                           height: 1.5 * ffem / fem,
+                           color: Color(0xff1e0a11),
+                         ),
+                       ),
+                     ),
 
+                     Container(
+                      margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 16 * fem),
+                       child: DropdownButtonFormField<String>(
+                        value: selectedCategory,
+                        hint: Text(
+                        'Select Event Category',
+                       style: SafeGoogleFont(
+                        'Be Vietnam Pro',
+                        fontSize: 16 * ffem,
+                        fontWeight: FontWeight.w400,
+                        height: 1.5 * ffem / fem,
+                        color: Color(0xff1e0a11),
+                         ),
+                       ),
+                        items: categories.map((String category) {
+                          return DropdownMenuItem<String>(
+                        value: category,
+                        child: Text(
+                          category,
+                          style: SafeGoogleFont(
+                            'Be Vietnam Pro',
+                            fontSize: 16 * ffem,
+                            fontWeight: FontWeight.w400,
+                            height: 1.5 * ffem / fem,
+                            color: Color(0xff1e0a11),
+                          ),
+                         ),
+                          );
+                        }).toList(),
+                    onChanged: (newValue) {
+                      setState(() {
+                        selectedCategory = newValue;
+                      });
+                       },
+                    decoration: InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(vertical: 17.0, horizontal: 12.0),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12 * fem),
+                        borderSide: BorderSide(width: 1.25, color: Color(0xffeac6d3)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12 * fem),
+                        borderSide: BorderSide(width: 1.25, color: Color(0xffe5195e)),
+                      ),
+                    ),
+                  ),
+                   ),
 
-                        SizedBox(height: 18 * fem),
-                        Container(
-                          margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 6.5 * fem),
-                          child: Text(
-                            'Special requests',
-                            style: SafeGoogleFont(
-                              'Be Vietnam Pro',
-                              fontSize: 22 * ffem,
-                              fontWeight: FontWeight.w700,
-                              height: 1.25 * ffem / fem,
-                              letterSpacing: -0.3300000131 * fem,
-                              color: Color(0xff1e0a11),
-                            ),
+                     Container(
+                       margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 16 * fem),
+                       child: DropdownButtonFormField<String>(
+                         value: selectedAudienceSize, // Store the selected audience size
+                         hint: Text(
+                           'Your Audience Size',
+                           style: SafeGoogleFont(
+                             'Be Vietnam Pro',
+                             fontSize: 16 * ffem,
+                             fontWeight: FontWeight.w400,
+                             height: 1.5 * ffem / fem,
+                             color: Color(0xff1e0a11),
+                           ),
+                         ),
+                         items: [
+                           '1-10',
+                           '1-30',
+                           '1-50',
+                           '1-70',
+                           '1-100',
+                           'More than 100'
+                         ].map((String size) {
+                           return DropdownMenuItem<String>(
+                             value: size,
+                             child: Text(
+                               size,
+                               style: SafeGoogleFont(
+                                 'Be Vietnam Pro',
+                                 fontSize: 16 * ffem,
+                                 fontWeight: FontWeight.w500,
+                                 height: 1.5 * ffem / fem,
+                                 color: Color(0xff1e0a11),
+                               ),
+                             ),
+                           );
+                         }).toList(),
+                         onChanged: (newValue) {
+                           setState(() {
+                             selectedAudienceSize = newValue;
+                           });
+                         },
+                         decoration: InputDecoration(
+                           contentPadding: EdgeInsets.symmetric(vertical: 17.0, horizontal: 12.0),
+                           enabledBorder: OutlineInputBorder(
+                             borderRadius: BorderRadius.circular(12 * fem),
+                             borderSide: BorderSide(width: 1.25, color: Color(0xffeac6d3)),
+                           ),
+                           focusedBorder: OutlineInputBorder(
+                             borderRadius: BorderRadius.circular(12 * fem),
+                             borderSide: BorderSide(width: 1.25, color: Color(0xffe5195e)),
+                           ),
+                         ),
+                       ),
+                     ),
+
+               ],
+               ),
+                ),
+                 Container(
+                  // autogroupe7afD43 (JkRkRPf57vHepTRWamE7AF)
+                  padding: EdgeInsets.fromLTRB(16*fem, 7*fem, 16*fem, 12*fem),
+                  width: double.infinity,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        // datetimevj9 (9:1606)
+                        margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 0*fem, 15*fem),
+                        child: Text(
+                          'Date & Time',
+                          style: SafeGoogleFont (
+                            'Be Vietnam Pro',
+                            fontSize: 22*ffem,
+                            fontWeight: FontWeight.w700,
+                            height: 1.25*ffem/fem,
+                            letterSpacing: -0.3300000131*fem,
+                            color: Color(0xff1e0a11),
                           ),
                         ),
-                        Container(
-                          margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 24 * fem),
-                          width: double.infinity,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 8 * fem),
-                                constraints: BoxConstraints(
-                                  maxWidth: 325 * fem,
-                                ),
-                                child: Text(
-                                  'Any Special Message For the Booked Artist.',
-                                  style: SafeGoogleFont(
-                                    'Be Vietnam Pro',
-                                    fontSize: 16 * ffem,
-                                    fontWeight: FontWeight.w500,
-                                    height: 1.5 * ffem / fem,
-                                    color: Color(0xff1e0a11),
+                      ),
+                      Container(
+                        // depth3frame0ppX (9:1609)
+                        margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 0*fem, 14*fem),
+                        width: double.infinity,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+
+                            Container(
+                              margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 8 * fem),
+                              width: double.infinity,
+                              child: GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    isContainerTapped = !isContainerTapped;
+                                  });
+                                  _selectDate(context);
+                                },
+                                child: Container(
+                                  height: 54 * fem,
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: isContainerTapped ? Color(0xffe5195e) : Color(0xffeac6d3),
+                                    ),
+                                    borderRadius: BorderRadius.circular(12 * fem),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Padding(
+                                        padding: EdgeInsets.fromLTRB(10 * fem, 0, 10 * fem, 0),
+                                        child: Text(
+                                          selectedDate != null
+                                              ? '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}'
+                                              : 'Choose Event Date',
+                                          style: TextStyle(
+                                            fontSize: 16 * ffem,
+                                            color: Color(0xff1e0a11),
+                                          ),
+                                        ),
+                                      ),
+                                      Row(
+                                        children: [
+                                          SizedBox(width: 16 * fem), // Add some space to shift the icon to the left
+                                          Icon(
+                                            Icons.calendar_today,
+                                            color: isContainerTapped ? Color(0xffe5195e) : Color(0xffeac6d3),
+                                          ),
+                                          SizedBox(width: 8 * fem), // Adjust space if needed to balance the layout
+                                        ],
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
-                              Container(
-                                width: double.infinity,
-                                height: 56 * fem,
+                            ),
+                            SizedBox(
+                              height: 14*fem,
+                            ),
+                            Container(
+                              margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 12 * fem),
+                              child: Text(
+                                'Select Time   (From-To)',
+                                style: SafeGoogleFont(
+                                  'Be Vietnam Pro',
+                                  fontSize: 17 * ffem,
+                                  fontWeight: FontWeight.w500,
+                                  height: 1.5 * ffem / fem,
+                                  color: Color(0xff1e0a11),
+                                ),
+                              ),
+                            ),
+
+                            Row(
+                              children:[
+                                Container(
+                                  width: 178.5*fem,
+                                  height: 56 * fem,
+                                  child: TextField(
+                                    controller: fromTimeController,
+                                    onTap: () async {
+                                      final TimeOfDay? pickedTime = await showTimePicker(
+                                        context: context,
+                                        initialTime: TimeOfDay.now(),
+                                      );
+
+                                      if (pickedTime != null) {
+                                        setState(() {
+                                          // Store the selected time in selectedFromTime variable
+                                          selectedFromTime = pickedTime.format(context);
+                                          String formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate!);
+                                          selectedFromTimeBack = '$formattedDate ${pickedTime.hour}:${pickedTime.minute}:00';
+                                          print(selectedFromTimeBack);
+                                          fromTimeController.text = selectedFromTime ?? ''; // Update the text field
+                                        });
+                                      }
+                                    },
+                                    decoration: InputDecoration(contentPadding: EdgeInsets.symmetric(vertical: 17.0, horizontal: 12.0),
+                                      suffixIcon: Icon(Icons.access_time, color: Color(0xffeac6d3)),
+                                      hintText: 'From',
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12 * fem),
+                                        borderSide: BorderSide(width: 1.25, color: Color(0xffeac6d3)),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12 * fem),
+                                        borderSide: BorderSide(width: 1.25, color: Color(0xffe5195e)),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                Container(
+                                  width: 178.5,
+                                  height: 56 * fem,
+                                  child: TextField(
+                                    controller: toTimeController,
+                                    onTap: () async {
+                                      final TimeOfDay? pickedTime = await showTimePicker(
+                                        context: context,
+                                        initialTime: TimeOfDay.now(),
+                                      );
+
+                                      if (pickedTime != null) {
+                                        setState(() {
+                                          // Store the selected time in selectedToTime variable
+                                          selectedToTime = pickedTime.format(context);
+                                          // Format the selected date and time
+                                          String formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate!);
+                                          selectedToTimeBack = '$formattedDate ${pickedTime.hour}:${pickedTime.minute}:00';
+                                          print(selectedToTimeBack);
+                                          toTimeController.text = selectedToTime ?? ''; // Update the text field
+                                          calculateDuration(); // Calculate duration whenever "To" time is selected
+                                        });
+                                      }
+                                    },
+                                    decoration: InputDecoration(contentPadding: EdgeInsets.symmetric(vertical: 17.0, horizontal: 12.0),
+                                      suffixIcon: Icon(Icons.access_time, color: Color(0xffeac6d3)),
+                                      hintText: 'To',
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12 * fem),
+                                        borderSide: BorderSide(width: 1.25, color: Color(0xffeac6d3)),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12 * fem),
+                                        borderSide: BorderSide(width: 1.25, color: Color(0xffe5195e)),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                          ],
+                        ),
+                      ),
+                      Container(
+                        width: double.infinity,
+                        height: 56 * fem,
+                        child: TextField(
+                          controller: durationController, // Connect the controller here
+                          decoration: InputDecoration(contentPadding: EdgeInsets.symmetric(vertical: 17.0, horizontal: 12.0),
+                            hintText: 'Event Duration',
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12 * fem),
+                              borderSide: BorderSide(width: 1.25, color: Color(0xffeac6d3)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12 * fem),
+                              borderSide: BorderSide(width: 1.25, color: Color(0xffe5195e)),
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 18 * fem),
+
+                      Container(
+                        margin: EdgeInsets.only(bottom: 10.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Event Location',
+                              style: SafeGoogleFont (
+                                'Be Vietnam Pro',
+                                fontSize: 22*ffem,
+                                fontWeight: FontWeight.w700,
+                                height: 1.25*ffem/fem,
+                                letterSpacing: -0.3300000131*fem,
+                                color: Color(0xff1e0a11),
+                              ),
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.edit, color: Color(0xffe5195e)),
+                              onPressed: () {
+                                // Focus on the TextField to allow editing
+                                locationFocusNode.requestFocus();
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      Stack(
+                        children: [
+                          Container(
+                            width: double.infinity,
+                            constraints: BoxConstraints(
+                              // minHeight: 100.0, // Set a minimum height
+                            ),
+                            child: InkWell(
+                              onTap: () {
+                                _showLocationDialog(context);
+                              },
+                              child: IgnorePointer(
                                 child: TextField(
-                                  controller: specialRequestController, // Connect the controller here
+                                  controller: locationController,
+                                  focusNode: locationFocusNode,
+                                  maxLines: null, // This allows the TextField to grow vertically
                                   decoration: InputDecoration(
-                                    hintText: 'Optional',
+                                    contentPadding: EdgeInsets.symmetric(vertical: 17.0, horizontal: 12.0), // Adjust padding
+                                    hintText: 'Full Address',
                                     enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12 * fem),
-                                      borderSide: BorderSide(width: 1.25, color: Color(0xffeac6d3)),
+                                      borderRadius: BorderRadius.circular(12.0),
+                                      borderSide: BorderSide(
+                                        width: 1.25,
+                                        color: Color(0xffeac6d3),
+                                      ),
                                     ),
                                     focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12 * fem),
-                                      borderSide: BorderSide(width: 1.25, color: Color(0xffe5195e)),
+                                      borderRadius: BorderRadius.circular(12.0),
+                                      borderSide: BorderSide(
+                                        width: 1.25,
+                                        color: Color(0xffe5195e),
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 25, right: 25),
-                          child: ElevatedButton(
-                            onPressed: () async{
-
-                              // Calculate the total amount
-                              double totalAmount = calculateTotalAmount(price!, hours!, minutes!);
-                              // Create order and wait for the response
-                              String? orderId = await createOrder(totalAmount);
-
-                             if (orderId != null) {
-                               Razorpay _razorpay = Razorpay();
-
-                               var options = {
-                                 'key': 'rzp_test_Hb4hFCm46361XC',
-                                 'amount': 5000,
-                                 'name': 'Home Stage ',
-                                 'order_id': orderId,
-                                 // Generate order_id using Orders API
-                                 'description': 'artist book',
-                                 'timeout': 120,
-                                 // in seconds
-                                 // 'prefill': {
-                                 //   'contact': '8538948208',
-                                 //   'email': 'manav.kumar@example.com'
-                                 // }
-                               };
-
-                               try {
-                                 _razorpay.open(options);
-                               } catch (e) {
-                                 debugPrint('Error: $e');
-                               }
-
-                               _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS,
-                                       (response) => _handlePaymentSuccess(context, response));
-                               _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR,
-                                   _handlePaymentError);
-                               _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET,
-                                   _handleExternalWallet);
-
-                               // _razorpay.clear(); // Removes all listeners
-                             }else {
-                               print('Order creation failed');
-                             }
-                              // Handle button pres
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Color(0xffe5195e),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12 * fem),
-                              ),
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 16 * fem,
-                                vertical: 12 * fem,
-                              ),
-                              minimumSize: Size(double.infinity, 14 * fem),
                             ),
-                            child: Center(
+                          )
+                        ],
+                      ),
+
+
+                      SizedBox(height: 15 * fem),
+
+                      Container(
+                        margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 24 * fem),
+                        width: double.infinity,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 8 * fem),
+                              constraints: BoxConstraints(
+                                maxWidth: 325 * fem,
+                              ),
                               child: Text(
-                                'Proceed To Payment',
+                                'Special Message/Request For the Artist.',
                                 style: SafeGoogleFont(
                                   'Be Vietnam Pro',
                                   fontSize: 16 * ffem,
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: FontWeight.w500,
                                   height: 1.5 * ffem / fem,
-                                  letterSpacing: 0.2399999946 * fem,
-                                  color: Color(0xffffffff),
+                                  color: Color(0xff1e0a11),
                                 ),
+                              ),
+                            ),
+                            Container(
+                              width: double.infinity,
+                              height: 56 * fem,
+                              child: TextField(
+                                controller: specialRequestController, // Connect the controller here
+                                decoration: InputDecoration(
+                                  contentPadding: EdgeInsets.symmetric(vertical: 17.0, horizontal: 12.0),
+                                  hintText: 'Optional',
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12 * fem),
+                                    borderSide: BorderSide(width: 1.25, color: Color(0xffeac6d3)),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12 * fem),
+                                    borderSide: BorderSide(width: 1.25, color: Color(0xffe5195e)),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Container(
+                              // datetimevj9 (9:1606)
+                              margin: EdgeInsets.fromLTRB(0*fem, 25*fem, 0*fem, 0*fem),
+                              child: Text(
+                                'Payment Information',
+                                style: SafeGoogleFont (
+                                  'Be Vietnam Pro',
+                                  fontSize: 22*ffem,
+                                  fontWeight: FontWeight.w700,
+                                  height: 1.25*ffem/fem,
+                                  letterSpacing: -0.3300000131*fem,
+                                  color: Color(0xff1e0a11),
+                                ),
+                              ),
+                            ),
+          Container(
+            padding: EdgeInsets.fromLTRB(0,10*fem,0,20*fem),
+            child: RichText(
+              text: TextSpan(
+                text: 'Questions on cancellations or refunds? See our ',
+                style: TextStyle(
+                  fontStyle: FontStyle.italic, // Italic style for the entire text
+                  fontSize: 16.0,
+                  color: Colors.black,
+                ),
+                children: [
+                  TextSpan(
+                    text: 'FAQ',
+                    style: TextStyle(
+                      fontStyle: FontStyle.italic,
+                      color: Colors.blue, // Blue color for the button
+                      decoration: TextDecoration.underline,
+                    ),
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () {
+                        // Navigate to FAQ screen
+                        Navigator.push(context, MaterialPageRoute (builder:
+                            (context)=> SupportScreen())
+
+                        );
+                      },
+                  ),
+                  TextSpan(
+                    text: ' or ',
+                  ),
+                  TextSpan(
+                    text: 'Refund Policy',
+                    style: TextStyle(
+                      fontStyle: FontStyle.italic,
+                      color: Colors.blue, // Blue color for the button
+                      decoration: TextDecoration.underline,
+                    ),
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () {
+                        // Navigate to Refund Policy screen
+                        Navigator.push(context,MaterialPageRoute(builder: (context)=>SupportScreen()));
+                      },
+                  ),
+                  TextSpan(
+                    text: '.',
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+
+
+
+                                Column(
+                                   crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+
+                                      Row(
+                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                       children: [
+                                            Text(
+                                          'Total Price for the artist:',
+                                          style: TextStyle(fontSize: 17.0, fontWeight: FontWeight.w600),
+                                              ),
+                                        Text(
+                                            '₹${artistPrice}',
+                                            style: TextStyle(fontSize: 17.0, fontWeight: FontWeight.w600),
+                                            ),
+                                      ],
+                                      ),
+                                      SizedBox(height: 10.0),
+
+
+                                     if (hasSoundSystem)
+                                     Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                       Text(
+                                         'Sound system price :',
+                                          style: TextStyle(fontSize: 17.0),
+                                           ),
+                                       Text(
+                                        '₹${soundSystemPrice}',
+                                        style: TextStyle(fontSize: 17.0),
+                                            ),
+                                      ],
+                                     ),
+                                    SizedBox(height: 5.0),
+
+                                       Row(
+                                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                         children: [
+                                          Text(
+                                         'Have your own sound system?',
+                                          style: TextStyle(fontSize: 16.0, fontStyle: FontStyle.italic),
+                                             ),
+                                           TextButton(
+                                             onPressed: () {
+                                              setState(() {
+                                              hasSoundSystem = !hasSoundSystem;
+                                              soundSystemPrice = hasSoundSystem ? 500.0 : 0.0;
+                                                });
+                                                },
+                                             child: Text(
+                                              hasSoundSystem ? 'Remove' : 'Add',
+                                               style: TextStyle(color: hasSoundSystem ? Colors.red : Colors.green,fontSize: 16),
+                                           ),
+                                           ),
+                                            ],
+                                           ),
+                                     SizedBox(height: 5.0),
+
+
+                                     Divider(thickness: 1, color: Colors.grey),
+
+                                     SizedBox(height: 10.0),
+
+                                      Row(
+                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                         children: [
+                                         Text(
+                                        'Total Amount Payable:',
+                                         style: TextStyle(fontSize: 17.0, fontWeight: FontWeight.w600),
+                                         ),
+                                        Text(
+                                          '₹${(artistPrice! + soundSystemPrice!).toStringAsFixed(2)}',
+                                           style: TextStyle(fontSize: 17.0, fontWeight: FontWeight.w600),
+                                            ),
+                                          ],
+                                         ),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          '(Includes all the taxes)',
+                                          style: TextStyle(fontSize: 16.0, fontStyle: FontStyle.italic),
+                                        ),
+                                           ], ),
+                                        ],
+
+                                   )
+                          ],
+
+
+
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 25, right: 25),
+                        child: ElevatedButton(
+                          onPressed: () async{
+
+                            // Calculate the total amount
+                            double totalAmount = calculateTotalAmount(price!, hours!, minutes!);
+                            // Create order and wait for the response
+                            String? orderId = await createOrder(totalAmount);
+
+                           if (orderId != null) {
+                             Razorpay _razorpay = Razorpay();
+
+                             var options = {
+                               'key': 'rzp_test_Hb4hFCm46361XC',
+                               'amount': 5000,
+                               'name': 'Home Stage ',
+                               'order_id': orderId,
+                               // Generate order_id using Orders API
+                               'description': 'artist book',
+                               'timeout': 120,
+                               // in seconds
+                               // 'prefill': {
+                               //   'contact': '8538948208',
+                               //   'email': 'manav.kumar@example.com'
+                               // }
+                             };
+
+                             try {
+                               _razorpay.open(options);
+                             } catch (e) {
+                               debugPrint('Error: $e');
+                             }
+
+                             _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS,
+                                     (response) => _handlePaymentSuccess(context, response));
+                             _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR,
+                                 _handlePaymentError);
+                             _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET,
+                                 _handleExternalWallet);
+
+                             // _razorpay.clear(); // Removes all listeners
+                           }else {
+                             print('Order creation failed');
+                           }
+                            // Handle button pres
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xffe5195e),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12 * fem),
+                            ),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 16 * fem,
+                              vertical: 12 * fem,
+                            ),
+                            // minimumSize: Size(double.infinity, 14 * fem),
+                          ),
+                          child: Center(
+                            child: Text(
+                              'Proceed To Payment',
+                              style: SafeGoogleFont(
+                                'Be Vietnam Pro',
+                                fontSize: 16 * ffem,
+                                fontWeight: FontWeight.w700,
+                                height: 1.5 * ffem / fem,
+                                letterSpacing: 0.2399999946 * fem,
+                                color: Color(0xffffffff),
                               ),
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  Container(
-                    // depth1frame14GWj (9:1682)
-                    width: double.infinity,
-                    height: 20*fem,
-                    decoration: BoxDecoration (
-                      color: Color(0xffffffff),
-                    ),
+                ),
+                Container(
+                  // depth1frame14GWj (9:1682)
+                  width: double.infinity,
+                  height: 20*fem,
+                  decoration: BoxDecoration (
+                    color: Color(0xffffffff),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
@@ -971,20 +1157,22 @@ class _BookingArtistState extends State<booking_artist> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
+        return AlertDialog(backgroundColor:Color(0xfffff5f8) ,
           title: Text('Event Location'),
-          content: Text('How would you like to enter the event location?'),
+          content: Text('How would you like to enter the Event Location?',
+          style: TextStyle(fontSize: 16),
+          ),
           actions: [
-            TextButton(
+            ElevatedButton(
               onPressed: () {
                 latitude = null;
                 longitude = null;
                 Navigator.of(context).pop();
                 _showManualEntryDialog(context);
               },
-              child: Text('Enter Manually'),
+              child: Text('Enter Manually',style: TextStyle(color: Colors.black),),
             ),
-            TextButton(
+            ElevatedButton(
               onPressed: () async {
                 Navigator.of(context).pop();
                 final result = await Navigator.push(
@@ -1004,7 +1192,7 @@ class _BookingArtistState extends State<booking_artist> {
 
                 }
               },
-              child: Text('Select on Map'),
+              child: Text('Select On Map',style: TextStyle(color: Colors.black),),
             ),
           ],
         );
@@ -1022,14 +1210,14 @@ class _BookingArtistState extends State<booking_artist> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
+        return AlertDialog(backgroundColor:Color(0xfffff5f8) ,
           title: Text('Enter Address Manually'),
           content: SingleChildScrollView(
             child: Column(
               children: [
                 TextField(
                   controller: flatController,
-                  decoration: InputDecoration(hintText: 'Flat, House No, Building, Apartment'),
+                  decoration: InputDecoration(hintText: 'Apartment/House No,  Building'),
                 ),
                 TextField(
                   controller: areaController,
@@ -1051,13 +1239,13 @@ class _BookingArtistState extends State<booking_artist> {
             ),
           ),
           actions: [
-            TextButton(
+            ElevatedButton(
               onPressed: () {
                 locationController.text =
                 "${flatController.text}, ${areaController.text}, ${cityController.text}, ${stateController.text}, ${pincodeController.text}";
                 Navigator.of(context).pop();
               },
-              child: Text('OK'),
+              child: Text('OK',style: TextStyle(color: Colors.black),),
             ),
           ],
         );
@@ -1087,14 +1275,14 @@ Future<void> _handlePaymentSuccess(BuildContext context, PaymentSuccessResponse 
       // Send the payment details to the server
 
         _sendPaymentDetailsToServer(
-            razorpayPaymentId, razorpayOrderId, razorpaySignature);
+            razorpayPaymentId, razorpayOrderId, razorpaySignature, id);
 
 
 
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => Booked(BookingId: id ,artistId :artist_id ),
+          builder: (context) => Booked(BookingId: id ,artistId :widget.artist_id ),
         ),
       );
 
@@ -1124,13 +1312,13 @@ Future<void> _handlePaymentSuccess(BuildContext context, PaymentSuccessResponse 
       String? apiUrl='${Config().apiDomain}/booking';
 
       Map<String, dynamic> bookingData = {
-        'artist_id':artist_id,
+        'artist_id':widget.artist_id,
         'user_id': user_id,
         'booking_date': selectedDate != null ? selectedDate.toString() : null,
         'booked_from':  selectedFromTimeBack ?? '',
         'booked_to':  selectedToTimeBack ?? '',
         'duration': durationController.text,
-
+        'audience_size': '200',
         'location': locationController.text,
         'longitude': longitude,
         'latitude': latitude,
@@ -1181,18 +1369,17 @@ Future<void> _handlePaymentSuccess(BuildContext context, PaymentSuccessResponse 
       return false;
     }
 
-    Future<void> _sendPaymentDetailsToServer(String paymentId, String orderId, String signature) async {
+    Future<void> _sendPaymentDetailsToServer(String paymentId, String orderId, String signature, String id) async {
 
       String serverUrl = '${Config().apiDomain}/payment/success';
+      // print('booking_is is :$id');
 
       Future<String?> _getBookingId() async {
         return await storage.read(key: 'booking_id'); // Assuming you stored the token with key 'token'
       }
       String? booking_id = await _getBookingId();
-      // print(booking_id);
-      // print(paymentId);
-      // print(orderId);
-      // print(signature);
+      print('booking_is is :$booking_id');
+
 
       Map<String, dynamic> requestBody = {
         'payment_id': paymentId,

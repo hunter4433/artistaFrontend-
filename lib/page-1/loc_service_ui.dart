@@ -37,13 +37,17 @@ class _ServiceCheckerPageState extends State<ServiceCheckerPage> {
       speedAccuracy: 0.0,
     ); // Initial position
     _serviceAvailable = false; // Initial service availability
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showInitialDialog();
+    });
   }
 
   Future<void> useCurrentLocation() async {
-
     try {
       _currentPosition = await _locationService.getCurrentLocation();
-      _serviceAvailable = await _locationService.isServiceAvailable(_currentPosition);
+      _serviceAvailable =
+      await _locationService.isServiceAvailable(_currentPosition);
       print(_serviceAvailable);
       sendLocationToBackend();
       setState(() {}); // Update the UI with new state
@@ -67,7 +71,8 @@ class _ServiceCheckerPageState extends State<ServiceCheckerPage> {
   Future<void> convertAddressToLatLng(String textEditingController) async {
     try {
       LocationService locationService = LocationService();
-      Position position = await locationService.getLocationFromAddress(textEditingController);
+      Position position = await locationService.getLocationFromAddress(
+          textEditingController);
       print('Latitude: ${position.latitude}, Longitude: ${position.longitude}');
       _serviceAvailable = await _locationService.isServiceAvailable(position);
       print(_serviceAvailable);
@@ -88,136 +93,153 @@ class _ServiceCheckerPageState extends State<ServiceCheckerPage> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Service Checker'),
-      ),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () async {
-            // Show dialog to choose method
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  title: Text('Choose Checking Method'),
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.pop(context); // Close dialog
-                          // Show another dialog for entering PINCODE or CITY NAME
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return StatefulBuilder(
-                                builder: (BuildContext context, StateSetter setState) {
-                                  return AlertDialog(
-                                    title: Text('Enter PINCODE or CITY NAME'),
-                                    content: TextField(
-                                      controller: textEditingController,
-                                      decoration: InputDecoration(
-                                        hintText: 'Enter PINCODE or City Name',
-                                      ),
-                                      textInputAction: TextInputAction.done,
-                                      onChanged: (value) {
-                                        // Update textEditingController value
-                                        setState(() {
-                                          textEditingController.text = value;
-                                        });
-
-                                      },
-                                    ),
-                                    actions: <Widget>[
-                                      TextButton(
-
-                                        onPressed: () {
-                                          setState(() {
-                                            textEditingController.text = ''; // Clear text field
-                                          });
-                                          Navigator.pop(context); // Close dialog without value
-                                        },
-                                        child: Text('Cancel'),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {
-                                          // You can handle validation or further actions here
-                                          print(textEditingController);
-                                          convertAddressToLatLng(textEditingController.text);
-                                          setState(() {
-                                            textEditingController.text = ''; // Clear text field
-                                          });
-                                          Navigator.pop(context, textEditingController.text); // Close dialog and handle entered value
-
-                                        },
-                                        child: Text('OK'),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
-                            },
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.grey,
-                          padding: EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        child: Text(
-                          'Enter PINCODE or CITY NAME',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                      ),
-                      SizedBox(height: 10),
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.pop(context); // Close dialog
-                          // Call function to use current location
-                          useCurrentLocation();
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.grey,
-                          padding: EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        child: Text(
-                          'Use Current Location',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                      ),
-                    ],
+  void _showInitialDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            'Let’s Find Out If We’re Near You!',
+            style: TextStyle(fontSize: 19,fontWeight: FontWeight.w500),
+          ),
+          content: Container(
+            constraints: BoxConstraints(
+              maxWidth: 300, // Adjust width here
+              maxHeight: 200, // Adjust height here
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context); // Close dialog
+                    _showPincodeOrCityDialog(); // Show the PINCODE or CITY NAME dialog
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white, // Change color here
+                    padding: EdgeInsets.symmetric(vertical: 14), // Adjust height here
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12), // Adjust corner radius here
+                    ),
                   ),
-                );
-              },
-            );
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.grey,
-            padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+                  child: Text(
+                    'Enter PINCODE or CITY NAME',
+                    style: TextStyle(fontSize: 16,color: Colors.black),
+                  ),
+                ),
+                SizedBox(height: 12),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context); // Close dialog
+                    useCurrentLocation(); // Call function to use current location
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white, // Change color here
+                    padding: EdgeInsets.symmetric(vertical: 14), // Adjust height here
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12), // Adjust corner radius here
+                    ),
+                  ),
+                  child: Text(
+                    'Use Current Location',
+                    style: TextStyle(fontSize: 16,color: Colors.black),
+                  ),
+                ),
+              ],
             ),
           ),
-          child: Text(
-            'Check Location and Service',
-            style: TextStyle(fontSize: 18),
+          backgroundColor:Color(0xfffff5f8), // Slightly darker than Color(0xfffff5f8) , // Change dialog background color here
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14), // Adjust corner radius of dialog here
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
-
-
+  void _showPincodeOrCityDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return AlertDialog(
+              title: Text(
+                'Please Enter Your PINCODE or City Name',
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 19,
+                ),
+              ),
+              content: Container(
+                width: 300, // Adjust width here
+                height: 150, // Adjust height here
+                child: TextField(
+                  controller: textEditingController,
+                  decoration: InputDecoration(
+                    hintText: 'Enter PINCODE or City Name',
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey), // Color when not focused
+                    ),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.blue), // Color when focused
+                    ),
+                  ),
+                  textInputAction: TextInputAction.done,
+                  onChanged: (value) {
+                    setState(() {
+                      textEditingController.text = value;
+                    });
+                  },
+                ),
+              ),
+              backgroundColor: Colors.white, // Change dialog background color here
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12), // Rounded corners for dialog box
+              ),
+              actions: <Widget>[
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      textEditingController.text = ''; // Clear text field
+                    });
+                    Navigator.pop(context); // Close dialog without value
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey, // Button background color
+                    padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20), // Adjust padding
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8), // Rounded corners for button
+                    ),
+                  ),
+                  child: Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    // Handle validation or further actions here
+                    convertAddressToLatLng(textEditingController.text);
+                    setState(() {
+                      textEditingController.text = ''; // Clear text field
+                    });
+                    Navigator.pop(context, textEditingController.text); // Close dialog
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue, // Button background color
+                    padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20), // Adjust padding
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8), // Rounded corners for button
+                    ),
+                  ),
+                  child: Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
 
 
   final storage = FlutterSecureStorage();
@@ -225,15 +247,17 @@ class _ServiceCheckerPageState extends State<ServiceCheckerPage> {
 
   // Define your function here
   Future<void> sendLocationToBackend() async {
-
     Future<String?> _getId() async {
-      return await storage.read(key: 'user_id'); // Assuming you stored the token with key 'token'
+      return await storage.read(
+          key: 'user_id'); // Assuming you stored the token with key 'token'
     }
     Future<String?> _getLatitude() async {
-      return await storage.read(key: 'latitude'); // Assuming you stored the token with key 'token'
+      return await storage.read(
+          key: 'latitude'); // Assuming you stored the token with key 'token'
     }
     Future<String?> _getLongitude() async {
-      return await storage.read(key: 'longitude'); // Assuming you stored the token with key 'token'
+      return await storage.read(
+          key: 'longitude'); // Assuming you stored the token with key 'token'
     }
     String? id = await _getId();
     String? latitude = await _getLatitude();
@@ -258,13 +282,35 @@ class _ServiceCheckerPageState extends State<ServiceCheckerPage> {
       if (response.statusCode == 200) {
         debugPrint('location stored successfully.');
       } else {
-        debugPrint('Failed to store location. Status code: ${response.statusCode}');
+        debugPrint(
+            'Failed to store location. Status code: ${response.statusCode}');
         debugPrint('Failed to store location. Status code: ${response.body}');
       }
     } catch (e) {
       debugPrint('Error storing location: $e');
     }
   }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(backgroundColor:Color(0xFF121217),
+      appBar: AppBar(backgroundColor:Color(0xFF121217),
+        title: Text('Service Checker', style: TextStyle(color: Colors.white)),
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0), // You can adjust the padding value
+          child: Text(
+            'Unfortunately, our service isn’t available in your area yet. We’re expanding soon!',
+            textAlign: TextAlign.center, // Center-align the text if desired
+            style: TextStyle(fontSize: 18,fontWeight: FontWeight.w500,color: Colors.white), // Adjust font size as needed
+          ),
+        ),
+      ),
+    );
+  }
+
+
 }
 
 

@@ -22,7 +22,9 @@ class ArtistProfile extends StatefulWidget {
 }
 
 class _ArtistProfileState extends State<ArtistProfile> {
-
+  final List<String> demoSkills = ['Guitar', 'Singing', 'Piano',]; // replace with backend data
+  final String experience = '5 years'; // replace with backend data (can be '3 months', '2 years', etc.)
+  final bool hasSoundSystem = true; // replace with backend data
   final storage = FlutterSecureStorage();
   String? artistName;
   String? artistRole;
@@ -86,7 +88,7 @@ String baseUrl='http://192.0.0.2:8000/storage';
 
         // Inside fetchArtistWorkInformation method
         for (var artistData in artistDataList) {
-          artist_id = artistData['artist_id'].toString();
+          // artist_id = artistData['id'].toString();
           artistName = artistData['name'];
           artistRole=artistData['skills'];
           artistPrice=artistData['price_per_hour'];
@@ -241,9 +243,12 @@ String baseUrl='http://192.0.0.2:8000/storage';
 
 
     return Scaffold(
-      appBar: AppBar(title: Center(child: Text('Artist Profile')),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+      appBar: AppBar(title: Text('Artist Profile',style:
+        TextStyle(color: Colors.black,
+        fontWeight: FontWeight.w500,
+        fontSize: 21*fem),),
+        leading: IconButton(color: Colors.black,
+          icon: Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () {
             // Use Navigator.pop() to close the current screen (Scene2) and go back to the previous screen (Scene1)
             Navigator.pop(context);
@@ -255,531 +260,610 @@ String baseUrl='http://192.0.0.2:8000/storage';
       child: Container(
         width: double.infinity,
         child: Container(
-          // galileodesignDQb (15:2110)
           width: double.infinity,
           height: 1950*fem,
           decoration: BoxDecoration (
             color: Color(0xffffffff),
           ),
-          child: Container(
-            // depth0frame0wLb (15:2111)
-            width: double.infinity,
-            height: double.infinity,
-            decoration: BoxDecoration (
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
 
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-
-                  Container(
-                    // autogroupw2njBkj (JkS1Ti6a5oTyiELwzGW2nj)
-                    margin: EdgeInsets.fromLTRB(16*fem, 16*fem, 5*fem, 11.5*fem),
-                    width: double.infinity,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(width: double.infinity,
-                          margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 12 * fem),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(9.0), // Set the radius to make the corners round
-                                child: Container(
-                                  width: 128 * fem,
-                                  height: 160 * fem,
-                                  color: Colors.grey[200], // Placeholder color
-                                  child: Image.network(
-                                    profilePhoto,
-                                    fit: BoxFit.cover,
-                                  ),
+                Container(
+                  // autogroupw2njBkj (JkS1Ti6a5oTyiELwzGW2nj)
+                  margin: EdgeInsets.fromLTRB(16*fem, 16*fem, 5*fem, 11.5*fem),
+                  width: double.infinity,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(width: double.infinity,
+                        margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 12 * fem),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(9.0), // Set the radius to make the corners round
+                              child: Container(
+                                width: 115 * fem,
+                                height: 150 * fem,
+                                color: Colors.grey[200], // Placeholder color
+                                child: Image.network(
+                                  profilePhoto,
+                                  fit: BoxFit.cover,
                                 ),
                               ),
-                              Container(
-                                margin: EdgeInsets.fromLTRB(20*fem,0*fem, 0*fem, 25*fem),
-                                padding: EdgeInsets.fromLTRB(0*fem, 20*fem, 0*fem, 0*fem),
-                                // depth4frame1YUo (15:2131)
-                                width:220*fem,
-                                height: 155*fem,
-                                child: Column(  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    // FutureBuilder to fetch and display name
-                                    Text(
-                                      artistName ?? '', // Use the artistName variable directly
-                                      style: TextStyle(
-                                        fontSize: 22 * ffem,
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.black,
+                            ),
+                            Container(
+                              margin: EdgeInsets.fromLTRB(20*fem,0*fem, 0*fem, 10*fem),
+                              padding: EdgeInsets.fromLTRB(0*fem, 20*fem, 0*fem, 0*fem),
+                              // depth4frame1YUo (15:2131)
+                              width:220*fem,
+                              height: 150*fem,
+                              child: Column(  crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // FutureBuilder to fetch and display name
+                                  Text(
+                                    artistName ?? '', // Use the artistName variable directly
+                                    style: TextStyle(
+                                      fontSize: 20 * ffem,
+                                      fontWeight: FontWeight.w400,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+
+
+                                  // FutureBuilder to fetch and display role (e.g., Artist)
+                                  Text(
+                                    artistRole ?? '', // Use the artistRole variable directly
+                                    style: TextStyle(
+                                      fontSize: 17 * ffem,
+                                      fontWeight: FontWeight.w400,
+                                      color: Color(0xff964f66),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    height: 4,
+                                  ),
+
+                                  // FutureBuilder to fetch and display ratings
+                                  Row(
+                                    children: [
+                                      Text(
+                                        'Rating: 4.57/5', // Static text
+                                        style: TextStyle(
+                                          fontSize: 17 * ffem,
+                                          fontWeight: FontWeight.w400,
+                                          color: Colors.black,
+                                        ),
                                       ),
-                                    ),
-
-
-                                    // FutureBuilder to fetch and display role (e.g., Artist)
-                                    Text(
-                                      artistRole ?? '', // Use the artistRole variable directly
-                                      style: TextStyle(
-                                        fontSize: 18 * ffem,
-                                        fontWeight: FontWeight.w400,
-                                        color: Color(0xff964f66),
+                                      Text(
+                                        artistRatings ?? '', // Use the artistRatings variable directly
+                                        style: TextStyle(
+                                          fontSize: 17 * ffem,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.black,
+                                        ),
                                       ),
-                                    ),
-                                    SizedBox(
-                                      height: 4,
-                                    ),
+                                    ],
+                                  ),
+                                  SizedBox(
+                                    height: 4,
+                                  ),
 
-                                    // FutureBuilder to fetch and display ratings
-                                    Row(
-                                      children: [
-                                        Text(
-                                          'Rating: 4.57/5', // Static text
-                                          style: TextStyle(
-                                            fontSize: 18 * ffem,
-                                            fontWeight: FontWeight.w400,
-                                            color: Colors.black,
-                                          ),
+
+                                  // FutureBuilder to fetch and display price per hour
+                                  Row(
+                                    children: [
+                                      Text(
+                                        'Price Per Hour: ₹ ', // Static text
+                                        style: TextStyle(
+                                          fontSize: 17 * ffem,
+                                          fontWeight: FontWeight.w400,
+                                          color: Colors.black,
                                         ),
-                                        Text(
-                                          artistRatings ?? '', // Use the artistRatings variable directly
-                                          style: TextStyle(
-                                            fontSize: 18 * ffem,
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.black,
-                                          ),
+                                      ),
+                                      Text(
+                                        artistPrice ?? '', // Use the artistPrice variable directly
+                                        style: TextStyle(
+                                          fontSize: 17 * ffem,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.black,
                                         ),
-                                      ],
-                                    ),
-                                    SizedBox(
-                                      height: 4,
-                                    ),
+                                      ),
+                                    ],
+                                  ),
 
 
-                                    // FutureBuilder to fetch and display price per hour
-                                    Row(
-                                      children: [
-                                        Text(
-                                          'Price Per Hour: ₹ ', // Static text
-                                          style: TextStyle(
-                                            fontSize: 18 * ffem,
-                                            fontWeight: FontWeight.w400,
-                                            color: Colors.black,
-                                          ),
-                                        ),
-                                        Text(
-                                          artistPrice ?? '', // Use the artistPrice variable directly
-                                          style: TextStyle(
-                                            fontSize: 18 * ffem,
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.black,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      FutureBuilder<String>(
+                        future: fetchAvailabilityStatus(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return CircularProgressIndicator();
+                          } else {
+                            if (snapshot.hasData) {
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 0),
+                                child: buildAvailabilityText(snapshot.data!),
+                              );
+                            } else {
+                              return Text(
+                                'Error fetching availability status',
+                                style: TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.red,
+                                ),
+                              );
+                            }
+                          }
+                        },
+                      ),
 
 
-                                  ],
+                      SizedBox(height: 15 * fem),
+
+                      Padding(
+                        padding: const EdgeInsets.only(left: 4, right: 15, bottom: 25),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (context)=>booking_artist(artist_id : widget.artist_id)));
+                            // Handle button press
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xffe5195e),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(9 * fem),
+                            ),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 16 * fem,
+                              vertical: 12 * fem,
+                            ),
+                            minimumSize: Size(double.infinity, 14 * fem),
+                          ),
+                          child: Center(
+                            child: Text(
+                              'Book Artist',
+                              style: SafeGoogleFont(
+                                'Be Vietnam Pro',
+                                fontSize: 17 * ffem,
+                                fontWeight: FontWeight.w500,
+                                height: 1.5 * ffem / fem,
+                                letterSpacing: 0.2399999946 * fem,
+                                color: Color(0xffffffff),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Container(
+
+                        margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 0*fem, 5*fem),
+                        child: Text(
+                          'About',
+                          style: SafeGoogleFont (
+                            'Be Vietnam Pro',
+                            fontSize: 22*ffem,
+                            fontWeight: FontWeight.w600,
+                            height: 1.25*ffem/fem,
+                            letterSpacing: -0.3300000131*fem,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 12*fem,),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Row for Skills
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Good At: ',
+                                style: TextStyle(
+                                  fontSize: 18.0,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              SizedBox(width: 8.0),
+
+                              Expanded(
+                                child: Wrap(
+                                  spacing: 10.0,
+                                  runSpacing: 10.0,
+                                  children: demoSkills.map((skill) {
+                                    return Container(
+                                      padding: EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+                                      decoration: BoxDecoration(
+                                        color: Color(0xfff5e1e5) ,
+                                        borderRadius: BorderRadius.circular(10.0),
+                                      ),
+                                      child: Text(
+                                        skill,
+                                        style: TextStyle(fontSize: 16.0,fontWeight: FontWeight.w500),
+                                      ),
+                                    );
+                                  }).toList(),
                                 ),
                               ),
                             ],
                           ),
-                        ),
-                        FutureBuilder<String>(
-                          future: fetchAvailabilityStatus(),
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState == ConnectionState.waiting) {
-                              return CircularProgressIndicator();
-                            } else {
-                              if (snapshot.hasData) {
-                                return Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 0),
-                                  child: buildAvailabilityText(snapshot.data!),
-                                );
-                              } else {
-                                return Text(
-                                  'Error fetching availability status',
-                                  style: TextStyle(
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.red,
-                                  ),
-                                );
-                              }
-                            }
-                          },
-                        ),
+                          SizedBox(height: 8.0),
 
-
-                        SizedBox(height: 15 * fem),
-
-                        Padding(
-                          padding: const EdgeInsets.only(left: 4, right: 15, bottom: 25),
-                          child: ElevatedButton(
-                            onPressed: () {
-                              Navigator.push(context, MaterialPageRoute(builder: (context)=>booking_artist()));
-                              // Handle button press
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Color(0xffe5195e),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(9 * fem),
-                              ),
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 16 * fem,
-                                vertical: 12 * fem,
-                              ),
-                              minimumSize: Size(double.infinity, 14 * fem),
-                            ),
-                            child: Center(
-                              child: Text(
-                                'Book Artist',
-                                style: SafeGoogleFont(
-                                  'Be Vietnam Pro',
-                                  fontSize: 17 * ffem,
+                          // Row for Experience
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Subheading for Experience
+                              Text(
+                                'Experience: ',
+                                style: TextStyle(
+                                  fontSize: 18.0,
                                   fontWeight: FontWeight.w500,
-                                  height: 1.5 * ffem / fem,
-                                  letterSpacing: 0.2399999946 * fem,
-                                  color: Color(0xffffffff),
                                 ),
                               ),
-                            ),
+                              SizedBox(width: 8.0),
+                              // Display Experience from backend
+                              Text(
+                                experience,
+                                style: TextStyle(fontWeight: FontWeight.w400,
+                                  fontSize: 18.0,
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                        Container(
+                          SizedBox(height: 5.0),
 
-                          margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 0*fem, 12*fem),
-                          child: Text(
-                            'About',
-                            style: SafeGoogleFont (
-                              'Be Vietnam Pro',
-                              fontSize: 22*ffem,
-                              fontWeight: FontWeight.w500,
-                              height: 1.25*ffem/fem,
-                              letterSpacing: -0.3300000131*fem,
-                              color: Colors.black,
-                            ),
+                          // Row for Sound System
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Subheading for Sound System
+                              Text(
+                                'Has Sound System?: ',
+                                style: TextStyle(
+                                  fontSize: 18.0,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              SizedBox(width: 8.0),
+                              // Display Yes/No for Sound System
+                              Text(
+                                hasSoundSystem ? 'Yes' : 'No',
+                                style: TextStyle(fontWeight: FontWeight.w400,
+                                  fontSize: 19.0,
+                                  color: hasSoundSystem ? Colors.green : Colors.red,
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                        Container(
+                        ],
+                      ),
 
-                          margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 0*fem, 28*fem),
-                          width: 2222*fem,
-                          height: 100,
-                          child: artistAboutText != null
-                              ? Text(
-                            artistAboutText!,
-                            style: TextStyle(
-                              fontSize: 16 * ffem,
-                              fontWeight: FontWeight.w400,
-                              height: 1.5 * ffem / fem,
-                              color: Color(0xff1c0c11),
-                            ),
-                          )
-                              : Text(
-                            'Error fetching about data',
-                            style: TextStyle(
-                              fontSize: 16 * ffem,
-                              fontWeight: FontWeight.w400,
-                              color: Colors.red,
-                            ),
-                          ),
 
-                        ),
 
-                      ],
-                    ),
+              // Container(
+              //
+              //           margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 0*fem, 28*fem),
+              //           width: 2222*fem,
+              //           height: 100,
+              //           child: artistAboutText != null
+              //               ? Text(
+              //             artistAboutText!,
+              //             style: TextStyle(
+              //               fontSize: 16 * ffem,
+              //               fontWeight: FontWeight.w400,
+              //               height: 1.5 * ffem / fem,
+              //               color: Color(0xff1c0c11),
+              //             ),
+              //           )
+              //               : Text(
+              //             'Error fetching about data',
+              //             style: TextStyle(
+              //               fontSize: 16 * ffem,
+              //               fontWeight: FontWeight.w400,
+              //               color: Colors.red,
+              //             ),
+              //           ),
+              //
+              //         ),
+
+                    ],
                   ),
+                ),
 
-                  Container(
-                    margin: EdgeInsets.fromLTRB(15 * fem, 30, 16 * fem, 0),
-                    width: double.infinity,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Gallery',
-                          style: TextStyle(
-                            fontSize: 22 * ffem,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black,
-                          ),
+
+                Container(
+                  margin: EdgeInsets.fromLTRB(15 * fem, 15, 16 * fem, 0),
+                  width: double.infinity,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Gallery',
+                        style: TextStyle(
+                          fontSize: 22 * ffem,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black,
                         ),
-                        SizedBox(height: 12 * fem),
-                        // GridView builder for the gallery
-                    SizedBox(
-                      height: 220 * fem,
+                      ),
+                      SizedBox(height: 12 * fem),
+                      // GridView builder for the gallery
+                  SizedBox(
+                    height: 200 * fem,
 
-                      child:ListView.builder(
-                          scrollDirection: Axis.horizontal, // Set scroll direction to horizontal
-                          itemCount: imagePathsFromBackend.length, // Total count
-                          itemBuilder: (context, index) {
-                            if (index < imagePathsFromBackend.length) {
-                              // Display images in the carousel
-                              return GestureDetector(
-                                onTap: () {
-                                  // Navigate to fullscreen view on image tap
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => FullScreenView(
-                                        imagePath: imagePathsFromBackend[index],
-                                      ),
-                                    ),
-                                  );
-                                },
-                                child: Container(
-                                  width: 155 * fem, // Set width of each item in the carousel
-                                  margin: EdgeInsets.symmetric(horizontal: 5.5 * fem), // Add margin between items
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(9 * fem), // Example border radius
-                                    child: Image.network(
-                                      imagePathsFromBackend[index], // Network image path
-                                      fit: BoxFit.cover, // Fit the image within the container
+                    child:ListView.builder(
+                        scrollDirection: Axis.horizontal, // Set scroll direction to horizontal
+                        itemCount: imagePathsFromBackend.length, // Total count
+                        itemBuilder: (context, index) {
+                          if (index < imagePathsFromBackend.length) {
+                            // Display images in the carousel
+                            return GestureDetector(
+                              onTap: () {
+                                // Navigate to fullscreen view on image tap
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => FullScreenView(
+                                      imagePath: imagePathsFromBackend[index],
                                     ),
                                   ),
-                                ),
-                              );
-                            } else {
-                              // Placeholder when index exceeds the image list
-                              return Container(
-                                width: 150 * fem, // Placeholder width
-                                margin: EdgeInsets.symmetric(horizontal: 5.5 * fem), // Placeholder margin
-                                decoration: BoxDecoration(
+                                );
+                              },
+                              child: Container(
+                                width: 150 * fem, // Set width of each item in the carousel
+                                margin: EdgeInsets.symmetric(horizontal: 5.5 * fem), // Add margin between items
+                                child: ClipRRect(
                                   borderRadius: BorderRadius.circular(9 * fem), // Example border radius
-                                  color: Colors.grey[200], // Placeholder color
-                                ),
-                              );
-                            }
-                          },
-                        ),
-                    ),
-                      ],
-                    ),
-                  ),
-                  //VideoPathsFromBackend.length
-              Container(
-                margin: EdgeInsets.fromLTRB(15 * fem, 30, 16 * fem, 0),
-                width: double.infinity,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Video Samples',
-                      style: TextStyle(
-                        fontSize: 22 * ffem,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black,
-                      ),
-                    ),
-                    SizedBox(height: 12 * fem),
-                    // GridView builder for the gallery
-                SizedBox(
-                  height: 220 * fem, // Set a fixed height for the carousel
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal, // Set scroll direction to horizontal
-                    itemCount: VideoPathsFromBackend.length, // Total count
-                    itemBuilder: (context, index) {
-                      if (index < VideoPathsFromBackend.length) {
-                        // Display video player in the carousel
-                        return GestureDetector(
-                          onTap: () {
-                            // Navigate to fullscreen video view on tap
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => FullScreenVideoView(
-                                  videoUrl: VideoPathsFromBackend[index],
+                                  child: Image.network(
+                                    imagePathsFromBackend[index], // Network image path
+                                    fit: BoxFit.cover, // Fit the image within the container
+                                  ),
                                 ),
                               ),
                             );
-                          },
-                          child: Container(
-                            width: 155 * fem, // Set width of each item in the carousel
-                            margin: EdgeInsets.symmetric(horizontal: 5.5 * fem), // Add margin between items
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(9 * fem), // Example border radius
-                              child: VideoPlayerWidget(url: VideoPathsFromBackend[index]),
-                            ),
-                          ),
-                        );
-                      } else {
-                        // Placeholder when index exceeds the video list
-                        return Container(
-                          width: 160 * fem, // Placeholder width
-                          margin: EdgeInsets.symmetric(horizontal: 6 * fem), // Placeholder margin
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(9 * fem), // Example border radius
-                            color: Colors.grey[200], // Placeholder color
-                          ),
-                        );
-                      }
-                    },
+                          } else {
+                            // Placeholder when index exceeds the image list
+                            return Container(
+                              width: 150 * fem, // Placeholder width
+                              margin: EdgeInsets.symmetric(horizontal: 5.5 * fem), // Placeholder margin
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(9 * fem), // Example border radius
+                                color: Colors.grey[200], // Placeholder color
+                              ),
+                            );
+                          }
+                        },
+                      ),
+                  ),
+                    ],
                   ),
                 ),
-                  ],
-                ),
-              ),
-
-
-
-
-
-                  Container(
-                    // autogroupcvhmtnB (JkS2cgAzEk6pkAMGDjcvHm)
-                    padding: EdgeInsets.fromLTRB(16*fem, 40*fem, 16*fem, 11.5*fem),
-                    width: double.infinity,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          // specialmessageforthehost2dV (15:2210)
-                          margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 23.5 * fem),
-                          child: Text(
-                            'Message for the Host',
-                            style: SafeGoogleFont(
-                              'Be Vietnam Pro',
-                              fontSize: 22 * ffem,
-                              fontWeight: FontWeight.w500,
-                              height: 1.25 * ffem / fem,
-                              letterSpacing: -0.3300000131 * fem,
-                              color: Colors.black,
-                            ),
-                          ),
-                        ),
-                        Container(
-                          // depth5frame06dM (15:2215)
-                          margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 32 * fem),
-                          width: double.infinity,
-                          height: 144 * fem,
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Color(0xffe8d1d6)),
-                            color: Color(0xffffffff),
-                            borderRadius: BorderRadius.circular(12 * fem),
-                          ),
-                          child: artistSpecialMessage != null
-                              ? Padding(
-                            padding: EdgeInsets.all(16 * fem), // Adjust padding as needed
-                            child: Text(
-                              artistSpecialMessage!,
-                              style: TextStyle(
-                                fontSize: 16 * ffem,
-                                fontWeight: FontWeight.w400,
-                                color: Color(0xff964f66),
+                //VideoPathsFromBackend.length
+            Container(
+              margin: EdgeInsets.fromLTRB(15 * fem, 25*fem, 16 * fem, 0),
+              width: double.infinity,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Video Samples',
+                    style: TextStyle(
+                      fontSize: 22 * ffem,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black,
+                    ),
+                  ),
+                  SizedBox(height: 12 * fem),
+                  // GridView builder for the gallery
+              SizedBox(
+                height: 200 * fem, // Set a fixed height for the carousel
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal, // Set scroll direction to horizontal
+                  itemCount: VideoPathsFromBackend.length, // Total count
+                  itemBuilder: (context, index) {
+                    if (index < VideoPathsFromBackend.length) {
+                      // Display video player in the carousel
+                      return GestureDetector(
+                        onTap: () {
+                          // Navigate to fullscreen video view on tap
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => FullScreenVideoView(
+                                videoUrl: VideoPathsFromBackend[index],
                               ),
                             ),
-                          )
-                              : Text(
-                            'Error fetching special message',
+                          );
+                        },
+                        child: Container(
+                          width: 150 * fem, // Set width of each item in the carousel
+                          margin: EdgeInsets.symmetric(horizontal: 5.0 * fem), // Add margin between items
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(9 * fem), // Example border radius
+                            child: VideoPlayerWidget(url: VideoPathsFromBackend[index]),
+                          ),
+                        ),
+                      );
+                    } else {
+                      // Placeholder when index exceeds the video list
+                      return Container(
+                        width: 150 * fem, // Placeholder width
+                        margin: EdgeInsets.symmetric(horizontal: 5.5 * fem), // Placeholder margin
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(9 * fem), // Example border radius
+                          color: Colors.grey[200], // Placeholder color
+                        ),
+                      );
+                    }
+                  },
+                ),
+              ),
+                ],
+              ),
+            ),
+
+
+
+
+
+                Container(
+                  padding: EdgeInsets.fromLTRB(16*fem, 30*fem, 16*fem, 11.5*fem),
+                  width: double.infinity,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 23.5 * fem),
+                        child: Text(
+                          'Message for the Host',
+                          style: SafeGoogleFont(
+                            'Be Vietnam Pro',
+                            fontSize: 22 * ffem,
+                            fontWeight: FontWeight.w600,
+                            height: 1.25 * ffem / fem,
+                            letterSpacing: -0.3300000131 * fem,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 32 * fem),
+                        width: double.infinity,
+                        height: 38 * fem,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Color(0xffe8d1d6)),
+                          color: Color(0xffffffff),
+                          borderRadius: BorderRadius.circular(12 * fem),
+                        ),
+                        child: artistSpecialMessage != null
+                            ? Padding(
+                          padding: EdgeInsets.all(16 * fem),
+                          child: Text(
+                            artistSpecialMessage!,
                             style: TextStyle(
                               fontSize: 16 * ffem,
                               fontWeight: FontWeight.w400,
-                              color: Colors.red,
+                              color: Color(0xff964f66),
                             ),
                           ),
-                        ),
-
-                        Text(
-                          // reviewsZ19 (15:2222)
-                          'Reviews',
-                          style: SafeGoogleFont (
-                            'Epilogue',
-                            fontSize: 22*ffem,
-                            fontWeight: FontWeight.w700,
-                            height: 1.25*ffem/fem,
-                            letterSpacing: -0.3300000131*fem,
-                            color: Color(0xff1c0c11),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    // depth1frame15grT (15:2223)
-                    margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 0*fem, 14*fem),
-                    padding: EdgeInsets.fromLTRB(16*fem, 16*fem, 16*fem, 1*fem),
-                    width: double.infinity,
-                    height: 209*fem,
-                    decoration: BoxDecoration (
-                      color: Color(0xffffffff),
-                    ),
-
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 25, right: 25, bottom: 45),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context)=>booking_artist()));
-                        // Handle button press
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xffe5195e),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12 * fem),
-                        ),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 16 * fem,
-                          vertical: 12 * fem,
-                        ),
-                        minimumSize: Size(double.infinity, 14 * fem),
-                      ),
-                      child: Center(
-                        child: Text(
-                          'Book Artist',
-                          style: SafeGoogleFont(
-                            'Be Vietnam Pro',
+                        )
+                            : Text(
+                          'Error fetching special message',
+                          style: TextStyle(
                             fontSize: 16 * ffem,
-                            fontWeight: FontWeight.w700,
-                            height: 1.5 * ffem / fem,
-                            letterSpacing: 0.2399999946 * fem,
-                            color: Color(0xffffffff),
+                            fontWeight: FontWeight.w400,
+                            color: Colors.red,
                           ),
+                        ),
+                      ),
+
+                      Text(
+                        'Reviews',
+                        style: SafeGoogleFont (
+                          'Epilogue',
+                          fontSize: 22*ffem,
+                          fontWeight: FontWeight.w600,
+                          height: 1.25*ffem/fem,
+                          letterSpacing: -0.3300000131*fem,
+                          color: Color(0xff1c0c11),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 0*fem, 14*fem),
+                  padding: EdgeInsets.fromLTRB(16*fem, 16*fem, 16*fem, 1*fem),
+                  width: double.infinity,
+                  height: 209*fem,
+                  decoration: BoxDecoration (
+                    color: Color(0xffffffff),
+                  ),
+
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 25, right: 25, bottom: 45),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context)=>booking_artist(artist_id: widget.artist_id)));
+                      // Handle button press
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color(0xffe5195e),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12 * fem),
+                      ),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16 * fem,
+                        vertical: 12 * fem,
+                      ),
+                      minimumSize: Size(double.infinity, 14 * fem),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Book Artist',
+                        style: SafeGoogleFont(
+                          'Be Vietnam Pro',
+                          fontSize: 16 * ffem,
+                          fontWeight: FontWeight.w700,
+                          height: 1.5 * ffem / fem,
+                          letterSpacing: 0.2399999946 * fem,
+                          color: Color(0xffffffff),
                         ),
                       ),
                     ),
                   ),
-                  // Rating Bar
-                  // SizedBox(height: 20), // Add space above the rating bar
-                  // PanableRatingBar.builder(
-                  //   initialRating: _currentRating,
-                  //   minRating: 1,
-                  //   direction: Axis.horizontal,
-                  //   allowHalfRating: true,
-                  //   itemCount: 5,
-                  //   itemSize: 40.0, // Size of each star
-                  //   itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
-                  //   itemBuilder: (context, _) => Icon(
-                  //     Icons.star,
-                  //     color: Colors.amber,
-                  //   ),
-                  //   onRatingUpdate: (rating) {
-                  //     setState(() {
-                  //       _currentRating = rating;
-                  //     });
-                  //     print("Rating: $rating");
-                  //   },
-                  // ),
-                  //
-                  // // "See All Reviews" Button
-                  // SizedBox(height: 16), // Add space above the button
-                  // TextButton(
-                  //   onPressed: () {
-                  //     // Navigate to the all reviews page
-                  //     Navigator.push(
-                  //       context,
-                  //       MaterialPageRoute(
-                  //         builder: (context) => AllReviewsPage(),
-                  //       ),
-                  //     );
-                  //   },
-                  //   child: Text(
-                  //     'See All Reviews',
-                  //     style: TextStyle(color: Colors.blue),
-                  //   ),
-                  // ),
-                  //
+                ),
+                // Rating Bar
+                // SizedBox(height: 20), // Add space above the rating bar
+                // PanableRatingBar.builder(
+                //   initialRating: _currentRating,
+                //   minRating: 1,
+                //   direction: Axis.horizontal,
+                //   allowHalfRating: true,
+                //   itemCount: 5,
+                //   itemSize: 40.0, // Size of each star
+                //   itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
+                //   itemBuilder: (context, _) => Icon(
+                //     Icons.star,
+                //     color: Colors.amber,
+                //   ),
+                //   onRatingUpdate: (rating) {
+                //     setState(() {
+                //       _currentRating = rating;
+                //     });
+                //     print("Rating: $rating");
+                //   },
+                // ),
+                //
+                // // "See All Reviews" Button
+                // SizedBox(height: 16), // Add space above the button
+                // TextButton(
+                //   onPressed: () {
+                //     // Navigate to the all reviews page
+                //     Navigator.push(
+                //       context,
+                //       MaterialPageRoute(
+                //         builder: (context) => AllReviewsPage(),
+                //       ),
+                //     );
+                //   },
+                //   child: Text(
+                //     'See All Reviews',
+                //     style: TextStyle(color: Colors.blue),
+                //   ),
+                // ),
+                //
 
-                ],
-              ),
+              ],
             ),
           ),
         ),

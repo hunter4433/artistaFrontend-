@@ -1,284 +1,142 @@
 import 'package:flutter/material.dart';
-import '../utils.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-class customer_support extends StatelessWidget {
+class SupportScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    double baseWidth = 390;
-    double fem = MediaQuery.of(context).size.width / baseWidth;
-    double ffem = fem * 0.97;
     return Scaffold(
-      body: SafeArea(
-      child: Container(
-        width: double.infinity,
-        child: Container(
-          // galileodesignhaF (16:2655)
-          width: double.infinity,
-          height: 844*fem,
-          decoration: BoxDecoration (
-            color: Color(0xffffffff),
-          ),
-          child: Container(
-            // depth0frame0Snj (16:2656)
-            padding: EdgeInsets.fromLTRB(0*fem, 0*fem, 0*fem, 120*fem),
-            width: double.infinity,
-            height: double.infinity,
-            decoration: BoxDecoration (
-              color: Color(0xffffffff),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  // depth1frame0xFH (16:2657)
-                  padding: EdgeInsets.fromLTRB(16*fem, 16*fem, 16*fem, 8*fem),
-                  width: double.infinity,
-                  height: 72*fem,
-                  decoration: BoxDecoration (
-                    color: Color(0xffffffff),
-                  ),
-                  child: Container(
-
-                    padding: EdgeInsets.fromLTRB(0*fem, 12*fem, 51.52*fem, 12*fem),
-                    width: 310*fem,
-                    height: double.infinity,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Container(
-                          // depth3frame01DZ (16:2659)
-                          margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 75.52*fem, 0*fem),
-                          width: 24*fem,
-                          height: 24*fem,
-                          child: Image.asset(
-                            'assets/page-1/images/depth-3-frame-0-37m.png',
-                            width: 24*fem,
-                            height: 24*fem,
-                          ),
-                        ),
-                        Container(
-                          // depth4frame0XSo (16:2665)
-                          margin: EdgeInsets.fromLTRB(0*fem, 0.75*fem, 0*fem, 0.75*fem),
-                          height: double.infinity,
-                          child: Text(
-                            'Customer Support',
-                            style: SafeGoogleFont (
-                              'Plus Jakarta Sans',
-                              fontSize: 18*ffem,
-                              fontWeight: FontWeight.w700,
-                              height: 1.25*ffem/fem,
-                              letterSpacing: -0.2700000107*fem,
-                              color: Color(0xff171111),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Container(
-                  // depth1frame1R2P (16:2670)
-                  padding: EdgeInsets.fromLTRB(16*fem, 16*fem, 18*fem, 16*fem),
-                  width: double.infinity,
-                  height: 56*fem,
-                  decoration: BoxDecoration (
-                    color: Color(0xffffffff),
-                  ),
-                  child: Container(
-                    // depth2frame0kaT (16:2671)
-                    width: double.infinity,
-                    height: double.infinity,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Container(
-                          // depth3frame0W3q (16:2672)
-                          margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 291*fem, 0*fem),
-                          width: 41*fem,
-                          height: double.infinity,
-                          child: Center(
-                            child: Text(
-                              'FAQs',
-                              style: SafeGoogleFont (
-                                'Plus Jakarta Sans',
-                                fontSize: 16*ffem,
-                                fontWeight: FontWeight.w400,
-                                height: 1.5*ffem/fem,
-                                color: Color(0xff171111),
-                              ),
-                            ),
-                          ),
-                        ),
-                        Container(
-                          // depth3frame1Zno (16:2675)
-                          width: 24*fem,
-                          height: 24*fem,
-                          child: Image.asset(
-                            'assets/page-1/images/depth-3-frame-1-Cfy.png',
-                            width: 24*fem,
-                            height: 24*fem,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Container(
-                  // depth1frame25m9 (16:2682)
-                  padding: EdgeInsets.fromLTRB(16*fem, 16*fem, 18*fem, 16*fem),
-                  width: double.infinity,
-                  height: 56*fem,
-                  decoration: BoxDecoration (
-                    color: Color(0xffffffff),
-                  ),
-                  child: Container(
-                    // depth2frame0zt7 (16:2683)
-                    width: double.infinity,
-                    height: double.infinity,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Container(
-                          // depth3frame0Y8w (16:2684)
-                          margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 246*fem, 0*fem),
-                          width: 86*fem,
-                          height: double.infinity,
-                          child: Center(
-                            child: Text(
-                              'Contact Us',
-                              style: SafeGoogleFont (
-                                'Plus Jakarta Sans',
-                                fontSize: 16*ffem,
-                                fontWeight: FontWeight.w400,
-                                height: 1.5*ffem/fem,
-                                color: Color(0xff171111),
-                              ),
-                            ),
-                          ),
-                        ),
-                        Container(
-                          // depth3frame1DF5 (16:2687)
-                          width: 24*fem,
-                          height: 24*fem,
-                          child: Image.asset(
-                            'assets/page-1/images/depth-3-frame-1-gNb.png',
-                            width: 24*fem,
-                            height: 24*fem,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Container(
-                  // depth1frame3XmZ (16:2694)
-                  margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 0*fem, 42*fem),
-                  padding: EdgeInsets.fromLTRB(8*fem, 16*fem, 18*fem, 16*fem),
-                  width: double.infinity,
-                  height: 56*fem,
-                  decoration: BoxDecoration (
-                    color: Color(0xffffffff),
-                  ),
-                  child: Container(
-                    // depth2frame03V1 (16:2695)
-                    width: double.infinity,
-                    height: double.infinity,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Container(
-                          // depth3frame0CMu (16:2696)
-                          margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 270*fem, 0*fem),
-                          width: 69*fem,
-                          height: double.infinity,
-                          child: Center(
-                            child: Text(
-                              'Call us',
-                              style: SafeGoogleFont (
-                                'Plus Jakarta Sans',
-                                fontSize: 16*ffem,
-                                fontWeight: FontWeight.w400,
-                                height: 1.5*ffem/fem,
-                                color: Color(0xff171111),
-                              ),
-                            ),
-                          ),
-                        ),
-                        Container(
-                          // depth3frame1u1R (16:2699)
-                          width: 24*fem,
-                          height: 24*fem,
-                          child: Image.asset(
-                            'assets/page-1/images/depth-3-frame-1-c7q.png',
-                            width: 24*fem,
-                            height: 24*fem,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Container(
-                  // depth2frame0CWK (16:2707)
-                  margin: EdgeInsets.fromLTRB(16*fem, 0*fem, 16*fem, 12*fem),
-                  padding: EdgeInsets.fromLTRB(107.66*fem, 9.5*fem, 107.66*fem, 9.5*fem),
-                  width: double.infinity,
-                  height: 40*fem,
-                  decoration: BoxDecoration (
-                    color: Color(0xfff4eff2),
-                    borderRadius: BorderRadius.circular(12*fem),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Container(
-                        // depth3frame05q1 (16:2708)
-                        margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 8*fem, 0*fem),
-                        width: 20*fem,
-                        height: 20*fem,
-                        child: Image.asset(
-                          'assets/page-1/images/depth-3-frame-0-sxK.png',
-                          width: 20*fem,
-                          height: 20*fem,
-                        ),
-                      ),
-                      Container(
-                        // depth3frame11Cs (16:2712)
-                        width: 114.67*fem,
-                        height: double.infinity,
-                        decoration: BoxDecoration (
-                          color: Color(0xfff4eff2),
-                        ),
-                        child: Center(
-                          child: Text(
-                            'Live chat with us',
-                            style: SafeGoogleFont (
-                              'Plus Jakarta Sans',
-                              fontSize: 14*ffem,
-                              fontWeight: FontWeight.w700,
-                              height: 1.5*ffem/fem,
-                              letterSpacing: 0.2099999934*fem,
-                              color: Color(0xff171111),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  // depth1frame5h5h (16:2715)
-                  width: double.infinity,
-                  height: 20*fem,
-                  decoration: BoxDecoration (
-                    color: Color(0xffffffff),
-                  ),
-                ),
-              ],
-            ),
+      appBar: AppBar(
+        title: Text(
+          'Support',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontFamily: 'Be Vietnam Pro',
+            fontSize: 22,
+            fontWeight: FontWeight.w400,
+            height: 1.25,
+            letterSpacing: -0.8,
+            color: Color(0xFF21160C),
           ),
         ),
+      ),
+      body: SingleChildScrollView(
+        child: Container(
+          color: Color(0xFFFFFFFF),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                child: Text(
+                  'How may we help you?',
+                  style: GoogleFonts.inter(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 22,
+                    color: Color(0xFF0D141C),
+                  ),
+                ),
+              ),
+              SizedBox(height: 12),
+              _buildSupportOption(
+                title: 'Call Us: 9896825379',
+              ),
+              _buildSupportOption(
+                title: 'Email us: support@homestage.com',
+              ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(16, 20, 16, 12),
+                child: Text(
+                  'FAQs',
+                  style: GoogleFonts.inter(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 22,
+                    color: Color(0xFF0D141C),
+                  ),
+                ),
+              ),
+              _buildFaqItem(
+                question: 'What is your refund policy?',
+                answer:
+                'Our refund policy allows for a full refund if the booking is canceled more than 36 hours before the performance. If the booking is canceled between 36 and 24 hours before the performance, 70% will be refunded, and if canceled between 24 and 12 hours before the performance, 50% will be refunded. Taxes will not be refunded at any time of cancellation.You will be eligible for complete refund including taxes if the request is cancelled by the artist.',),
+              _buildFaqItem(
+                question: 'Will the artist perform on requested songs?',
+                answer:
+                'Yes, the artist will perform requested songs, provided that the requests are communicated in advance or the artist is familiar with the songs given at the event. However, the final setlist will be at the artist’s discretion based on what best suits the performance and the event’s atmosphere.',
+              ),
+              _buildFaqItem(
+                question: 'Can the performance time be extended during the event?',
+                answer:
+                'Increasing the performance time during the event may be possible, depending on the artist’s availability and agreement, but this may result in additional charges other than the hourly charges of artist. So, we suggest that you edit the duration on the app before the onset of the event to ensure everything is arranged smoothly.',
+              ),
+              _buildFaqItem(question: 'What if the artist does not arrive on time?',
+                  answer: 'We always make sure that the artist arrives on time, and punctuality is our priority. However, a small variation in arrival time may occur due to unforeseen circumstances like weather or traffic, though this is very rare. If the artist is more than 40-50 minutes late, we will refund the cost of one hour of the performance, and appropriate action will be taken against the artist. Your satisfaction is our topmost priority'),
+              _buildFaqItem(
+                question: 'What if the artist cancels the request at the last moment?',
+                answer: 'The artist will respond to your request within a few hours. In the rare event that the artist cancels the request at the last moment, we will make every effort to'
+                    ' find a suitable replacement which will be discussed with you well in advance. If a replacement cannot be arranged, you will be eligible for a full refund including taxes. While mishaps are not anticipated '
+                    'as artists are expected to arrive on their own, we understand the inconvenience this may cause and will prioritize finding a resolution as quickly as possible.'
+                    ' Your satisfaction and the success of your event are our top priorities.',),
+              _buildFaqItem(
+                question: 'Where I can discuss the event details with the artists or chefs?',
+                answer: 'You will be provided the phone no once the booking is made. You can provide'
+                    ' the special requests in the section provided in the booking page.',),
+
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSupportOption({required String title}) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: GoogleFonts.inter(
+              fontWeight: FontWeight.w400,
+              fontSize: 16,
+              color: Color(0xFF0D141C),
             ),
-    ),);
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFaqItem({required String question, required String answer}) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      child: ExpansionTile(
+        title: Text(
+          question,
+          style: GoogleFonts.inter(
+            fontWeight: FontWeight.w500,
+            fontSize: 14,
+            color: Color(0xFF0D141C),
+          ),
+        ),
+        children: [
+          Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Text(
+              answer,
+              style: GoogleFonts.inter(
+                fontWeight: FontWeight.w400,
+                fontSize: 14,
+                color: Color(0xFF0D141C),
+              ),
+            ),
+          ),
+        ],
+        tilePadding: EdgeInsets.all(0),
+        expandedCrossAxisAlignment: CrossAxisAlignment.start,
+        backgroundColor: Color(0xFFF7FAFC),
+        childrenPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      ),
+    );
   }
 }

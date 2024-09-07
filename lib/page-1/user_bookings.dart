@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:test1/page-1/page_0.3_artist_home.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../config.dart';
+import '../utils.dart';
 import 'booked_artist.dart';
 
 
@@ -27,7 +27,63 @@ class _UserBookingsState extends State<UserBookings> {
   bool isLoading = true;
   String? bookingsString;
   String? fcmToken;
+  String? phone_number;
 
+
+
+
+
+  Future<bool> fetchArtistBooking(int artistId) async {
+    // String? token = await _getToken();
+
+
+
+    String apiUrl = '${Config().apiDomain}/featured/artist_info/$artistId';
+
+    try {
+      var response = await http.get(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/vnd.api+json',
+          'Accept': 'application/vnd.api+json',
+        },
+      );
+      if (response.statusCode == 200) {
+        List<dynamic> userDataList = json.decode(response.body);
+
+        // Check if the widget is mounted before calling setState
+        if (mounted) {
+          for (var userData in userDataList) {
+            // setState(() {
+
+            phone_number=userData['phone_number'] ?? '';
+
+            // });
+          }
+        }
+        return true;
+      } else {
+        print('Failed to fetch user information. Status code: ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      print('Error fetching user information: $e');
+      return false;
+    }
+    return false;
+  }
+
+  void _makePhoneCall(String phoneNumber) async {
+    final Uri launchUri = Uri(
+      scheme: 'tel',
+      path: phoneNumber,
+    );
+    if (await canLaunchUrl(launchUri)) {
+      await launchUrl(launchUri);
+    } else {
+      throw 'Could not launch $phoneNumber';
+    }
+  }
 
   Future<void> _loadBookings() async {
 
@@ -45,18 +101,6 @@ class _UserBookingsState extends State<UserBookings> {
       List<dynamic> decodedList = json.decode(response.body);
       bookings = decodedList.map((item) => Map<String, dynamic>.from(item)).toList();
       print('bookings are :$bookings ');
-      // // Define the date format for parsing and formatting
-      // DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'");
-      // DateFormat outputDateFormat = DateFormat('yyyy-MM-dd');
-      // DateFormat outputTimeFormat = DateFormat('HH:mm:ss');
-
-      // for (var booking in bookings) {
-      //   DateTime createdAt = inputFormat.parse(booking['created_at']!);
-      //   String formattedDate = outputDateFormat.format(createdAt);
-      //   String formattedTime = outputTimeFormat.format(createdAt);
-      //
-      // }
-
       setState(() {
         isLoading = false;
       });
@@ -74,17 +118,193 @@ class _UserBookingsState extends State<UserBookings> {
   @override
   void initState() {
     super.initState();
-    _initializeBookings();
+    // _initializeBookings();
+    _loadBookings();
   }
-  Future<void> _initializeBookings() async {
-    await _loadBookings();
 
-    // Ensure the UI updates after bookings are loaded
-    setState(() {
-      // Initialize rejected status list with false values
-      rejectedStatus = List<bool>.filled(bookings.length, false);
-    });
-  }
+
+
+
+
+
+  Widget _buildRequestCard(String Category, String booking_date, String Time, int booking_id, int artist_id, int index) {
+      double baseWidth = 390;
+      double fem = MediaQuery
+          .of(context)
+          .size
+          .width / baseWidth;
+      double ffem = fem * 0.97;
+
+      final booking = bookings[index];
+      final status = booking['status']; // Get the status from the booking object
+      double progress = 0.0;
+
+      // Set progress based on booking status
+      if (status == 0) {
+        progress = 0.33; // Booking Initiated
+      } else if (status == 1) {
+        progress = 0.66; // Artist Response accepted
+      } else if (status == 2) {
+        progress = 0.0; // Event rejected by artist
+      } else if (status == 3) {
+        progress = 0.0; // Rejected, no progress
+      }
+
+      return GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) =>
+                Booked(BookingId: booking_id.toString(), artistId: artist_id.toString())),
+          );
+        },
+        child: Stack(
+          children: [
+            Card(
+              color: Color(0xFF292938),
+              margin: EdgeInsets.fromLTRB(5, 0, 5, 20),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              elevation: 0,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(23, 16, 25, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Booking for $Category',
+                      style: GoogleFonts.epilogue(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 18,
+                        height: 1.5,
+                        color: Colors.white,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text('At:  $Time',
+                      style: GoogleFonts.epilogue(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 16,
+                          height: 1.5,
+                          color: Color(0xFFB4B4DF)
+                      ),
+                    ),
+                    SizedBox(height: 5),
+                    Text('On Date:  $booking_date,',
+                      style: GoogleFonts.epilogue(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 16,
+                          height: 1.5,
+                          color: Color(0xFFB4B4DF)
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    Stack(
+                      children: [
+                        LinearProgressIndicator(
+                          value: progress,
+                          backgroundColor: Colors.grey[800],
+                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xffe5195e)),
+                          minHeight: 8,
+                        ),
+                        Positioned(
+                          left: MediaQuery.of(context).size.width * progress - 30,
+                          top: -4,
+                          child: CircleAvatar(
+                            radius: 6,
+                            backgroundColor: Colors.black,
+                            child: CircleAvatar(
+                              radius: 4,
+                              backgroundColor: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Initiated',
+                          style: GoogleFonts.epilogue(
+                            fontSize: 14,
+                            color: Colors.white,
+                          ),
+                        ),
+                        Text(
+                          'Artist Response',
+                          style: GoogleFonts.epilogue(
+                            fontSize: 14,
+                            color: Colors.white,
+                          ),
+                        ),
+                        Text(
+                          'Completion',
+                          style: GoogleFonts.epilogue(
+                            fontSize: 14,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 16),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 3, right:3),
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              bool wait = await fetchArtistBooking(artist_id);
+                              if (wait) {
+                                _makePhoneCall(phone_number!);
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12 * fem),
+                              ),
+                              padding: EdgeInsets.symmetric(
+                                vertical: 6.5 * fem,
+                              ),
+                            ),
+                            child: Center(
+                              child: Text(
+                                'Call Artist',
+                                style: SafeGoogleFont(
+                                  'Be Vietnam Pro',
+                                  fontSize: 16 * ffem,
+                                  fontWeight: FontWeight.w700,
+                                  height: 1.5 * ffem / fem,
+                                  letterSpacing: 0.2399999946 * fem,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Positioned(
+              top: 18, // Adjust the distance from the top of the card
+              right: 10, // Adjust the distance from the right of the card
+              child: Icon(
+                Icons.arrow_forward_ios,
+                color: Colors.white,
+                size: 20,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
 
   @override
@@ -94,15 +314,27 @@ class _UserBookingsState extends State<UserBookings> {
       DateTime createdAtB = DateTime.parse(b['created_at']);
       return createdAtB.compareTo(createdAtA); // Descending order
     });
-
+    double baseWidth = 390;
+    double fem = MediaQuery.of(context).size.width / baseWidth;
+    double ffem = fem * 0.97;
     return Scaffold(
-      backgroundColor: Color(0xFF121217),
-      appBar: AppBar(
-        backgroundColor: Color(0xFF121217),
-        title: Text(
-          'Booking Requests',
-          style: TextStyle(color: Colors.white),
+      backgroundColor:  Color(0xFF121217),
+      appBar:AppBar(
+        automaticallyImplyLeading: false,
+        title: Padding(
+          padding: const EdgeInsets.fromLTRB(0, 0, 8, 0),
+          child: Center(
+            child: Text(
+              'Booking Requests',
+              style: TextStyle(
+                fontSize: 22 ,
+                fontWeight: FontWeight.w400,
+                color: Colors.white,
+              ),
+            ),
+          ),
         ),
+        backgroundColor:  Color(0xFF121217),
       ),
       body: bookings.isEmpty
           ? Center(
@@ -110,7 +342,7 @@ class _UserBookingsState extends State<UserBookings> {
           'No bookings done yet',
           style: TextStyle(
             color: Colors.white,
-            fontSize: 18,
+            fontSize: 20,
           ),
         ),
       )
@@ -132,398 +364,6 @@ class _UserBookingsState extends State<UserBookings> {
     );
   }
 
-  Widget _buildRequestCard(String Category, String booking_date, String Time, int booking_id, int artist_id, int index) {
-    final booking = bookings[index];
-    final status = booking['status']; // Get the status from the booking object
-    double progress = 0.0;
-
-    // Set progress based on booking status
-    if (status == 0) {
-      progress = 0.33; // Booking Initiated
-    } else if (status == 1) {
-      progress = 0.66; // Artist Response accepted
-    } else if (status == 2) {
-      progress = 0.0; // Event rejected by artist
-    } else if (status == 3) {
-      progress = 0.0; // Rejected, no progress
-    }
-
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => Booked(BookingId: booking_id.toString(), artistId : artist_id.toString())),
-        );
-      },
-      child: Stack(
-        children: [
-          Card(
-            margin: EdgeInsets.only(bottom: 16),
-            color: Color(0xFF292938),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            elevation: 8,
-            shadowColor: Colors.black54,
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(16, 16, 30, 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Artist Booked for $Category',
-                    style: GoogleFonts.epilogue(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 16,
-                      height: 1.5,
-                      color: Colors.white,
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    booking_date,
-                    style: GoogleFonts.epilogue(
-                      fontWeight: FontWeight.w400,
-                      fontSize: 14,
-                      height: 1.5,
-                      color: Color(0xFF9494C7),
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    Time,
-                    style: GoogleFonts.epilogue(
-                      fontWeight: FontWeight.w400,
-                      fontSize: 14,
-                      height: 1.5,
-                      color: Color(0xFF9494C7),
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  Stack(
-                    children: [
-                      // Progress Bar
-                      LinearProgressIndicator(
-                        value: progress,
-                        backgroundColor: Colors.grey[800],
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
-                        minHeight: 8,
-                      ),
-                      // End Indicator
-                      Positioned(
-                        left: MediaQuery.of(context).size.width * progress - 25, // Positioning the indicator
-                        top: -4,
-                        child: CircleAvatar(
-                          radius: 6,
-                          backgroundColor: Colors.green,
-                          child: CircleAvatar(
-                            radius: 4,
-                            backgroundColor: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 8),
-                  // Labels for the progress bar points
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Booking Initiated',
-                        style: GoogleFonts.epilogue(
-                          fontSize: 12,
-                          color: Colors.white,
-                        ),
-                      ),
-                      Text(
-                        'Artist Response',
-                        style: GoogleFonts.epilogue(
-                          fontSize: 12,
-                          color: Colors.white,
-                        ),
-                      ),
-                      Text(
-                        'Event Completion',
-                        style: GoogleFonts.epilogue(
-                          fontSize: 12,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 16),
-                  if (status == 3) // Check the status from the backend
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Booking Rejected',
-                          style: GoogleFonts.epilogue(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 14,
-                            height: 1.5,
-                            color: Colors.red,
-                          ),
-                        ),
-                        SizedBox(height: 8),
-                        OutlinedButton(
-                          onPressed: () {
-                            setState(() {
-                              booking['status'] = 0;
-                            });
-                            cancelBooking(context ,booking_id,'0');
-                            fetchArtist(context,artist_id , false );
-                          },
-                          style: OutlinedButton.styleFrom(
-                            backgroundColor: Color(0xFF340539),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            padding: EdgeInsets.symmetric(vertical: 9.5),
-                          ),
-                          child: Center(
-                            child: Text(
-                              'Undo',
-                              style: GoogleFonts.epilogue(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 14,
-                                height: 1.5,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    )
-                  else
-                    OutlinedButton(
-                      onPressed: () {
-                        setState(() {
-                          booking['status'] = 3; // Mark as rejected
-                          _showCancelConfirmationDialog(context, booking_id, artist_id);
-                        });
-                      },
-                      style: OutlinedButton.styleFrom(
-                        backgroundColor: Color(0xFF340539),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        padding: EdgeInsets.symmetric(vertical: 9.5),
-                      ),
-                      child: Center(
-                        child: Text(
-                          'Cancel Booking',
-                          style: GoogleFonts.epilogue(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 14,
-                            height: 1.5,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
-          Positioned(
-            top: 18,
-            right: 8,
-            child: Icon(
-              Icons.arrow_forward_ios,
-              color: Colors.white,
-              size: 20,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
 
-
-  void _showCancelConfirmationDialog(BuildContext context,int booking_id, int artist_id)  {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Cancel Booking'),
-          content: Text('Are you sure you want to cancel the booking?'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-              },
-              child: Text('No'),
-            ),
-            TextButton(
-              onPressed: ()async {
-                Navigator.of(context).pop(); // Close the dialog
-                bool wait= await cancelBooking(context ,booking_id,'3'); // Call the cancel booking function
-                if (wait){
-                  fetchArtist(context,artist_id , true );
-                }else{
-                  print('error occured while fecthing user');
-                }
-
-
-              },
-              child: Text('Yes'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future <void> fetchArtist(BuildContext context,int artist_id, bool status ) async{
-    // Initialize API URLs for different kinds
-    print(artist_id);
-
-
-    String apiUrl = '${Config().baseDomain}/artist/info/$artist_id';
-
-    try {
-      var uri = Uri.parse(apiUrl);
-      var response = await http.get(
-        uri,
-        headers: <String, String>{
-          'Content-Type': 'application/vnd.api+json',
-          'Accept': 'application/vnd.api+json',
-        },
-        // body: json.encode(requestBody),
-      );
-
-      if (response.statusCode == 200) {
-        print('Artist fetched successfully: ${response.body}');
-        Map<String, dynamic> artist= json.decode(response.body);
-
-        fcmToken=artist['data']['attributes']['fcm_token'];
-        // user_phonenumber=user['phone_number'];
-        sendNotification( context,fcmToken!, status);
-        print('token is :$fcmToken');
-
-
-      } else {
-        print('user fetch unsuccessful Status code: ${response.body}');
-
-      }
-    } catch (e) {
-      print('Error sending notification: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Notification has been sent to the artist'),
-          backgroundColor: Colors.green,
-        ),
-      );
-    }
-
-  }
-
-
-  Future<void> sendNotification(BuildContext context, String fcm_token, bool status) async {
-    if (!mounted) return; // Check if the widget is still mounted
-
-    // Initialize API URLs for different kinds
-    String apiUrl = '${Config().baseDomain}/send-notification';
-
-    Map<String, dynamic> requestBody = {
-      'type': 'artist',
-      'fcm_token': fcm_token,
-      'status': status,
-    };
-
-    try {
-      var uri = Uri.parse(apiUrl);
-      var response = await http.post(
-        uri,
-        headers: <String, String>{
-          'Content-Type': 'application/vnd.api+json',
-          'Accept': 'application/vnd.api+json',
-        },
-        body: json.encode(requestBody),
-      );
-      if (response.statusCode == 200) {
-        if (status) {
-          _showDialog('Delete success',
-              'Your Booking has been Deleted successfully and Notification has been Sent to Artist');
-        }else{
-          _showDialog('Request intiated again', 'Notification has been sent to the artist again.');
-        }
-        print('notification sent successfully: ${response.body}');
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Notification unsuccessfull'),
-              backgroundColor: Colors.green,
-            ),
-          );
-        }
-        print('Failed to send notification. Status code: ${response.body}');
-      }
-    } catch (e) {
-
-      print('Error sending notification: $e');
-    }
-  }
-
-
-
-
-
-  Future<bool> cancelBooking(BuildContext context, int booking_id, String status ) async {
-    print(booking_id);
-    final response = await http.patch(
-      Uri.parse('${Config().baseDomain}/booking/$booking_id'),
-      headers: <String, String>{
-        'Content-Type': 'application/vnd.api+json',
-        'Accept': 'application/vnd.api+json',
-      },
-      body: json.encode({
-        'status':status,
-    })
-
-    );
-
-    if (response.statusCode == 200) {
-      // var decodedResponse = json.decode(response.body);
-      // print(decodedResponse);
-      print('Booking deleted successfully');
-      print(response.body);
-      // _loadBookings();
-      return true;
-
-      // Show success dialog
-      // _showDialog('Success', 'Booking deleted successfully');
-    } else {
-      // Handle the error case
-      print('Failed to update booking: ${response.body}');
-      // Show error dialog
-      // _showDialog('Error', 'Failed to delete booking');
-
-    }
-    return false;
-  }
-
-  void _showDialog( String title, String message) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(title),
-          content: Text(message),
-          actions: <Widget>[
-            TextButton(
-              child: Text('OK'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
 }

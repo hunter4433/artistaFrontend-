@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:test1/page-1/artist_sign_up.dart';
+import 'package:test1/page-1/team_info.dart';
 import '../config.dart';
 import 'bottomNav_artist.dart';
 import 'loc_service_ui.dart';
@@ -54,11 +55,25 @@ class _VerificationCodeInputScreenState
   Future<bool> login(String? fCMToken, String? phoneNumber) async {
     if (fCMToken == null || phoneNumber == null) return false;
 
+    // Define URLs for each user type
     final String artistLoginUrl = '${Config().apiDomain}/artist/login';
+    final String teamLoginUrl = '${Config().apiDomain}/team/login';
     final String userLoginUrl = '${Config().apiDomain}/user/login';
+
+    // Get the user type from selection
     String? userType = await _getSelectedValue();
 
-    String url = (userType == 'hire') ? userLoginUrl : artistLoginUrl;
+    // Select the appropriate URL based on the user type
+    String url;
+    if (userType == 'hire') {
+      url = userLoginUrl;
+    } else if (userType == 'team') {
+      url = teamLoginUrl;
+    } else {
+      url = artistLoginUrl;  // Default to solo_artist
+    }
+
+    // Send the login request
     bool loginSuccessful = await _sendLoginRequest(url, fCMToken, phoneNumber);
 
     if (loginSuccessful) {
@@ -70,8 +85,7 @@ class _VerificationCodeInputScreenState
     }
   }
 
-  Future<bool> _sendLoginRequest(
-      String url, String fCMToken, String phoneNumber) async {
+  Future<bool> _sendLoginRequest(String url, String fCMToken, String phoneNumber) async {
     final response = await http.post(
       Uri.parse(url),
       headers: <String, String>{
@@ -85,30 +99,29 @@ class _VerificationCodeInputScreenState
     );
 
     String? userType = await _getSelectedValue();
-    print(userType);
-    if (userType == 'hire') {
-      if (response.statusCode == 200) {
-        Map<String, dynamic> body = jsonDecode(response.body);
-        print(body);
-        int id = body['user']['id'];
+    print('User type: $userType');
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> body = jsonDecode(response.body);
+      print('my body is $body');
+
+      int id;
+      if (userType == 'hire') {
+        id = body['user']['id']; // Handle hire login
         await storage.write(key: 'user_id', value: id.toString());
-        return true;
+      } else if (userType == 'team') {
+        id = body['artist']['id']; // Handle team login
+        await storage.write(key: 'team_id', value: id.toString());
       } else {
-        print('Failed to update FCM token: ${response.reasonPhrase}');
-        return false;
+        id = body['artist']['id']; // Handle solo_artist login
+        await storage.write(key: 'artist_id', value: id.toString());
+        print("hi");
       }
+
+      return true;
     } else {
-      if (response.statusCode == 200) {
-        Map<String, dynamic> body = jsonDecode(response.body);
-        print(body);
-        int id = body['artist']['id'];
-        print(id);
-        await storage.write(key: 'id', value: id.toString());
-        return true;
-      } else {
-        print('Failed to update FCM token: ${response.body}');
-        return false;
-      }
+      print('Failed to login: ${response.body}');
+      return false;
     }
   }
 
@@ -152,16 +165,25 @@ class _VerificationCodeInputScreenState
     );
 
     try {
+      // Sign in the user with the phone credential
       await _auth.signInWithCredential(credential);
+
+      // Fetch the FCM token, phone number, and user type
       String? fCMToken = await _getFCMToken();
       String? phoneNumber = await _getPhoneNumber();
       String? userType = await _getSelectedValue();
-
+print("love");
+      // Attempt to log in with the appropriate user type
       bool loginSuccessful = await login(fCMToken, phoneNumber);
+
+
+      print(loginSuccessful);
       if (loginSuccessful) {
+        // Store authorization and navigate to home
         await storage.write(key: 'authorised', value: 'true');
         _navigateToHome(userType);
       } else {
+        // If login fails, try sending the FCM token to the backend
         bool success = await sendFCMTokenBackend(fCMToken, phoneNumber);
         if (success) {
           await storage.write(key: 'authorised', value: 'true');
@@ -171,12 +193,13 @@ class _VerificationCodeInputScreenState
         }
       }
     } catch (e) {
-      print('Failed to sign in: $e');
+      print('Failed to sign ins: $e');
       _showSnackBar('Failed to sign in: $e');
     }
   }
 
   void _navigateToHome(String? userType) {
+    // Navigate to the correct screen based on user type
     if (userType == 'hire') {
       Navigator.pushReplacement(
         context,
@@ -187,7 +210,14 @@ class _VerificationCodeInputScreenState
         context,
         MaterialPageRoute(builder: (context) => artist_cred()),
       );
+    } else if (userType == 'team') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => team_info()),
+      );
     }
+
+    // Show a snackbar indicating successful login
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Logged In Successfully')),
     );

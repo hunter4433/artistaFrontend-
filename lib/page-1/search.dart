@@ -3,7 +3,10 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:test1/page-1/searched_artist.dart';
 import 'package:video_player/video_player.dart';
+
+import '../config.dart';
 
 class Search extends StatefulWidget {
   @override
@@ -81,8 +84,8 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
   Future<List<Map<String, dynamic>>> searchArtists(String searchTerm) async {
     String? latitude = await _getLatitude();
     String? longitude = await _getLongitude();
-    final String apiUrl = 'your-api-url';
-    final String baseUrl = 'your-base-url';
+    final String apiUrl = '${Config().apiDomain}/artist/search';
+    // final String baseUrl = 'your-base-url';
     final Uri uri = Uri.parse(apiUrl).replace(queryParameters: {
       'skill': searchTerm,
       'lat': latitude,
@@ -101,7 +104,7 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);
         return List<Map<String, dynamic>>.from(data.map((artist) {
-          artist['profile_photo'] = baseUrl + artist['profile_photo'];
+          artist['profile_photo'] = artist['profile_photo'];
           return artist;
         }));
       } else {
@@ -221,7 +224,7 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
                           context,
                           MaterialPageRoute(
                               builder: (context) =>
-                                  Scaffold(body: Center(child: Text("Results")))),
+                                  SearchedArtist(filteredArtistData: filteredData)),
                         ).then((value) {
                           // Reinitialize the video when returning to this page
                           _controller.play();
