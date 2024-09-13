@@ -6,6 +6,7 @@ import 'package:test1/page-1/customer_support.dart';
 
 import 'package:test1/page-1/edit_team_members.dart';
 import 'package:test1/page-1/phone_varification.dart';
+import 'package:test1/page-1/review.dart';
 
 import 'package:test1/page-1/sign_in.dart';
 
@@ -331,7 +332,7 @@ class setting extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => PhoneNumberInputScreen()),
+                      MaterialPageRoute(builder: (context) => ReviewPage()),
                     );
                   },
                   child: Container(

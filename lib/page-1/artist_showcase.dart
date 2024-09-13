@@ -9,12 +9,14 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 import 'package:flutter_pannable_rating_bar/flutter_pannable_rating_bar.dart';
+import 'package:flutter/material.dart';
 
 
 
 class ArtistProfile extends StatefulWidget {
      late String  artist_id;
-   ArtistProfile( {required this.artist_id});
+      String?  isteam;
+   ArtistProfile( {required this.artist_id, this.isteam});
 
 
   @override
@@ -22,15 +24,19 @@ class ArtistProfile extends StatefulWidget {
 }
 
 class _ArtistProfileState extends State<ArtistProfile> {
-  final List<String> demoSkills = ['Guitar', 'Singing', 'Piano',]; // replace with backend data
-  final String experience = '5 years'; // replace with backend data (can be '3 months', '2 years', etc.)
-  final bool hasSoundSystem = true; // replace with backend data
+  final List<String> demoSkills = ['Guitar', 'Singing', 'Piano']; // replace with backend data
+   String? experience ; // replace with backend data (can be '3 months', '2 years', etc.)
+  // final bool hasSoundSystem = true; // replace with backend data
   final storage = FlutterSecureStorage();
   String? artistName;
+  String? teamName;
   String? artistRole;
+  String? teamRole;
+  int? hasSoundSystem;
   String? artistPrice;
   String? artistRatings;
   String? artistAboutText;
+  String? teamAbout;
   String? artistSpecialMessage;
   String? artist_id;
   late String profilePhoto='';
@@ -61,12 +67,16 @@ class _ArtistProfileState extends State<ArtistProfile> {
     // String baseUrl = 'http://127.0.0.1:8000/storage/';
 
 
-    String? kind = await _getKind();
+    // String? kind = await _getKind();
+    // print('kind is $kind');
 
     String apiUrl;
+  if (widget.isteam =='true') {
+    apiUrl= '${Config().apiDomain}/featured/team/$artist_id';
 
-      apiUrl = '${Config().apiDomain}/featured/artist_info/$artist_id';
-
+  }else{
+    apiUrl = '${Config().apiDomain}/featured/artist_info/$artist_id';
+}
 // Declare a variable to store the name outside the loop
 
     try {
@@ -84,17 +94,21 @@ String baseUrl='http://192.0.0.2:8000/storage';
       if (response.statusCode == 200) {
         // Map<String, dynamic> userData = json.decode(response.body);
         List<dynamic> artistDataList = json.decode(response.body);
-        // print(artistDataList);
+        print(artistDataList);
 
         // Inside fetchArtistWorkInformation method
         for (var artistData in artistDataList) {
           // artist_id = artistData['id'].toString();
           artistName = artistData['name'];
+          teamName = artistData['team_name'];
           artistRole=artistData['skills'];
+          teamRole=artistData['skill_category'];
           artistPrice=artistData['price_per_hour'];
           artistAboutText=artistData['about_yourself'];
+          teamAbout=artistData['about_team'];
           artistSpecialMessage=artistData['special_message'];
           profilePhoto = '${artistData['profile_photo']}';
+          hasSoundSystem=artistData['sound_system'];
           image1 = '${artistData['image1']}';
           image2 = '${artistData['image2']}';
           image3 = '${artistData['image3']}';
@@ -114,10 +128,10 @@ String baseUrl='http://192.0.0.2:8000/storage';
           if (video3 != null) VideoPathsFromBackend.add(video3!);
           if (video4 != null) VideoPathsFromBackend.add(video4!);
         }
-        print(video1);
+        // print(video1);
 
 
-        print(VideoPathsFromBackend);
+        // print(VideoPathsFromBackend);
         // print(imagePathsFromBackend);
 
         // String profilePhoto = 'http://127.0.0.1:8000/storage/${userData['data']['attributes']['profile_photo']}';
@@ -128,6 +142,7 @@ String baseUrl='http://192.0.0.2:8000/storage';
         // print( _profileUrl);
         setState(() {});
         print(artistRole);
+        print('soudn_system is $hasSoundSystem');
       } else {
         print('Failed to fetch user information. Status code: ${response.statusCode}');
       }
@@ -152,6 +167,7 @@ String baseUrl='http://192.0.0.2:8000/storage';
 
       if (response.statusCode == 200) {
         Map<String, dynamic> responseData = json.decode(response.body);
+
         int status = responseData['data']['attributes']['booked_status'];
 
         if (status == 0) {
@@ -169,6 +185,36 @@ String baseUrl='http://192.0.0.2:8000/storage';
     }
   }
 
+  Future<List<dynamic>> teamMembersFromBackend() async {
+    String apiUrl = '${Config().apiDomain}/artist/team_member/${widget.artist_id}';
+    print(apiUrl);
+
+    try {
+      var response = await http.get(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/vnd.api+json',
+          'Accept': 'application/vnd.api+json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        List<dynamic> responseData = json.decode(response.body);
+        print('team members are $responseData');
+
+
+        // Assuming responseData contains a list of team members
+        // List<dynamic> teamMembers = responseData['data']['team_members'];
+        return responseData;
+      } else {
+        print('Failed to fetch data. Status code: ${response.statusCode}');
+        return []; // Return an empty list if there's an error
+      }
+    } catch (e) {
+      print('Error fetching data: $e');
+      return []; // Return an empty list in case of an exception
+    }
+  }
 
 
   @override
@@ -304,7 +350,7 @@ String baseUrl='http://192.0.0.2:8000/storage';
                                 children: [
                                   // FutureBuilder to fetch and display name
                                   Text(
-                                    artistName ?? '', // Use the artistName variable directly
+                                    artistName ?? teamName ?? '', // Use the artistName variable directly
                                     style: TextStyle(
                                       fontSize: 20 * ffem,
                                       fontWeight: FontWeight.w400,
@@ -315,7 +361,7 @@ String baseUrl='http://192.0.0.2:8000/storage';
 
                                   // FutureBuilder to fetch and display role (e.g., Artist)
                                   Text(
-                                    artistRole ?? '', // Use the artistRole variable directly
+                                    artistRole ?? teamRole ?? '', // Use the artistRole variable directly
                                     style: TextStyle(
                                       fontSize: 17 * ffem,
                                       fontWeight: FontWeight.w400,
@@ -442,9 +488,100 @@ String baseUrl='http://192.0.0.2:8000/storage';
                           ),
                         ),
                       ),
+                      if (widget.isteam =='true')
+                      // Team members section
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 0 * fem,),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Team Members:',
+                              style: TextStyle(
+                                fontSize: 20 * ffem,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xff1c0c11),
+                              ),
+                            ),
+                            SizedBox(height: 12 * fem),
+                            // List of team members
+                            FutureBuilder<List<dynamic>>(
+                              future: teamMembersFromBackend(), // Fetch the data
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState == ConnectionState.waiting) {
+                                  return CircularProgressIndicator(); // Show a loading indicator while waiting
+                                } else if (snapshot.hasError) {
+                                  return Text('Error fetching team members'); // Handle any error
+                                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                                  return Text('No team members available'); // Handle case when no data is returned
+                                }
+
+                                List<dynamic> teamMembers = snapshot.data!; // Extract team members from snapshot
+
+                                return ListView.builder(
+                                  shrinkWrap: true,
+                                  physics: NeverScrollableScrollPhysics(),
+                                  itemCount: teamMembers.length, // Use the length of team members list
+                                  itemBuilder: (context, index) {
+                                    // Fetch team member data
+                                    final member = teamMembers[index];
+                                    return Container(
+                                      padding: EdgeInsets.symmetric(vertical: 8 * fem),
+                                      child: Row(
+                                        children: [
+                                          ClipRRect(
+                                            borderRadius: BorderRadius.circular(10 * fem),
+                                            child: Container(
+                                              width: 70 * fem,
+                                              height: 85 * fem,
+                                              color: Colors.grey[200],
+                                              child: member['profile_photo'] != null
+                                                  ? Image.network( // Use network image if the image is from URL
+                                                member['profile_photo'],
+                                                fit: BoxFit.cover,
+                                              )
+                                                  : Icon(Icons.person), // Fallback if no image is available
+                                            ),
+                                          ),
+                                          SizedBox(width: 12 * fem),
+                                          Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                member['member_name'] ?? 'Unknown', // Fallback for name
+                                                style: TextStyle(
+                                                  fontSize: 17 * ffem,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: Color(0xff1c0c11),
+                                                ),
+                                              ),
+                                              SizedBox(height: 4 * fem),
+                                              Text(
+                                                member['role'] ?? 'Unknown role', // Fallback for role
+                                                style: TextStyle(
+                                                  fontSize: 15 * ffem,
+                                                  fontWeight: FontWeight.normal,
+                                                  color: Color(0xff1c0c11),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                            )
+                          ],
+                        ),
+                      ),
+
+
+
                       Container(
 
-                        margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 0*fem, 5*fem),
+                        margin: EdgeInsets.fromLTRB(0*fem, 20*fem, 0*fem, 5*fem),
                         child: Text(
                           'About',
                           style: SafeGoogleFont (
@@ -512,7 +649,7 @@ String baseUrl='http://192.0.0.2:8000/storage';
                               SizedBox(width: 8.0),
                               // Display Experience from backend
                               Text(
-                                experience,
+                                experience ?? teamAbout ?? '',
                                 style: TextStyle(fontWeight: FontWeight.w400,
                                   fontSize: 18.0,
                                 ),
@@ -536,10 +673,10 @@ String baseUrl='http://192.0.0.2:8000/storage';
                               SizedBox(width: 8.0),
                               // Display Yes/No for Sound System
                               Text(
-                                hasSoundSystem ? 'Yes' : 'No',
+                                hasSoundSystem != null ? 'Yes' : 'No',
                                 style: TextStyle(fontWeight: FontWeight.w400,
                                   fontSize: 19.0,
-                                  color: hasSoundSystem ? Colors.green : Colors.red,
+                                  color: hasSoundSystem != null ? Colors.green : Colors.red,
                                 ),
                               ),
                             ],
@@ -765,32 +902,38 @@ String baseUrl='http://192.0.0.2:8000/storage';
                         ),
                       ),
 
+// Reviews section heading
                       Text(
                         'Reviews',
-                        style: SafeGoogleFont (
+                        style: SafeGoogleFont(
                           'Epilogue',
-                          fontSize: 22*ffem,
+                          fontSize: 22 * ffem,
                           fontWeight: FontWeight.w600,
-                          height: 1.25*ffem/fem,
-                          letterSpacing: -0.3300000131*fem,
+                          height: 1.25 * ffem / fem,
+                          letterSpacing: -0.3300000131 * fem,
                           color: Color(0xff1c0c11),
                         ),
                       ),
-                    ],
-                  ),
-                ),
-                Container(
-                  margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 0*fem, 14*fem),
-                  padding: EdgeInsets.fromLTRB(16*fem, 16*fem, 16*fem, 1*fem),
-                  width: double.infinity,
-                  height: 209*fem,
-                  decoration: BoxDecoration (
-                    color: Color(0xffffffff),
+                  SizedBox(
+                    height: 10,
                   ),
 
-                ),
+
+// Add the ReviewsSection widget here
+                      ReviewsSection(
+                        averageRating: 4.5, // Replace with dynamic data
+                        totalReviews: 150, // Replace with dynamic data
+                        ratingDistribution: {
+                          5: 0.7,  // 70% of reviews are 5 stars
+                          4: 0.2,  // 20% of reviews are 4 stars
+                          3: 0.05, // 5% of reviews are 3 stars
+                          2: 0.03, // 3% of reviews are 2 stars
+                          1: 0.02, // 2% of reviews are 1 star
+                        },
+                      ),
+
                 Padding(
-                  padding: const EdgeInsets.only(left: 25, right: 25, bottom: 45),
+                  padding: const EdgeInsets.only(left: 5,top: 20, right: 5, bottom: 45),
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.push(context, MaterialPageRoute(builder: (context)=>booking_artist(artist_id: widget.artist_id)));
@@ -822,53 +965,12 @@ String baseUrl='http://192.0.0.2:8000/storage';
                     ),
                   ),
                 ),
-                // Rating Bar
-                // SizedBox(height: 20), // Add space above the rating bar
-                // PanableRatingBar.builder(
-                //   initialRating: _currentRating,
-                //   minRating: 1,
-                //   direction: Axis.horizontal,
-                //   allowHalfRating: true,
-                //   itemCount: 5,
-                //   itemSize: 40.0, // Size of each star
-                //   itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
-                //   itemBuilder: (context, _) => Icon(
-                //     Icons.star,
-                //     color: Colors.amber,
-                //   ),
-                //   onRatingUpdate: (rating) {
-                //     setState(() {
-                //       _currentRating = rating;
-                //     });
-                //     print("Rating: $rating");
-                //   },
-                // ),
-                //
-                // // "See All Reviews" Button
-                // SizedBox(height: 16), // Add space above the button
-                // TextButton(
-                //   onPressed: () {
-                //     // Navigate to the all reviews page
-                //     Navigator.push(
-                //       context,
-                //       MaterialPageRoute(
-                //         builder: (context) => AllReviewsPage(),
-                //       ),
-                //     );
-                //   },
-                //   child: Text(
-                //     'See All Reviews',
-                //     style: TextStyle(color: Colors.blue),
-                //   ),
-                // ),
-                //
-
               ],
             ),
           ),
-        ),
+        ],),
             ),
-    ),);
+    ),),),);
   }
 }
 // Fullscreen view for images
@@ -997,6 +1099,245 @@ class FullScreenVideoView extends StatelessWidget {
       ),
       body: Center(
         child: VideoPlayerWidget(url: videoUrl),
+      ),
+    );
+  }
+}
+
+
+
+class ReviewsSection extends StatelessWidget {
+  final double averageRating;
+  final int totalReviews;
+  final Map<int, double> ratingDistribution; // Star rating and its percentage
+
+  ReviewsSection({
+    required this.averageRating,
+    required this.totalReviews,
+    required this.ratingDistribution,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Average Rating Row
+        Row(
+          children: [
+            Icon(Icons.star, color: Colors.amber, size: 30),
+            SizedBox(width: 8),
+            Text(
+              averageRating.toStringAsFixed(1),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(width: 8),
+            Text(" ($totalReviews reviews)",
+                style: TextStyle(color: Colors.black,fontSize: 17,fontWeight: FontWeight.w500)),
+          ],
+        ),
+        SizedBox(height: 16),
+
+        // Rating Distribution (5-star, 4-star, etc.)
+        Column(
+          children: List.generate(5, (index) {
+            int starCount = 5 - index;
+            return _buildRatingLine(starCount, ratingDistribution[starCount] ?? 0.0);
+          }),
+        ),
+
+        SizedBox(height: 16),
+
+        // Button to see all reviews
+        Center(
+          child: ElevatedButton(
+            onPressed: () {
+              // Navigate to a page that shows all reviews
+              Navigator.push(context, MaterialPageRoute(
+                builder: (context) => AllReviewsPage(),
+              ));
+            },
+            child: Text("See All Reviews",style: TextStyle(color: Colors.black,fontWeight: FontWeight.w500,
+            fontSize: 16),),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Helper function to build rating lines
+  Widget _buildRatingLine(int starCount, double percentage) {
+    return Row(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(5.0, 0, 0, 0),
+          child: Text(
+            "$starCount star",
+            style: TextStyle(
+              color: Colors.grey,
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+        SizedBox(width: 8),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(15.0, 0, 0, 0),
+          child: Container(
+            width: 280,
+            height: 9, // Set the desired height for the progress bar
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(5), // Round the corners
+              child: LinearProgressIndicator(
+                value: percentage, // Percentage of reviews for this star
+                backgroundColor: Colors.white,
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xffe5195e)),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+
+class AllReviewsPage extends StatelessWidget {
+  // Simulating reviews fetched from backend
+  final List<Map<String, dynamic>> reviews = [
+    {
+      'profilePicture': 'https://via.placeholder.com/150', // Placeholder image URL
+      'name': 'John Doe',
+      'rating': 4,
+      'heading': 'Great performance!',
+      'review': 'The artist was amazing, truly talented and professionalghghghghghghghghghjgh'
+          'ghgghghjghvghgjghghgfgkkkhj.'
+    },
+    {
+      'profilePicture': 'https://via.placeholder.com/150',
+      'name': 'Jane Smith',
+      'rating': 5,
+      'heading': 'Incredible!',
+      'review': 'Best performance I’ve ever seen! Highly recommend.'
+    },
+    // Add more reviews...
+  ];
+
+  // Star rating widget
+  Widget buildStarRating(int rating) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(5, (index) {
+        return Icon(
+          index < rating ? Icons.star : Icons.star_border,
+          color: Colors.yellow,
+          size: 22,
+        );
+      }),
+    );
+  }
+
+  // Single review item widget
+  Widget buildReviewItem(Map<String, dynamic> review, double fem, double ffem) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 15 * fem, horizontal: 16 * fem),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Circular profile picture
+          // Circular profile picture or default grey icon
+          CircleAvatar(
+            radius: 26 * fem,
+            backgroundColor: Colors.grey[200], // Grey background
+            child: ClipOval(
+              child: review['profilePicture'] != null && review['profilePicture'].isNotEmpty
+                  ? Image.network(
+                review['profilePicture'],
+                width: 52 * fem, // Size should match the radius
+                height: 52 * fem,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  // Fallback to default icon if image fails to load
+                  return Icon(
+                    Icons.account_circle,
+                    size: 52 * fem,
+                    color: Colors.grey[400],
+                  );
+                },
+              )
+                  : Icon(
+                Icons.account_circle,
+                size: 52 * fem, // Matching size
+                color: Colors.grey[400],
+              ),
+            ),
+          ),
+
+          SizedBox(width: 12 * fem),
+
+          // Review content
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Name and rating
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      review['name'],
+                      style: TextStyle(
+                        fontSize: 17 * ffem,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    buildStarRating(review['rating']),
+                  ],
+                ),
+                SizedBox(height: 4 * fem),
+
+                // Heading
+                Text(
+                  review['heading'],
+                  style: TextStyle(
+                    fontSize: 15 * ffem,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black,
+                  ),
+                ),
+                SizedBox(height: 4 * fem),
+
+                // Review text
+                Text(
+                  review['review'],
+                  style: TextStyle(
+                    fontSize: 15 * ffem,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    double fem = MediaQuery.of(context).size.width / 390;
+    double ffem = fem * 0.97;
+
+    return Scaffold(backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: Text('All Reviews',style: TextStyle(color: Colors.black),),
+        backgroundColor: Colors.white,
+      ),
+      body: ListView.builder(
+        itemCount: reviews.length, // Number of reviews from the backend
+        itemBuilder: (context, index) {
+          return buildReviewItem(reviews[index], fem, ffem);
+        },
       ),
     );
   }

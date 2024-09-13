@@ -34,7 +34,7 @@ class _Home_userState extends State<Home_user> {
   final List<Map<String, dynamic>> bestArtists = [
     {
 
-      'name':'Infuse your gathering with the vocals of a premier singer.',
+      'name':'Infuse your gathering with the singer.',
       'type': 'video',
       'url': 'assets/page-1/images/newmarraige.mov'
     },
@@ -56,6 +56,7 @@ class _Home_userState extends State<Home_user> {
   void initState() {
     super.initState();
     fetchFeaturedArtists();
+
     // fetchFeaturedTeams();
     // fetchAssets();
   }
@@ -115,8 +116,10 @@ print(data);
               'skill': item['skills'],
             });
           }
-          print(featuredArtists);
+
         });
+
+        fetchFeaturedTeams();
 
         print('fetauredartist rae as follows:$featuredArtists');
       } else {
@@ -218,8 +221,18 @@ print(data);
 
   Future<void> fetchFeaturedTeams() async {
     try {
+      Future<String?> _getLatitude() async {
+        return await storage.read(key: 'latitude'); // Assuming you stored the token with key 'token'
+      }
+      Future<String?> _getLongitude() async {
+        return await storage.read(key: 'longitude'); // Assuming you stored the token with key 'token'
+// >>>>>>> 7351e5c0eb3d956ca9c6894a0710f105a9f2df77
+      }
 
-      String apiUrl = '${Config().apiDomain}/home/featured/team';
+      String? latitude = await _getLatitude();
+      String? longitude = await _getLongitude();
+
+      String apiUrl = '${Config().apiDomain}/home/featured/team?lat=$latitude&lng=$longitude';
       // Make the HTTP GET request
 
       var response = await http.get(
@@ -232,33 +245,30 @@ print(data);
 
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);
-
+        print(data);
         setState(() {
-          bestArtists.clear();
-          // String baseUrl = 'http://192.0.0.2:8000/storage/';
+          // featuredArtists.clear();
+
 
           for (var item in data) {
-            if (item != null) {
-              String? name = item['team_name'];
-              String? profilePhoto = item['profile_photo'];
-              String? skills = item['skill_category'];
+            featuredArtists.add({
+              'id': item['id'],
+              'name': item['team_name'],
 
-              if (name != null && profilePhoto != null && item['id'] != null) {
-                String id = item['id'].toString();
-                bestArtists.add({
-                  'id': id,
-                  'name': name,
-                  'image': '${Config().baseDomain}/storage/$profilePhoto',
-                  'skill': skills,
-                });
-              }
-            }
+              'image': '${item['profile_photo']}',
+              // 'rating': item['rating'].toString(),
+
+              'skill': item['skill_category'],
+              'team': 'true',
+            });
           }
+
         });
 
-        print(bestArtists);
+
+        print('team artista are $featuredArtists');
       } else {
-        print('Failed to load data: ${response.body}');
+        print('Failed to load datasssssss: ${response.body}');
       }
     } catch (error) {
       print('Error fetching data: $error');
@@ -276,20 +286,19 @@ print(data);
   final List<Map<String, dynamic>> best = [
     {
 
-      'name':'Infuse your gathering with the vocals of a premier singer.',
+      'name':'Experience Unforgettable Entertainment for Your Grand Wedding',
       'type': 'video',
       'url': 'assets/page-1/images/newmarraige.mov'
     },
     {
-      'subheading': 'Let the aroma flow',
-      'name': 'Treat your elite guests to culinary perfection.',
+      'name': 'Exclusive Haldi Entertainment to Complement Your Traditional Celebration',
       'type': 'video',
       'url': 'assets/page-1/images/homestage2.mov'
 
     },
     {
-      'subheading': 'Magical touch',
-      'name': 'Make your little one’s birthday magical.',
+
+      'name': 'Enhance Your Mehndi Event with Exquisite Talent and Elegant Performances',
       'type': 'video',
       'url': 'assets/page-1/images/mehandi.mov'
 
@@ -372,15 +381,15 @@ print(data);
                           physics: NeverScrollableScrollPhysics(),
                           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
-                            crossAxisSpacing: 15.0,
-                            mainAxisSpacing: 15.0,
-                            childAspectRatio: 2.5,
+                            crossAxisSpacing: 15.0*fem,
+                            mainAxisSpacing: 15.0*fem,
+                            childAspectRatio: 2.5*fem,
                           ),
                           itemCount: categories?.length,
                           itemBuilder: (context, index) {
                             final category = categories?[index];
                             return Container(
-                              height: 83.0,
+                              height: 83.0*fem,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(10),
                                 gradient: LinearGradient(
@@ -453,7 +462,7 @@ print(data);
                                   ),
                                 ),
                                 Container(
-                                  height: 575,
+                                  height: 575*fem,
                                   margin: EdgeInsets.zero,
                                   child: PageView.builder(
                                     controller: PageController(viewportFraction: 0.87),
@@ -480,8 +489,8 @@ print(data);
                                             children: [
                                               // Main image or video
                                               Container(
-                                                width: 330,
-                                                height: 495,
+                                                width: 330*fem,
+                                                height: 495*fem,
                                                 child: ClipRRect(
                                                   borderRadius: BorderRadius.circular(12),
                                                   child: artist['type'] == 'image'
@@ -499,20 +508,20 @@ print(data);
                                               Positioned.fill(
                                                 child: Container(
                                                   decoration: BoxDecoration(
-                                                    color: Colors.black.withOpacity(0.2), // Adjust transparency for individual items
+                                                    color: Colors.black.withOpacity(0.1), // Adjust transparency for individual items
                                                     borderRadius: BorderRadius.circular(10),
                                                   ),
                                                 ),
                                               ),
                                               // Artist name text
                                               Positioned(
-                                                bottom: 100,
-                                                left: 16,
-                                                right: 34,
+                                                bottom: 100*fem,
+                                                left: 16*fem,
+                                                right: 16*fem,
                                                 child: Text(
                                                   artist['name'] ?? '',
                                                   style: TextStyle(
-                                                    fontSize: 18,
+                                                    fontSize: 18*fem,
                                                     fontWeight: FontWeight.w400,
                                                     color: Colors.white,
                                                   ),
@@ -567,14 +576,15 @@ print(data);
                                         // Get the id of the selected artist
                                         String id = featuredArtists[index]['id']
                                             .toString(); // Convert id to String
-
+                                       String isteam= featuredArtists[index]['team'] ?? '';
+                                       print('isteam $isteam');
                                         // Navigate to the ArtistProfile screen
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
                                             builder: (context) =>
                                                 ArtistProfile(
-                                                  artist_id: id.toString(),),
+                                                  artist_id: id.toString(), isteam : isteam ),
                                           ),
                                         );
                                       },
@@ -841,10 +851,10 @@ print(data);
 
 
                         Container(
-                          height: 790, // Full height for the container
+                          height: 790*fem, // Full height for the container
                           decoration: BoxDecoration(
                             image: DecorationImage(
-                              image: AssetImage('assets/page-1/images/bulbs.jpg'), // Background image
+                              image: AssetImage('assets/page-1/images/party.jpg'), // Background image
                               fit: BoxFit.cover, // Adjust image to cover the container
                             ),
                           ),
@@ -860,8 +870,8 @@ print(data);
                               ),
                               // "Best Teams" title at the top
                               Positioned(
-                                top: 65, // Adjust top padding as needed
-                                left: 25, // Adjust left padding as needed
+                                top: 65*fem, // Adjust top padding as needed
+                                left: 25*fem, // Adjust left padding as needed
                                 child: Text(
                                   'Best Teams',
                                   style: TextStyle(
@@ -873,12 +883,12 @@ print(data);
                               ),
                               // PageView for videos or images
                               Positioned(
-                                top: 110, // Position this below the "Best Teams" title
+                                top: 110*fem, // Position this below the "Best Teams" title
                                 left: 0,
                                 right: 0,
                                 child: Container(
-                                  width: 330,
-                                  height: 495,// Full height for PageView to match the container
+                                  width: 330*fem,
+                                  height: 495*fem,// Full height for PageView to match the container
                                   child: PageView.builder(
                                     controller: PageController(viewportFraction: 0.87),
                                     scrollDirection: Axis.horizontal,
@@ -904,8 +914,8 @@ print(data);
                                             children: [
                                               // Main image or video
                                               Container(
-                                                width: 330,
-                                                height: 495,
+                                                width: 330*fem,
+                                                height: 495*fem,
                                                 child: ClipRRect(
                                                   borderRadius: BorderRadius.circular(12),
                                                   child: artist['type'] == 'image'
@@ -930,9 +940,9 @@ print(data);
                                               ),
                                               // Artist name text on each image/video
                                               Positioned(
-                                                bottom: 30, // Position near the bottom of each video/image
-                                                left: 16,
-                                                right: 34,
+                                                bottom: 30*fem, // Position near the bottom of each video/image
+                                                left: 16*fem,
+                                                right: 34*fem,
                                                 child: Text(
                                                   artist['name'] ?? '',
                                                   style: TextStyle(

@@ -32,6 +32,7 @@ class _BookingArtistState extends State<booking_artist> {
   String? selectedFromTimeBack;
   String? selectedToTimeBack;
   String? name;
+  String? team_name;
   String? price;
   String? amount;
   String? netAmount;
@@ -158,8 +159,11 @@ double? soundSystemPrice=20.0;
 
     // Initialize API URLs for different kinds
     String apiUrl;
-    // if (kind == 'solo_artist') {
+    if (kind == 'solo_artist') {
       apiUrl = '${Config().apiDomain}/featured/artist_info/$artist_id';
+    }else{
+      apiUrl = '${Config().apiDomain}/featured/team/$artist_id';
+    }
 
     try {
       var response = await http.get(
@@ -180,12 +184,13 @@ double? soundSystemPrice=20.0;
         for (var userData in userDataList) {
           // Update text controllers with fetched data for each user
           setState(() {
-            name = userData['name'] ?? ''; // Assign String to name
+            team_name = userData['team_name'] ;
+            name = userData['name'] ; // Assign String to name
             price = userData['price_per_hour'] ?? ''; // Assign String to price
             image = '${userData['profile_photo']}' ;
             fcm_token=userData['fcm_token'] ?? '';
           });
-
+print('team name is $team_name');
         }
       } else {
         print('Failed to fetch user information. Status code: ${response.body}');
@@ -411,7 +416,7 @@ double? soundSystemPrice=20.0;
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    name ?? '', // Use fetched name
+                                    name ??  team_name ?? '', // Use fetched name
                                     style: SafeGoogleFont(
                                       'Be Vietnam Pro',
                                       fontSize: 19 * ffem,

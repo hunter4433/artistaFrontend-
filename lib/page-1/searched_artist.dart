@@ -94,7 +94,7 @@ class SearchedArtist extends StatelessWidget {
                               topRight: Radius.circular(14 * fem),
                             ),
                             child: Image.network(
-                              filteredArtistData[index]['profile_photo'],
+                              filteredArtistData[index]['profile_photo'] ?? '',
                               fit: BoxFit.cover,
                               width: double.infinity,
                               height: double.infinity,
@@ -120,15 +120,20 @@ class SearchedArtist extends StatelessWidget {
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    filteredArtistData[index]['name'],
-                                    style: TextStyle(
-                                      fontSize: 22 * ffem,
-                                      fontWeight: FontWeight.w400,
-                                      height: 1.25 * ffem / fem,
-                                      letterSpacing: 0.703 * fem,
-                                      color: Colors.black,
-                                    ),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        filteredArtistData[index]['name'],
+                                        style: TextStyle(
+                                          fontSize: 22 * ffem,
+                                          fontWeight: FontWeight.w400,
+                                          height: 1.25 * ffem / fem,
+                                          letterSpacing: 0.703 * fem,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+
+                                    ],
                                   ),
                                   SizedBox(height: 8 * fem),
                                   Row(

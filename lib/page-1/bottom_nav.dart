@@ -57,7 +57,7 @@ class _BottomNavState extends State<BottomNav> {
         showSelectedLabels: true,
         showUnselectedLabels: true,
         type: BottomNavigationBarType.fixed,
-        backgroundColor:Color(0xFF292938), // Set your desired background color here
+        backgroundColor:Colors.black, // Set your desired background color here
         items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_filled),

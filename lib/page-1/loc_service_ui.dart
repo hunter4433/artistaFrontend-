@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import '../config.dart';
 import 'location_service.dart';
-import 'package:provider/provider.dart';
-
 import 'bottom_nav.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
@@ -98,58 +96,67 @@ class _ServiceCheckerPageState extends State<ServiceCheckerPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(
-            'Let’s Find Out If We’re Near You!',
-            style: TextStyle(fontSize: 19,fontWeight: FontWeight.w500),
+          title: Padding(
+            padding: const EdgeInsets.fromLTRB(5,20,5,0),
+            child: Text(
+              'Let’s Find Out If We’re Near You!',
+              style: TextStyle(fontSize: 19,fontWeight: FontWeight.w500,color: Colors.white),
+            ),
           ),
           content: Container(
             constraints: BoxConstraints(
-              maxWidth: 300, // Adjust width here
+              maxWidth: 350, // Adjust width here
               maxHeight: 200, // Adjust height here
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context); // Close dialog
-                    _showPincodeOrCityDialog(); // Show the PINCODE or CITY NAME dialog
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white, // Change color here
-                    padding: EdgeInsets.symmetric(vertical: 14), // Adjust height here
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12), // Adjust corner radius here
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(0,30,0,0),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context); // Close dialog
+                      _showPincodeOrCityDialog(); // Show the PINCODE or CITY NAME dialog
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white, // Change color here
+                      padding: EdgeInsets.symmetric(vertical: 14), // Adjust height here
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12), // Adjust corner radius here
+                      ),
                     ),
-                  ),
-                  child: Text(
-                    'Enter PINCODE or CITY NAME',
-                    style: TextStyle(fontSize: 16,color: Colors.black),
+                    child: Text(
+                      'Enter PINCODE or CITY NAME',
+                      style: TextStyle(fontSize: 16,color: Colors.black),
+                    ),
                   ),
                 ),
                 SizedBox(height: 12),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context); // Close dialog
-                    useCurrentLocation(); // Call function to use current location
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white, // Change color here
-                    padding: EdgeInsets.symmetric(vertical: 14), // Adjust height here
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12), // Adjust corner radius here
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(0,0,0,30),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context); // Close dialog
+                      useCurrentLocation(); // Call function to use current location
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white, // Change color here
+                      padding: EdgeInsets.symmetric(vertical: 14), // Adjust height here
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12), // Adjust corner radius here
+                      ),
                     ),
-                  ),
-                  child: Text(
-                    'Use Current Location',
-                    style: TextStyle(fontSize: 16,color: Colors.black),
+                    child: Text(
+                      'Use Current Location',
+                      style: TextStyle(fontSize: 16,color: Colors.black),
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-          backgroundColor:Color(0xfffff5f8), // Slightly darker than Color(0xfffff5f8) , // Change dialog background color here
+          backgroundColor:Color(0xFF292938), // Slightly darker than Color(0xfffff5f8) , // Change dialog background color here
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14), // Adjust corner radius of dialog here
           ),
@@ -170,22 +177,25 @@ class _ServiceCheckerPageState extends State<ServiceCheckerPage> {
                 style: TextStyle(
                   fontWeight: FontWeight.w500,
                   fontSize: 19,
+                  color: Colors.white
                 ),
               ),
               content: Container(
-                width: 300, // Adjust width here
+                width: 350, // Adjust width here
                 height: 150, // Adjust height here
                 child: TextField(
                   controller: textEditingController,
                   decoration: InputDecoration(
                     hintText: 'Enter PINCODE or City Name',
+                    hintStyle: TextStyle(color: Color(0xFF9E9EB8)),
                     enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey), // Color when not focused
+                      borderSide: BorderSide(color: Color(0xFF9E9EB8)), // Color when not focused
                     ),
                     focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.blue), // Color when focused
+                      borderSide: BorderSide(color: Colors.white), // Color when focused
                     ),
                   ),
+                  style: TextStyle(color: Colors.white,fontSize: 18),
                   textInputAction: TextInputAction.done,
                   onChanged: (value) {
                     setState(() {
@@ -194,7 +204,7 @@ class _ServiceCheckerPageState extends State<ServiceCheckerPage> {
                   },
                 ),
               ),
-              backgroundColor: Colors.white, // Change dialog background color here
+              backgroundColor: Color(0xFF292938), // Change dialog background color here
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12), // Rounded corners for dialog box
               ),
@@ -204,16 +214,17 @@ class _ServiceCheckerPageState extends State<ServiceCheckerPage> {
                     setState(() {
                       textEditingController.text = ''; // Clear text field
                     });
-                    Navigator.pop(context); // Close dialog without value
+                    Navigator.pop(context); // Close the current dialog
+                    _showInitialDialog(); // Show the previous dialog
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey, // Button background color
+                    backgroundColor: Colors.white, // Button background color
                     padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20), // Adjust padding
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8), // Rounded corners for button
+                      borderRadius: BorderRadius.circular(10), // Rounded corners for button
                     ),
                   ),
-                  child: Text('Cancel'),
+                  child: Text('Cancel',style: TextStyle(color: Colors.black)),
                 ),
                 ElevatedButton(
                   onPressed: () {
@@ -225,13 +236,13 @@ class _ServiceCheckerPageState extends State<ServiceCheckerPage> {
                     Navigator.pop(context, textEditingController.text); // Close dialog
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue, // Button background color
+                    backgroundColor: Colors.white, // Button background color
                     padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20), // Adjust padding
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8), // Rounded corners for button
+                      borderRadius: BorderRadius.circular(10), // Rounded corners for button
                     ),
                   ),
-                  child: Text('OK'),
+                  child: Text('OK',style: TextStyle(color: Colors.black),),
                 ),
               ],
             );
@@ -293,23 +304,77 @@ class _ServiceCheckerPageState extends State<ServiceCheckerPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(backgroundColor:Color(0xFF121217),
-      appBar: AppBar(backgroundColor:Color(0xFF121217),
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Color(0xFF121217),
         title: Text('Service Checker', style: TextStyle(color: Colors.white)),
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0), // You can adjust the padding value
-          child: Text(
-            'Unfortunately, our service isn’t available in your area yet. We’re expanding soon!',
-            textAlign: TextAlign.center, // Center-align the text if desired
-            style: TextStyle(fontSize: 18,fontWeight: FontWeight.w500,color: Colors.white), // Adjust font size as needed
+      body: Padding(
+        padding: const EdgeInsets.fromLTRB(38.0,182,38,0), // Adjust padding value as needed
+        child: SingleChildScrollView(
+          child: Column(
+          
+            children: [
+              // Image above the text
+              Image.asset(
+                'assets/page-1/images/guitaristloc.jpg', // Path to your image
+                height: 200, // Adjust height as needed
+                width: 220, // Adjust width as needed
+                fit: BoxFit.contain, // Adjust how the image fits
+              ),
+              SizedBox(height: 0), // Space between image and text
+          
+              // Text message
+              Text(
+                'Unfortunately, our service isn’t available in your area yet. We’re expanding soon!',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white,
+                ),
+              ),
+              SizedBox(height: 20), // Space between text and button
+          
+              // "Continue Anyway" button
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => BottomNav(data: {},)),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white, // Change button color if needed
+                  padding: EdgeInsets.symmetric(vertical: 14, horizontal: 24), // Adjust padding
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8), // Adjust corner radius
+                  ),
+                ),
+                child: Text(
+                  'Continue Anyway',
+                  style: TextStyle(fontSize: 16, color: Colors.black),
+                ),
+              ),
+              SizedBox(height: 8), // Space between buttons
+          
+              // "Check Location Again" button
+              TextButton(
+                onPressed: () {
+                  _showInitialDialog(); // Reopen the initial dialog
+                },
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.blue, // Change text color if needed
+                ),
+                child: Text('Check Location Again'),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
-
 
 }
 
