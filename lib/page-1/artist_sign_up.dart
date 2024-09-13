@@ -300,40 +300,60 @@ class _artist_credState extends State<artist_cred> {
     );
   }
 
-  //location dialog box
   void _showLocationDialog(BuildContext context) {
-
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(backgroundColor:Color(0xfffff5f8) ,
-          title: Text('Address'),
-          content: isLoading
-              ? Center(child: CircularProgressIndicator())
-              : Text('How would you like to enter your Address?',style: TextStyle(fontSize: 17,color: Colors.black),),
-          actions: isLoading
-              ? []
-              : [
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                _showManualEntryDialog(context);
-              },
-              child: Text('Enter Manually',style: TextStyle(fontSize: 16, color: Colors.black),),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                _useCurrentLocation();
-                // Close the dialog after fetching the location
-                Navigator.of(context).pop();
-              },
-              child: Text('Use Current Location',style: TextStyle(fontSize: 16, color: Colors.black),),
-            ),
-          ],
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: Color(0xfffff5f8),
+              title: Text('Address'),
+              content: isLoading
+                  ? Center(child: CircularProgressIndicator()) // Show loading bar
+                  : Text(
+                'How would you like to enter your Address?',
+                style: TextStyle(fontSize: 17, color: Colors.black),
+              ),
+              actions: isLoading
+                  ? [] // Disable buttons while loading
+                  : [
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    _showManualEntryDialog(context);
+                  },
+                  child: Text(
+                    'Enter Manually',
+                    style: TextStyle(fontSize: 16, color: Colors.black),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    // Show loading state while fetching the location
+                    setState(() {
+                      isLoading = true;
+                    });
+                    // print('hi mojhit ');
+
+                    await _useCurrentLocation();
+
+                    // Close the dialog after fetching the location
+                    // Navigator.of(context).pop();
+                  },
+                  child: Text(
+                    'Use Current Location',
+                    style: TextStyle(fontSize: 16, color: Colors.black),
+                  ),
+                ),
+              ],
+            );
+          },
         );
       },
     );
   }
+
 
   //manual entry dialog box
   void _showManualEntryDialog(BuildContext context) {
@@ -446,23 +466,17 @@ class _artist_credState extends State<artist_cred> {
     );
   }
 
-  // usecurrent location function
   Future<void> _useCurrentLocation() async {
     setState(() {
-      isLoading = true;
+      isLoading = true; // Show loading indicator
     });
 
     LocationService _locationService = LocationService();
     _currentPosition = await _locationService.getCurrentLocation();
-    print(_currentPosition);
-    _latitude=_currentPosition!.latitude;
-    _longitude=_currentPosition!.longitude;
-
 
     if (_currentPosition != null) {
-      print('Latitude is : ${_currentPosition!.latitude}, Longitude: ${_currentPosition!.longitude}');
+      print('Latitude: ${_currentPosition!.latitude}, Longitude: ${_currentPosition!.longitude}');
       _address = await MyCustomScrollBehavior.getAddressFromLatLng(_currentPosition!);
-      print(_address);
 
       if (_address != null) {
         _addressController.text = _address!;
@@ -470,10 +484,8 @@ class _artist_credState extends State<artist_cred> {
     }
 
     setState(() {
-      isLoading = false;
+      isLoading = false; // Hide loading indicator
     });
-
-
   }
 
   //pincode to latLng

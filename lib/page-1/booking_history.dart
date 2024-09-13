@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:test1/page-1/page0.3_booking.dart';
+import 'package:test1/page-1/page_0.3_artist_home.dart';
 import '../config.dart';
 import '../utils.dart';
 import 'package:http/http.dart' as http;
@@ -26,12 +27,29 @@ class _booking_historyState extends State<booking_history>{
     _loadBookings(widget.artist_id); // Fetch profile data when screen initializes
   }
 
+  Future<String?> _getTeamid() async {
+    return await storage.read(key: 'team_id'); // Assuming you stored the token with key 'id'
+  }
+
+  Future<String?> _getKind() async {
+    return await storage.read(key: 'selected_value'); // Assuming you stored the token with key 'selected_value'
+  }
+
 
   Future<void> _loadBookings(String artist_id) async {
 
     // String? id = await _getArtist_id();
+    String? team_id= await _getTeamid();
+    String? kind = await _getKind();
 
-    final response = await http.get(Uri.parse('${Config().apiDomain}/artist/bookings/completed/$artist_id'));
+    String apiUrl;
+    if (kind=='solo_artist'){
+      apiUrl='${Config().apiDomain}/artist/bookings/completed/$artist_id';
+    }else{
+    apiUrl='${Config().apiDomain}/team/bookings/completed/$team_id';
+    }
+
+    final response = await http.get(Uri.parse(apiUrl));
 
     if (response.statusCode == 200) {
       List<dynamic> decodedList = json.decode(response.body);

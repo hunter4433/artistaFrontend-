@@ -85,19 +85,24 @@ class _team1signupState extends State<team1signup> {
             'team_members[$i][profile_photo]',  // Ensure the file field matches the array structure
             member.imageFile!.path,
           ));
-         print('sending file for ${member.name}: ${member.imageFile!.path}');
-
+          print('sending file for ${member.name}: ${member.imageFile!.path}');
         }
       }
-      print('request fileds: ${request.fields}');
-      print('request Files: ${request.files.map((file)=> file.filename)}');
+
+      print('request fields: ${request.fields}');
+      print('request Files: ${request.files.map((file) => file.filename)}');
+
       // Send the request
       final response = await request.send();
 
+      // Convert the response stream to a string
+      final responseString = await response.stream.bytesToString();
+
       if (response.statusCode == 201) {
         print('Data sent successfully');
+        print('Response: $responseString');
       } else {
-        throw Exception('Failed to send data. Error ${response.statusCode}');
+        throw Exception('Failed to send data. Error $responseString');
       }
     } catch (e) {
       print('Error: $e');

@@ -13,11 +13,15 @@ class account_delete extends StatelessWidget {
 
 
     Future<String?> _getId() async {
-      return await storage.read(key: 'id');
+      return await storage.read(key: 'artist_id');
     }
     Future<String?> _getUser_id() async {
       return await storage.read(key: 'user_id'); // Assuming you stored the token with key 'token'
     }
+    Future<String?> _getTeam_id() async {
+      return await storage.read(key: 'team_id'); // Assuming you stored the token with key 'token'
+    }
+
 
     String? user_id = await _getUser_id();
 
@@ -25,7 +29,7 @@ class account_delete extends StatelessWidget {
       return await storage.read(key: 'selected_value');
     }
 
-
+    String? team_id = await _getTeam_id();
     String? id = await _getId();
     String? kind = await _getKind();
 
@@ -33,7 +37,7 @@ class account_delete extends StatelessWidget {
 
     String apiUrlHire = '${Config().apiDomain}/info/$user_id';
     String apiUrlArtist='${Config().apiDomain}/artist/info/$id';
-    String apiUrlTeam='${Config().apiDomain}/artist/team_info/$id';
+    String apiUrlTeam='${Config().apiDomain}/artist/team_info/$team_id';
 
     try {
       // Make DELETE request to the API based on the value of 'kind'

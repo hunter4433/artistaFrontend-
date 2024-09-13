@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:test1/page-1/artist_sign_up.dart';
+import 'package:test1/page-1/page_0.3_artist_home.dart';
 import 'package:test1/page-1/team_info.dart';
 import '../config.dart';
 import 'bottomNav_artist.dart';
@@ -172,7 +173,7 @@ class _VerificationCodeInputScreenState
       String? fCMToken = await _getFCMToken();
       String? phoneNumber = await _getPhoneNumber();
       String? userType = await _getSelectedValue();
-print("love");
+
       // Attempt to log in with the appropriate user type
       bool loginSuccessful = await login(fCMToken, phoneNumber);
 
@@ -183,14 +184,23 @@ print("love");
         await storage.write(key: 'authorised', value: 'true');
         _navigateToHome(userType);
       } else {
-        // If login fails, try sending the FCM token to the backend
-        bool success = await sendFCMTokenBackend(fCMToken, phoneNumber);
-        if (success) {
-          await storage.write(key: 'authorised', value: 'true');
-          _navigateToHome(userType);
-        } else {
-          _showSnackBar('Check your internet connection');
+
+        if(userType=='hire') {
+          // If login fails, try sending the FCM token to the backend
+          bool success = await sendFCMTokenBackend(fCMToken, phoneNumber);
+          if (success) {
+            await storage.write(key: 'authorised', value: 'true');
+            _navigateToSignUp(userType);
+          }
         }
+        else{
+            _navigateToSignUp(userType);
+        }
+
+          // _navigateToSignUp(userType);
+        // } else {
+        //   _showSnackBar('Check your internet connection');
+        // }
       }
     } catch (e) {
       print('Failed to sign ins: $e');
@@ -199,6 +209,33 @@ print("love");
   }
 
   void _navigateToHome(String? userType) {
+    // Navigate to the correct screen based on user type
+    if (userType == 'hire') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => ServiceCheckerPage()),
+      );
+    } else if (userType == 'solo_artist') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => BottomNavart(data: {},)),
+      );
+    } else if (userType == 'team') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => BottomNavart(data: {},)),
+      );
+    }
+
+    // Show a snackbar indicating successful login
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Logged In Successfully')),
+    );
+  }
+
+
+
+  void _navigateToSignUp(String? userType) {
     // Navigate to the correct screen based on user type
     if (userType == 'hire') {
       Navigator.pushReplacement(
@@ -219,7 +256,7 @@ print("love");
 
     // Show a snackbar indicating successful login
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Logged In Successfully')),
+      SnackBar(content: Text('Signed Up Successfully')),
     );
   }
 

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:test1/page-1/page_0.3_artist_home.dart';
 
 import '../config.dart';
 
@@ -32,13 +33,40 @@ String? duration;
     fetchArtist(widget.artistId);
   }
 
+Future<String?> _getid() async {
+  return await storage.read(key: 'artist_id'); // Assuming you stored the token with key 'id'
+}
+
+Future<String?> _getTeamid() async {
+  return await storage.read(key: 'team_id'); // Assuming you stored the token with key 'id'
+}
+
+Future<String?> _getKind() async {
+  return await storage.read(key: 'selected_value'); // Assuming you stored the token with key 'selected_value'
+}
 
 Future <void> fetchArtist(String artist_id) async{
   // Initialize API URLs for different kinds
-  print(artist_id);
-  String? user_fcmToken;
+  // String? id = await _getid();
+  String? team_id= await _getTeamid();
+  String? kind = await _getKind();
+  print(team_id);
 
-  String apiUrl = '${Config().apiDomain}/artist/info/$artist_id';
+  String apiUrl;
+  if (kind == 'solo_artist') {
+    apiUrl = '${Config().apiDomain}/artist/info/$artist_id';
+  } else if (kind == 'team') {
+    apiUrl = '${Config().apiDomain}/artist/team_info/$team_id';
+  } else {
+    return;
+  }
+
+
+
+  // print(artist_id);
+  // String? user_fcmToken;
+
+  // String apiUrl = '${Config().apiDomain}/artist/info/$artist_id';
 
   try {
     var uri = Uri.parse(apiUrl);

@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:test1/page-1/page0.3_booking.dart';
+import 'package:test1/page-1/page_0.3_artist_home.dart';
 import '../utils.dart';
 
 
@@ -33,11 +34,35 @@ class _payment_historyState extends State<payment_history>{
   }
 
 
+  // Future<String?> _getid() async {
+  //   return await storage.read(key: 'artist_id'); // Assuming you stored the token with key 'id'
+  // }
+
+  Future<String?> _getTeamid() async {
+    return await storage.read(key: 'team_id'); // Assuming you stored the token with key 'id'
+  }
+
+  Future<String?> _getKind() async {
+    return await storage.read(key: 'selected_value'); // Assuming you stored the token with key 'selected_value'
+  }
+
   Future<void> _loadPayments(String artist_id ) async {
 
     // String? id = await _getArtist_id();
+    // String? id = await _getid();
+    String? team_id= await _getTeamid();
+    String? kind = await _getKind();
 
-    final response = await http.get(Uri.parse('${Config().apiDomain}/artist/payments/$artist_id'));
+    String apiUrl;
+    if (kind == 'solo_artist') {
+      apiUrl = '${Config().apiDomain}/artist/payments/$artist_id';
+    } else if (kind == 'team') {
+      apiUrl = '${Config().apiDomain}/team/payments/$team_id';
+    } else {
+      return;
+    }
+
+    final response = await http.get(Uri.parse(apiUrl));
 
     if (response.statusCode == 200) {
       List<dynamic> decodedList = json.decode(response.body);

@@ -30,7 +30,7 @@ class _BookedState extends State<Booked> {
   String? phone_number;
    String? dateText ;
   String? timeText ;
-   String? durationText ;
+  String? durationText ;
  String? priceText;
 String? locationText ;
 int? hour;
@@ -91,7 +91,7 @@ String? totalprice;
   //   }
   // }
 
-  String calculateTotalAmount(String pricePerHour, int hours, int minutes) {
+  Future<String> calculateTotalAmount (String pricePerHour, int hours, int minutes)  async {
     // Convert total time to hours
     double totalTimeInHours = hours + (minutes / 60.0);
 
@@ -160,8 +160,12 @@ String? totalprice;
       print('Hours: $hour');
       print('Minutes: $minute');
 
-      totalprice=await calculateTotalAmount( price!, hour as int , minute as int );
-      print(totalprice);
+// setState(() async {
+//   totalprice=await calculateTotalAmount( price!, hour as int , minute as int );
+//
+//   totalprice;
+// });
+
 
 
     }
@@ -273,103 +277,172 @@ print(formData);
     double fem = MediaQuery.of(context).size.width / baseWidth;
     double ffem = fem * 0.97;
     return Scaffold(
-      backgroundColor:Colors.white,
-      body: SafeArea(
-        child: Container(color:Colors.grey ,
-          width: double.infinity,
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: EdgeInsets.fromLTRB(1 * fem, 1 * fem, 1 * fem, 2 * fem),
-                  width: double.infinity,
-                  height: 62 * fem,
-                  decoration: BoxDecoration(
-                    color: Color(0xFFFFFFFF)
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      IconButton(
-                        icon: Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
+        backgroundColor: Colors.white,
+        body: SafeArea(
+        child: FutureBuilder<void>(
+        future: fetchArtistBooking(widget.BookingId), // Fetch the booking details
+         builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(
+          child: CircularProgressIndicator(), // Show loading bar while fetching data
+          );
+         } else if (snapshot.hasError) {
+         return Center(
+         child: Text('Error fetching data!'), // Show error message if there's an issue
+          );
+        } else {
+            return Container(color: Colors.grey,
+              width: double.infinity,
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: EdgeInsets.fromLTRB(1 * fem, 1 * fem, 1 * fem,
+                          2 * fem),
+                      width: double.infinity,
+                      height: 62 * fem,
+                      decoration: BoxDecoration(
+                          color: Color(0xFFFFFFFF)
                       ),
-                      Expanded(
-                        child: Center(
-                          child: Text(
-                            'Booking Details',
-                            style: SafeGoogleFont(
-                              'Be Vietnam Pro',
-                              fontSize: 21 * ffem,
-                              fontWeight: FontWeight.w500,
-                              height: 1.25 * ffem / fem,
-                              letterSpacing: -0.2700000107 * fem,
-                              color: Colors.black,
-                            ),
-                          ),
-                        ),
-                      ),
-                      // This SizedBox ensures that the title is centered
-                      // by taking the same width as the back button
-                      SizedBox(width: 48),
-                    ],
-                  ),
-                ),
-
-                InkWell(
-                  child: Container(
-                    margin: EdgeInsets.fromLTRB(0 * fem, 0.15 * fem, 0 * fem, 0.15 * fem),
-                    padding: EdgeInsets.fromLTRB(1 * fem, 8 * fem, 1 * fem, 10 * fem),
-                    width: 540 * fem,
-                    height: 160 * fem,
-                    color:Color(0xFFFFFFFF),
-                    child: Row(
-                      children: [
-                        Container(
-                          margin: EdgeInsets.fromLTRB(16 * fem, 0 * fem, 15 * fem, 0 * fem),
-                          width: 110 * fem,
-                          height: 140 * fem,
-                          child: FutureBuilder<void>(
-                            future: fetchArtistBooking(widget.BookingId), // Call fetchArtistBooking instead of fetchImage
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState == ConnectionState.waiting) {
-                                return Container(color: Colors.grey); // Placeholder until image is loaded
-                              } else if (snapshot.hasError) {
-                                return Container(color: Colors.red); // Placeholder for error
-                              } else {
-                                return ClipRRect(
-                                  borderRadius: BorderRadius.circular(10 * fem), // Set your desired border radius
-                                  child: Image.network(
-                                    image ?? '', // Display the fetched image
-                                    fit: BoxFit.cover, // Ensure the image covers the container
-                                  ),
-                                );
-                              }
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.arrow_back_ios_new_rounded,
+                                color: Colors.black),
+                            onPressed: () {
+                              Navigator.of(context).pop();
                             },
                           ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.fromLTRB(10 * fem, 10 * fem, 5 * fem, 8 * fem),
-                          width: 247 * fem,
-                          height: double.infinity,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
+                          Expanded(
+                            child: Center(
+                              child: Text(
+                                'Booking Details',
+                                style: SafeGoogleFont(
+                                  'Be Vietnam Pro',
+                                  fontSize: 21 * ffem,
+                                  fontWeight: FontWeight.w500,
+                                  height: 1.25 * ffem / fem,
+                                  letterSpacing: -0.2700000107 * fem,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ),
+                          ),
+                          // This SizedBox ensures that the title is centered
+                          // by taking the same width as the back button
+                          SizedBox(width: 48),
+                        ],
+                      ),
+                    ),
 
-                                  // Add some space between the hardcoded and fetched name
+                    InkWell(
+                      child: Container(
+                        margin: EdgeInsets.fromLTRB(
+                            0 * fem, 0.15 * fem, 0 * fem, 0.15 * fem),
+                        padding: EdgeInsets.fromLTRB(
+                            1 * fem, 8 * fem, 1 * fem, 10 * fem),
+                        width: 540 * fem,
+                        height: 160 * fem,
+                        color: Color(0xFFFFFFFF),
+                        child: Row(
+                          children: [
+                            Container(
+                              margin: EdgeInsets.fromLTRB(
+                                  16 * fem, 0 * fem, 15 * fem, 0 * fem),
+                              width: 110 * fem,
+                              height: 140 * fem,
+                              child: FutureBuilder<void>(
+                                future: fetchArtistBooking(widget.BookingId),
+                                // Call fetchArtistBooking instead of fetchImage
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return Container(color: Colors
+                                        .grey); // Placeholder until image is loaded
+                                  } else if (snapshot.hasError) {
+                                    return Container(color: Colors
+                                        .red); // Placeholder for error
+                                  } else {
+                                    return ClipRRect(
+                                      borderRadius: BorderRadius.circular(
+                                          10 * fem),
+                                      // Set your desired border radius
+                                      child: Image.network(
+                                        image ?? '',
+                                        // Display the fetched image
+                                        fit: BoxFit
+                                            .cover, // Ensure the image covers the container
+                                      ),
+                                    );
+                                  }
+                                },
+                              ),
+                            ),
+                            Container(
+                              padding: EdgeInsets.fromLTRB(
+                                  10 * fem, 10 * fem, 5 * fem, 8 * fem),
+                              width: 247 * fem,
+                              height: double.infinity,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+
+                                      // Add some space between the hardcoded and fetched name
+                                      FutureBuilder<void>(
+                                        future: fetchArtistBooking(
+                                            widget.BookingId),
+                                        // Function to fetch text from backend
+                                        builder: (context, snapshot) {
+                                          if (snapshot.connectionState ==
+                                              ConnectionState.waiting) {
+                                            return Container(); // Placeholder until text is loaded
+                                          } else if (snapshot.hasError) {
+                                            return Text(
+                                              'Error loading text',
+                                              // Placeholder for error
+                                              style: SafeGoogleFont(
+                                                'Be Vietnam Pro',
+                                                fontSize: 16 * ffem,
+                                                fontWeight: FontWeight.w400,
+                                                height: 1.5 * ffem / fem,
+                                                color: Colors.black,
+                                              ),
+                                            );
+                                          } else {
+                                            return Text(
+                                              name ?? '',
+                                              // Display the fetched text
+                                              style: SafeGoogleFont(
+                                                'Be Vietnam Pro',
+                                                fontSize: 18 * ffem,
+                                                fontWeight: FontWeight.w400,
+                                                height: 1.5 * ffem / fem,
+                                                color: Colors.black,
+                                              ),
+                                            );
+                                          }
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 7 * fem),
+                                  // Add some space between name and other details
                                   FutureBuilder<void>(
-                                    future: fetchArtistBooking(widget.BookingId), // Function to fetch text from backend
+                                    future: fetchArtistBooking(
+                                        widget.BookingId),
+                                    // Function to fetch price and rating from backend
                                     builder: (context, snapshot) {
-                                      if (snapshot.connectionState == ConnectionState.waiting) {
+                                      if (snapshot.connectionState ==
+                                          ConnectionState.waiting) {
                                         return Container(); // Placeholder until text is loaded
                                       } else if (snapshot.hasError) {
                                         return Text(
-                                          'Error loading text', // Placeholder for error
+                                          'Error loading text',
+                                          // Placeholder for error
                                           style: SafeGoogleFont(
                                             'Be Vietnam Pro',
                                             fontSize: 16 * ffem,
@@ -379,464 +452,480 @@ print(formData);
                                           ),
                                         );
                                       } else {
-                                        return Text(
-                                          name ?? '', // Display the fetched text
-                                          style: SafeGoogleFont(
-                                            'Be Vietnam Pro',
-                                            fontSize: 18 * ffem,
-                                            fontWeight: FontWeight.w400,
-                                            height: 1.5 * ffem / fem,
-                                            color: Colors.black,
-                                          ),
+                                        return Column(
+                                          crossAxisAlignment: CrossAxisAlignment
+                                              .start,
+                                          children: [
+                                            Text(
+                                              'Price / Hour: ${price ?? ''}',
+                                              // Display the fetched price
+                                              style: SafeGoogleFont(
+                                                'Be Vietnam Pro',
+                                                fontSize: 16 * ffem,
+                                                fontWeight: FontWeight.w400,
+                                                height: 1.5 * ffem / fem,
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                            SizedBox(height: 7 * fem),
+                                            Text(
+                                              'Rating:${rating ?? '  null/5'}',
+                                              // Display the fetched rating
+                                              style: SafeGoogleFont(
+                                                'Be Vietnam Pro',
+                                                fontSize: 16 * ffem,
+                                                fontWeight: FontWeight.w400,
+                                                height: 1.5 * ffem / fem,
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                            SizedBox(height: 7 * fem),
+                                            Text(
+                                              'Skill:${skill ?? '  null/5'}',
+                                              // Display the fetched rating
+                                              style: SafeGoogleFont(
+                                                'Be Vietnam Pro',
+                                                fontSize: 16 * ffem,
+                                                fontWeight: FontWeight.w400,
+                                                height: 1.5 * ffem / fem,
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                          ],
                                         );
                                       }
                                     },
                                   ),
                                 ],
                               ),
-                              SizedBox(height: 7 * fem), // Add some space between name and other details
-                              FutureBuilder<void>(
-                                future: fetchArtistBooking(widget.BookingId), // Function to fetch price and rating from backend
-                                builder: (context, snapshot) {
-                                  if (snapshot.connectionState == ConnectionState.waiting) {
-                                    return Container(); // Placeholder until text is loaded
-                                  } else if (snapshot.hasError) {
-                                    return Text(
-                                      'Error loading text', // Placeholder for error
-                                      style: SafeGoogleFont(
-                                        'Be Vietnam Pro',
-                                        fontSize: 16 * ffem,
-                                        fontWeight: FontWeight.w400,
-                                        height: 1.5 * ffem / fem,
-                                        color: Colors.black,
-                                      ),
-                                    );
-                                  } else {
-                                    return Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Price / Hour: ${price ?? ''}', // Display the fetched price
-                                          style: SafeGoogleFont(
-                                            'Be Vietnam Pro',
-                                            fontSize: 16 * ffem,
-                                            fontWeight: FontWeight.w400,
-                                            height: 1.5 * ffem / fem,
-                                            color: Colors.black,
-                                          ),
-                                        ),
-                                        SizedBox(height: 7 * fem),
-                                        Text(
-                                          'Rating:${rating ?? '  null/5'}' , // Display the fetched rating
-                                          style: SafeGoogleFont(
-                                            'Be Vietnam Pro',
-                                            fontSize: 16 * ffem,
-                                            fontWeight: FontWeight.w400,
-                                            height: 1.5 * ffem / fem,
-                                            color: Colors.black,
-                                          ),
-                                        ),
-                                        SizedBox(height: 7 * fem),
-                                        Text(
-                                          'Skill:${skill ?? '  null/5'}' , // Display the fetched rating
-                                          style: SafeGoogleFont(
-                                            'Be Vietnam Pro',
-                                            fontSize: 16 * ffem,
-                                            fontWeight: FontWeight.w400,
-                                            height: 1.5 * ffem / fem,
-                                            color: Colors.black,
-                                          ),
-                                        ),
-                                      ],
-                                    );
-                                  }
-                                },
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
 
 
-
-                Container(
-                  margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 0*fem, 0.15*fem),
-                  // depth1frame51h9 (9:1715)
-                  padding: EdgeInsets.fromLTRB(16*fem, 10*fem, 16*fem, 10*fem),
-                  width: double.infinity,
-                  height: 80*fem,
-                  decoration: BoxDecoration (
-                    color: Color(0xFFFFFFFF),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        // depth4frame05h1 (9:1718)
-                        width: 249*fem,
-                        height: 24*fem,
-                        child: Text(
-                          'Date:',
-                          style: SafeGoogleFont (
-                            'Be Vietnam Pro',
-                            fontSize: 19*ffem,
-                            fontWeight: FontWeight.w500,
-                            height: 1.5*ffem/fem,
-                            color: Colors.black,
-                          ),
-                        ),
+                    Container(
+                      margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem,
+                          0.15 * fem),
+                      // depth1frame51h9 (9:1715)
+                      padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 16 * fem,
+                          10 * fem),
+                      width: double.infinity,
+                      height: 80 * fem,
+                      decoration: BoxDecoration(
+                        color: Color(0xFFFFFFFF),
                       ),
-                      SizedBox(height: 10*fem,),
-                      Container(
-                        width: 249*fem,
-                        height: 24*fem,
-                        child:TextField(
-                          controller: _dateTextController,
-                          style: SafeGoogleFont(
-                            'Be Vietnam Pro',
-                            fontSize: 17 * ffem,
-                            fontWeight: FontWeight.w400,
-                            height: 1.5 * ffem / fem,
-                            color: _isEditing ? Colors.blue : Color(0xff876370),
-                          ),
-                          enabled: _isEditing,
-                          decoration: InputDecoration(
-                            border: InputBorder.none,
-                          ),
-                        ),
-
-                      ),
-                    ],
-                  ),
-                ),
-                Container(margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 0*fem, 0.15*fem),
-                  // depth1frame6vBq (9:1724)
-                  padding: EdgeInsets.fromLTRB(16*fem, 10*fem, 16*fem, 10*fem),
-                  width: double.infinity,
-                  height: 80*fem,
-                  decoration: BoxDecoration (
-                    color: Colors.white
-                    ,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        // depth4frame0nE3 (9:1727)
-                        width: 249*fem,
-                        height: 24*fem,
-                        child: Text(
-                          'Time:',
-                          style: SafeGoogleFont (
-                            'Be Vietnam Pro',
-                            fontSize: 19*ffem,
-                            fontWeight: FontWeight.w500,
-                            height: 1.5*ffem/fem,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 10*fem,),
-                      Container(
-                        width: 249*fem,
-                        height: 24*fem,
-                        child:TextField(
-                          controller: _timeTextController,
-                          style: SafeGoogleFont(
-                            'Be Vietnam Pro',
-                            fontSize: 17 * ffem,
-                            fontWeight: FontWeight.w400,
-                            height: 1.5 * ffem / fem,
-                            color: _isEditing ? Colors.blue : Color(0xff876370),
-                          ),
-                          enabled: _isEditing,
-                          decoration: InputDecoration(
-                            border: InputBorder.none,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 0*fem, 0.15*fem),
-                  // depth1frame7BGB (9:1733)
-                  padding: EdgeInsets.fromLTRB(16*fem, 10*fem, 16*fem, 10*fem),
-                  width: double.infinity,
-                  height: 80*fem,
-                  decoration: BoxDecoration (
-                    color:Color(0xFFFFFFFF)
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 249*fem,
-                        height: 24*fem,
-
-                        child: Text(
-                          'Duration:',
-                          style: SafeGoogleFont (
-                            'Be Vietnam Pro',
-                            fontSize: 19*ffem,
-                            fontWeight: FontWeight.w500,
-                            height: 1.5*ffem/fem,
-                            color: Colors.black,
-
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 10*fem,),
-                      Container(
-                        width: 249*fem,
-                        height: 24*fem,
-
-                        child:  TextField(
-                          controller: _durationTextController,
-                          style: SafeGoogleFont(
-                            'Be Vietnam Pro',
-                            fontSize: 17 * ffem,
-                            fontWeight: FontWeight.w400,
-                            height: 1.5 * ffem / fem,
-                            color: _isEditing ? Colors.blue : Color(0xff876370),
-                          ),
-                          enabled: _isEditing,
-                          decoration: InputDecoration(
-                            border: InputBorder.none,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 0*fem, 0.15*fem),
-                  // depth1frame8U8o (9:1742)
-                  padding: EdgeInsets.fromLTRB(16*fem, 10*fem, 16*fem, 10*fem),
-                  width: double.infinity,
-                  height: 80*fem,
-                  decoration: BoxDecoration (
-                    color: Color(0xFFFFFFFF)
-                    ,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 249*fem,
-                        height: 24*fem,
-                        child: Text(
-                          'Total Price ',
-                          style: SafeGoogleFont (
-                            'Be Vietnam Pro',
-                            fontSize: 19*ffem,
-                            fontWeight: FontWeight.w500,
-                            height: 1.5*ffem/fem,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 10*fem,),
-                      Container(
-                        width: 249*fem,
-                        height: 24*fem,
-                        child: Text(
-                          totalprice!,
-                          style: SafeGoogleFont (
-                            'Be Vietnam Pro',
-                            fontSize: 17*ffem,
-                            fontWeight: FontWeight.w400,
-                            height: 1.5*ffem/fem,
-                            color: Color(0xff876370),
-                          ),
-
-                        ),
-
-                      ),
-                    ],
-                  ),
-                ),
-                Container(margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 0*fem, 0.15*fem),
-                  padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 16 * fem, 1 * fem),
-                  width: double.infinity,
-                  height: 80 * fem,
-                  decoration: BoxDecoration(
-                    color: Color(0xFFFFFFFF),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 249*fem,
-                        height: 24*fem,
-                        child: Text(
-                          'Location:',
-                          style: SafeGoogleFont(
-                            'Be Vietnam Pro',
-                            fontSize: 19 * ffem,
-                            fontWeight: FontWeight.w500,
-                            height: 1.5 * ffem / fem,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 10*fem,),
-                      Container(
-                        width: 249*fem,
-                        height: 24*fem,
-                        child: TextField(
-                          controller: _locationController,
-                          style: SafeGoogleFont(
-                            'Be Vietnam Pro',
-                            fontSize: 17 * ffem,
-                            fontWeight: FontWeight.w400,
-                            height: 1.5 * ffem / fem,
-                            color: _isEditing ? Colors.blue : Color(0xff876370),
-                          ),
-                          enabled: _isEditing,
-                          decoration: InputDecoration(
-                            border: InputBorder.none,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                Container(color: Colors.white,
-                  // autogroupmzqsqvP (JkRoFj6v1J7WT1Tj1JMZQs)
-                  padding: EdgeInsets.fromLTRB(16*fem, 20*fem, 16*fem, 12*fem),
-                  width: double.infinity,
-                  height: 190*fem,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 25, right: 25),
-                        child: OutlinedButton(
-                          onPressed: () {
-                            setState(() {
-                              _isEditing = !_isEditing;
-                              if (!_isEditing) {
-                                // Call your function here
-                                _saveBookingDetails();
-                                sendNotifications(context,fcm_token!,false);
-                              }
-                            });
-                          },
-                          style: OutlinedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10 * fem),
-                            ),
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 16 * fem,
-                              vertical: 8 * fem,
-                            ),
-                          ),
-                          child: Center(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            // depth4frame05h1 (9:1718)
+                            width: 249 * fem,
+                            height: 24 * fem,
                             child: Text(
-                              _isEditing ? 'Save Changes' : 'Edit Booking',
+                              'Date:',
                               style: SafeGoogleFont(
                                 'Be Vietnam Pro',
-                                fontSize: 16 * ffem,
-                                fontWeight: FontWeight.w700,
+                                fontSize: 19 * ffem,
+                                fontWeight: FontWeight.w500,
                                 height: 1.5 * ffem / fem,
-                                letterSpacing: 0.2399999946 * fem,
-                                color: Color(0xff171111),
+                                color: Colors.black,
                               ),
                             ),
                           ),
-                        ),
-
-                      ),
-
-                      Padding(
-                        padding: const EdgeInsets.only(left: 25, right: 25),
-                        child: (status == 3) // Check the status from the backend
-                            ? Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Booking Canceled, You can still change your decision',
-                              style: GoogleFonts.epilogue(
-                                fontWeight: FontWeight.w500,
-                                fontSize: 16,
-                                height: 1.5,
-                                color: Color(0xffe5195e),
+                          SizedBox(height: 10 * fem,),
+                          Container(
+                            width: 249 * fem,
+                            height: 24 * fem,
+                            child: TextField(
+                              controller: _dateTextController,
+                              style: SafeGoogleFont(
+                                'Be Vietnam Pro',
+                                fontSize: 17 * ffem,
+                                fontWeight: FontWeight.w400,
+                                height: 1.5 * ffem / fem,
+                                color: _isEditing ? Colors.blue : Color(
+                                    0xff876370),
+                              ),
+                              enabled: _isEditing,
+                              decoration: InputDecoration(
+                                border: InputBorder.none,
                               ),
                             ),
-                            SizedBox(height: 4),
-                            OutlinedButton(
+
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 *
+                        fem, 0.15 * fem),
+                      // depth1frame6vBq (9:1724)
+                      padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 16 * fem,
+                          10 * fem),
+                      width: double.infinity,
+                      height: 80 * fem,
+                      decoration: BoxDecoration(
+                        color: Colors.white
+                        ,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            // depth4frame0nE3 (9:1727)
+                            width: 249 * fem,
+                            height: 24 * fem,
+                            child: Text(
+                              'Time:',
+                              style: SafeGoogleFont(
+                                'Be Vietnam Pro',
+                                fontSize: 19 * ffem,
+                                fontWeight: FontWeight.w500,
+                                height: 1.5 * ffem / fem,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 10 * fem,),
+                          Container(
+                            width: 249 * fem,
+                            height: 24 * fem,
+                            child: TextField(
+                              controller: _timeTextController,
+                              style: SafeGoogleFont(
+                                'Be Vietnam Pro',
+                                fontSize: 17 * ffem,
+                                fontWeight: FontWeight.w400,
+                                height: 1.5 * ffem / fem,
+                                color: _isEditing ? Colors.blue : Color(
+                                    0xff876370),
+                              ),
+                              enabled: _isEditing,
+                              decoration: InputDecoration(
+                                border: InputBorder.none,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 *
+                        fem, 0.15 * fem),
+                      // depth1frame7BGB (9:1733)
+                      padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 16 * fem,
+                          10 * fem),
+                      width: double.infinity,
+                      height: 80 * fem,
+                      decoration: BoxDecoration(
+                          color: Color(0xFFFFFFFF)
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 249 * fem,
+                            height: 24 * fem,
+
+                            child: Text(
+                              'Duration:',
+                              style: SafeGoogleFont(
+                                'Be Vietnam Pro',
+                                fontSize: 19 * ffem,
+                                fontWeight: FontWeight.w500,
+                                height: 1.5 * ffem / fem,
+                                color: Colors.black,
+
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 10 * fem,),
+                          Container(
+                            width: 249 * fem,
+                            height: 24 * fem,
+
+                            child: TextField(
+                              controller: _durationTextController,
+                              style: SafeGoogleFont(
+                                'Be Vietnam Pro',
+                                fontSize: 17 * ffem,
+                                fontWeight: FontWeight.w400,
+                                height: 1.5 * ffem / fem,
+                                color: _isEditing ? Colors.blue : Color(
+                                    0xff876370),
+                              ),
+                              enabled: _isEditing,
+                              decoration: InputDecoration(
+                                border: InputBorder.none,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 *
+                        fem, 0.15 * fem),
+                      // depth1frame8U8o (9:1742)
+                      padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 16 * fem,
+                          10 * fem),
+                      width: double.infinity,
+                      height: 80 * fem,
+                      decoration: BoxDecoration(
+                        color: Color(0xFFFFFFFF)
+                        ,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 249 * fem,
+                            height: 24 * fem,
+                            child: Text(
+                              'Total Price',
+                              style: SafeGoogleFont(
+                                'Be Vietnam Pro',
+                                fontSize: 19 * ffem,
+                                fontWeight: FontWeight.w500,
+                                height: 1.5 * ffem / fem,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 10 * fem,),
+                          // Use FutureBuilder to handle async calculation
+                          FutureBuilder<String>(
+                            future: calculateTotalAmount( price!, hour as int , minute as int ), // Call the async function
+                            builder: (context, snapshot) {
+                              // Check for different states
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                // While waiting, show a loading spinner or message
+                                return CircularProgressIndicator();
+                              } else if (snapshot.hasError) {
+                                // If there's an error, show an error message
+                                return Text('Error calculating price');
+                              } else if (snapshot.hasData) {
+                                // Once the data is ready, display the total price
+                                return Container(
+                                  width: 249 * fem,
+                                  height: 24 * fem,
+                                  child: Text(
+                                    snapshot.data ?? 'Price not available', // Use the calculated price
+                                    style: SafeGoogleFont(
+                                      'Be Vietnam Pro',
+                                      fontSize: 17 * ffem,
+                                      fontWeight: FontWeight.w400,
+                                      height: 1.5 * ffem / fem,
+                                      color: Color(0xff876370),
+                                    ),
+                                  ),
+                                );
+                              } else {
+                                // Fallback for unexpected states
+                                return Text('Price not available');
+                              }
+                            },
+                          ),
+                        ],
+                      ),
+
+                    ),
+                    Container(margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 *
+                        fem, 0.15 * fem),
+                      padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 16 * fem,
+                          1 * fem),
+                      width: double.infinity,
+                      height: 80 * fem,
+                      decoration: BoxDecoration(
+                        color: Color(0xFFFFFFFF),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 249 * fem,
+                            height: 24 * fem,
+                            child: Text(
+                              'Location:',
+                              style: SafeGoogleFont(
+                                'Be Vietnam Pro',
+                                fontSize: 19 * ffem,
+                                fontWeight: FontWeight.w500,
+                                height: 1.5 * ffem / fem,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 10 * fem,),
+                          Container(
+                            width: 249 * fem,
+                            height: 24 * fem,
+                            child: TextField(
+                              controller: _locationController,
+                              style: SafeGoogleFont(
+                                'Be Vietnam Pro',
+                                fontSize: 17 * ffem,
+                                fontWeight: FontWeight.w400,
+                                height: 1.5 * ffem / fem,
+                                color: _isEditing ? Colors.blue : Color(
+                                    0xff876370),
+                              ),
+                              enabled: _isEditing,
+                              decoration: InputDecoration(
+                                border: InputBorder.none,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    Container(color: Colors.white,
+                      // autogroupmzqsqvP (JkRoFj6v1J7WT1Tj1JMZQs)
+                      padding: EdgeInsets.fromLTRB(16 * fem, 20 * fem, 16 * fem,
+                          12 * fem),
+                      width: double.infinity,
+                      height: 190 * fem,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(left: 25, right: 25),
+                            child: OutlinedButton(
                               onPressed: () {
                                 setState(() {
-                                  status = 0 ;
+                                  _isEditing = !_isEditing;
+                                  if (!_isEditing) {
+                                    // Call your function here
+                                    _saveBookingDetails();
+                                    sendNotifications(
+                                        context, fcm_token!, false);
+                                  }
                                 });
-                                cancelBooking(context, widget.BookingId, '0');
-                                fetchArtist(context, widget.artistId, false);
                               },
                               style: OutlinedButton.styleFrom(
                                 backgroundColor: Colors.white,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
+                                  borderRadius: BorderRadius.circular(10 * fem),
                                 ),
-                                padding: EdgeInsets.symmetric(vertical: 8.5),
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 16 * fem,
+                                  vertical: 8 * fem,
+                                ),
                               ),
                               child: Center(
                                 child: Text(
-                                  'Undo',
-                                  style: GoogleFonts.epilogue(
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 16,
-                                    height: 1.5,
-                                    color: Colors.black,
+                                  _isEditing ? 'Save Changes' : 'Edit Booking',
+                                  style: SafeGoogleFont(
+                                    'Be Vietnam Pro',
+                                    fontSize: 16 * ffem,
+                                    fontWeight: FontWeight.w700,
+                                    height: 1.5 * ffem / fem,
+                                    letterSpacing: 0.2399999946 * fem,
+                                    color: Color(0xff171111),
                                   ),
                                 ),
                               ),
                             ),
-                          ],
-                        )
-                            : OutlinedButton(
-                          onPressed: () {
-                            setState(() {
-                              status = 3 ; // Mark as canceled
-                              _showCancelConfirmationDialog(context, widget.BookingId, widget.artistId);
-                            });
-                          },
-                          style: OutlinedButton.styleFrom(
-                            backgroundColor: Colors.black,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            padding: EdgeInsets.symmetric(vertical: 9.5),
+
                           ),
-                          child: Center(
-                            child: Text(
-                              'Cancel Booking',
-                              style: GoogleFonts.epilogue(
-                                fontWeight: FontWeight.w500,
-                                fontSize: 16,
-                                height: 1.5,
-                                color: Colors.white,
+
+                          Padding(
+                            padding: const EdgeInsets.only(left: 25, right: 25),
+                            child: (status ==
+                                3) // Check the status from the backend
+                                ? Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Booking Canceled, You can still change your decision',
+                                  style: GoogleFonts.epilogue(
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 16,
+                                    height: 1.5,
+                                    color: Color(0xffe5195e),
+                                  ),
+                                ),
+                                SizedBox(height: 4),
+                                OutlinedButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      status = 0;
+                                    });
+                                    cancelBooking(
+                                        context, widget.BookingId, '0');
+                                    fetchArtist(
+                                        context, widget.artistId, false);
+                                  },
+                                  style: OutlinedButton.styleFrom(
+                                    backgroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    padding: EdgeInsets.symmetric(
+                                        vertical: 8.5),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      'Undo',
+                                      style: GoogleFonts.epilogue(
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 16,
+                                        height: 1.5,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            )
+                                : OutlinedButton(
+                              onPressed: () {
+                                setState(() {
+                                  status = 3; // Mark as canceled
+                                  _showCancelConfirmationDialog(
+                                      context, widget.BookingId,
+                                      widget.artistId);
+                                });
+                              },
+                              style: OutlinedButton.styleFrom(
+                                backgroundColor: Colors.black,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                padding: EdgeInsets.symmetric(vertical: 9.5),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  'Cancel Booking',
+                                  style: GoogleFonts.epilogue(
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 16,
+                                    height: 1.5,
+                                    color: Colors.white,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ),
-                      SizedBox(
-                          height: 8*fem
-                      ),
+                          SizedBox(
+                              height: 8 * fem
+                          ),
 
-                    ],
-                  ),
+                        ],
+                      ),
+                    ),
+
+                  ],
                 ),
+              ),
+            );
 
-              ],
-            ),
-          ),
-        ),
-      ),);
+
+         }
+        }
+  ),
+    ),
+    );
   }
 
   void _showCancelConfirmationDialog(BuildContext context,String booking_id, String artist_id)  {

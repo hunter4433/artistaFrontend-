@@ -52,6 +52,9 @@ class SearchedArtist extends StatelessWidget {
             itemBuilder: (context, index) {
               return GestureDetector(
                 onTap: () {
+                  final artist = filteredArtistData[index];
+                  final isTeam = artist['isTeam'];
+                  print('is team is $isTeam');
                   // Navigate to the artist detail page
                   Navigator.push(
                     context,
@@ -59,6 +62,7 @@ class SearchedArtist extends StatelessWidget {
                       builder: (context) =>
                           ArtistProfile(
                             artist_id: filteredArtistData[index]['id'].toString(),
+                            isteam :isTeam
                           ),
                     ),
                   );
@@ -79,21 +83,20 @@ class SearchedArtist extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
-
                           height: 310.66 * fem,
                           decoration: BoxDecoration(
-
                             borderRadius: BorderRadius.vertical(
                               top: Radius.circular(14 * fem),
                             ),
                           ),
                           child: ClipRRect(
-
                             borderRadius: BorderRadius.only(
                               topLeft: Radius.circular(14 * fem),
                               topRight: Radius.circular(14 * fem),
                             ),
-                            child: Image.network(
+                            child: (filteredArtistData[index]['profile_photo'] != null &&
+                                filteredArtistData[index]['profile_photo'].isNotEmpty)
+                                ? Image.network(
                               filteredArtistData[index]['profile_photo'],
                               fit: BoxFit.cover,
                               width: double.infinity,
@@ -107,9 +110,17 @@ class SearchedArtist extends StatelessWidget {
                                   ),
                                 );
                               },
+                            )
+                                : Center(
+                              child: Icon(
+                                Icons.person, // Placeholder icon when photo is null
+                                color: Colors.grey,
+                                size: 50 * fem,
+                              ),
                             ),
                           ),
                         ),
+
                         Padding(
 
                           padding: EdgeInsets.fromLTRB(16 * fem, 25 * fem, 16 * fem, 25 * fem),
@@ -121,7 +132,7 @@ class SearchedArtist extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    filteredArtistData[index]['name'],
+                                    filteredArtistData[index]['name'] ?? filteredArtistData[index]['team_name'] ?? '',
                                     style: TextStyle(
                                       fontSize: 22 * ffem,
                                       fontWeight: FontWeight.w400,

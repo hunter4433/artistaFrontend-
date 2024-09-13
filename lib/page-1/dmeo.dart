@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:test1/page-1/artist_showcase.dart';
+import 'package:test1/page-1/searched_artist.dart';
 import 'package:test1/page-1/team_showcase.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -296,6 +297,57 @@ print(data);
     },
   ];
 
+  Future<String?> _getLatitude() async {
+    return await storage.read(key: 'latitude');
+  }
+
+  Future<String?> _getLongitude() async {
+    return await storage.read(key: 'longitude');
+  }
+
+  Future<List<Map<String, dynamic>>> searchArtists(String searchTerm) async {
+    print('skill is $searchTerm');
+    String? latitude = await _getLatitude();
+    print(latitude);
+    String? longitude = await _getLongitude();
+    print(longitude);
+    final String apiUrl = '${Config().apiDomain}/artist/search';
+    // final String baseUrl = 'your-base-url';
+    final Uri uri = Uri.parse(apiUrl).replace(queryParameters: {
+      'skill': searchTerm,
+      'lat': latitude,
+      'lng': longitude,
+    });
+    print(uri);
+
+    try {
+      final response = await http.get(
+        uri,
+        headers: {
+          'Content-Type': 'application/vnd.api+json',
+          'Accept': 'application/vnd.api+json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        List<dynamic> data = jsonDecode(response.body);
+        print('data is $data');
+        return List<Map<String, dynamic>>.from(data.map((artist) {
+          artist['profile_photo'] = artist['profile_photo'];
+          return artist;
+        }));
+      } else {
+        print('Failed to load artists');
+        return [];
+      }
+    } catch (e) {
+      print('Error occurred: $e');
+      return [];
+    }
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
     double baseWidth = 390;
@@ -366,8 +418,8 @@ print(data);
                             ),
                           ),
                         ),
-                        GridView.builder(padding: EdgeInsets.fromLTRB(12 * fem, 0 * fem,
-                            12 * fem, 30 * fem),
+                        GridView.builder(
+                          padding: EdgeInsets.fromLTRB(12 * fem, 0 * fem, 12 * fem, 30 * fem),
                           shrinkWrap: true,
                           physics: NeverScrollableScrollPhysics(),
                           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -379,38 +431,52 @@ print(data);
                           itemCount: categories?.length,
                           itemBuilder: (context, index) {
                             final category = categories?[index];
-                            return Container(
-                              height: 83.0,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                gradient: LinearGradient(
-                                  begin: Alignment(0, 1),
-                                  end: Alignment(0, -1),
-                                  colors: <Color>[
-                                    Color(0x66000000),
-                                    Color(0x00000000),
-                                    Color(0x1A000000),
-                                    Color(0x00000000),
-                                  ],
-                                  stops: <double>[0, 1, 1, 1],
+
+                            return GestureDetector(
+                              onTap: () async {
+                                List<Map<String, dynamic>> filteredData =
+                                    await searchArtists(category['name']);
+                                // Navigate to a new page on tap, passing the category data if needed
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => SearchedArtist(filteredArtistData: filteredData),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                height: 83.0,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                  gradient: LinearGradient(
+                                    begin: Alignment(0, 1),
+                                    end: Alignment(0, -1),
+                                    colors: <Color>[
+                                      Color(0x66000000),
+                                      Color(0x00000000),
+                                      Color(0x1A000000),
+                                      Color(0x00000000),
+                                    ],
+                                    stops: <double>[0, 1, 1, 1],
+                                  ),
+                                  image: DecorationImage(
+                                    fit: BoxFit.cover,
+                                    image: NetworkImage(category['image']),
+                                  ),
                                 ),
-                                image: DecorationImage(
-                                  fit: BoxFit.cover,
-                                  image: NetworkImage(category['image']),
-                                ),
-                              ),
-                              child: Align(
-                                alignment: Alignment.bottomLeft,
-                                child: Container(
-                                  margin: EdgeInsets.all(16),
-                                  child: Text(
-                                    category['name'],
-                                    style: GoogleFonts.getFont(
-                                      'Be Vietnam Pro',
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 16,
-                                      height: 1.3,
-                                      color: Color(0xFFFFFFFF),
+                                child: Align(
+                                  alignment: Alignment.bottomLeft,
+                                  child: Container(
+                                    margin: EdgeInsets.all(16),
+                                    child: Text(
+                                      category['name'],
+                                      style: GoogleFonts.getFont(
+                                        'Be Vietnam Pro',
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 16,
+                                        height: 1.3,
+                                        color: Color(0xFFFFFFFF),
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -418,6 +484,7 @@ print(data);
                             );
                           },
                         ),
+
 
 
                         Stack(

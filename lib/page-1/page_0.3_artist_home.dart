@@ -17,7 +17,11 @@ final storage = FlutterSecureStorage();
 
 
 Future<String?> _getid() async {
-  return await storage.read(key: 'id'); // Assuming you stored the token with key 'id'
+  return await storage.read(key: 'artist_id'); // Assuming you stored the token with key 'id'
+}
+
+Future<String?> _getTeamid() async {
+  return await storage.read(key: 'team_id'); // Assuming you stored the token with key 'id'
 }
 
 Future<String?> _getKind() async {
@@ -33,13 +37,15 @@ class _artist_home extends State<artist_home> {
 
   Future<void> fetchDataFromBackend() async {
     String? id = await _getid();
+    String? team_id= await _getTeamid();
     String? kind = await _getKind();
+    print(team_id);
 
     String apiUrl;
     if (kind == 'solo_artist') {
       apiUrl = '${Config().apiDomain}/artist/info/$id';
     } else if (kind == 'team') {
-      apiUrl = '${Config().apiDomain}/artist/team_info/$id';
+      apiUrl = '${Config().apiDomain}/artist/team_info/$team_id';
     } else {
       return;
     }
@@ -55,7 +61,7 @@ class _artist_home extends State<artist_home> {
 
       if (response.statusCode == 200) {
         Map<String, dynamic> responseData = json.decode(response.body);
-
+      print('tema data is $responseData');
 
         setState(() {
           name = kind == 'solo_artist'
@@ -68,10 +74,13 @@ class _artist_home extends State<artist_home> {
 
           String baseUrl = '${Config().baseDomain}/storage/';
           imageUrl =
-          '$baseUrl/${responseData['data']['attributes']['profile_photo']}';
+          '${responseData['data']['attributes']['profile_photo']}';
 
           loading = false; // Set loading to false once data is fetched
         });
+
+        // print('status is $status');
+
       } else {
         print('Failed to fetch data. Status code: ${response.statusCode}');
         setState(() {
@@ -365,20 +374,21 @@ class _artist_home extends State<artist_home> {
 
     final storage = FlutterSecureStorage();
 
-    String? id = await storage.read(key: 'id');
+    String? id = await storage.read(key: 'artist_id');
+    String? team_id = await storage.read(key: 'team_id');
     print(id);
     String? kind = await storage.read(key: 'selected_value');
 
-    if (id == null || kind == null) {
-      print('Error: User id or kind is null');
-      return;
-    }
+    // if (id == null || kind == null || team_id == null) {
+    //   print('Error: User id or kind is null');
+    //   return;
+    // }
 
     String apiUrl;
     if (kind == 'solo_artist') {
       apiUrl = '${Config().apiDomain}/artist/info/$id';
     } else if (kind == 'team') {
-      apiUrl = '${Config().apiDomain}/artist/team_info/$id';
+      apiUrl = '${Config().apiDomain}/artist/team_info/$team_id';
     } else {
       print('Error: Unrecognized kind');
       return;

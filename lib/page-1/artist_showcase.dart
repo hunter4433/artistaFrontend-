@@ -14,7 +14,8 @@ import 'package:flutter_pannable_rating_bar/flutter_pannable_rating_bar.dart';
 
 class ArtistProfile extends StatefulWidget {
      late String  artist_id;
-   ArtistProfile( {required this.artist_id});
+     String? isteam;
+   ArtistProfile( {required this.artist_id, this.isteam});
 
 
   @override

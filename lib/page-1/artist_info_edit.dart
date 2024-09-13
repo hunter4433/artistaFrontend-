@@ -5,6 +5,7 @@ import 'package:test1/page-1/artsit_skills_edit.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
+import 'package:http_parser/http_parser.dart';
 
 
 
@@ -30,6 +31,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   // String _phoneNo = '';
   // String _address = '';
   File? _image;
+  String? _imageUrl; // For profile photo URL from backend
 
   final storage = FlutterSecureStorage();
 
@@ -37,7 +39,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return await storage.read(key: 'token'); // Assuming you stored the token with key 'token'
   }
   Future<String?> _getid() async {
-    return await storage.read(key: 'id'); // Assuming you stored the token with key 'token'
+    return await storage.read(key: 'artist_id'); // Assuming you stored the token with key 'token'
+  }
+  Future<String?> _getTeamid() async {
+    return await storage.read(key: 'team_id'); // Assuming you stored the token with key 'token'
   }
   Future<String?> _getKind() async {
     return await storage.read(key: 'selected_value'); // Assuming you stored the token with key 'token'
@@ -46,6 +51,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Future<void> fetchArtistInformation() async {
     String? token = await _getToken();
     String? id = await _getid();
+    String? team_id = await _getTeamid();
     String? kind = await _getKind();
     // print(token);
     print(id);
@@ -56,7 +62,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (kind == 'solo_artist') {
       apiUrl = '${Config().apiDomain}/artist/info/$id';
     } else if (kind == 'team') {
-      apiUrl = '${Config().apiDomain}/artist/team_info/$id';
+      apiUrl = '${Config().apiDomain}/artist/team_info/$team_id';
     } else {
       // Handle the case where kind is not recognized
       return;
@@ -84,9 +90,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           _ageController.text = userData['data']['attributes']['age']?.toString() ?? '';
           _addressController.text = userData['data']['attributes']['address'] ?? '';
           _altPhoneController.text=userData['data']['attributes']['alt_phone_number'];
+          _imageUrl=userData['data']['attributes']['profile_photo'];
           // _sController.text = userData['data']['attributes']['state'] ?? '';
           // _pinCodeController.text = userData['data']['attributes']['pin'] ?? '';
         });
+        print('profile photo is $_imageUrl');
       } else {
         print('Failed to fetch user information. Status code: ${response.body}');
       }
@@ -120,11 +128,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     setState(() {
       if (pickedImage != null) {
         _image = File(pickedImage.path);
+         _imageUrl= null; // For profile photo URL from backend
+
       } else {
         print('No image selected.');
       }
     });
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -149,8 +161,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           IconButton(
             icon: Icon(Icons.done),
             color: Color(0xffe5195e), // Change icon button color
-            onPressed: () {
-              _saveUserInformation(); // Call function to update profile data
+            onPressed: () async {
+              await _saveUserInformation(); // Call function to update profile data
+              // After editing the image, call the function to upload it
+              if (_image != null) {
+                _uploadImage(_image!);
+              }
               Navigator.pop(context); // Go back to previous screen
             },
           ),
@@ -179,6 +195,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   borderRadius: BorderRadius.circular(15.0),
                   child: Image.file(
                     _image!,
+                    width: 190,
+                    height: 220,
+                    fit: BoxFit.cover,
+                  ),
+                )
+                    : _imageUrl != null
+                    ? ClipRRect(
+                  borderRadius: BorderRadius.circular(15.0),
+                  child: Image.network(
+                    _imageUrl!,
                     width: 190,
                     height: 220,
                     fit: BoxFit.cover,
@@ -299,23 +325,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
 
-  void _saveUserInformation() async {
+  Future<void> _saveUserInformation() async {
     final storage = FlutterSecureStorage();
-
-    Future<String?> _getToken() async {
-      return await storage.read(key: 'token'); // Assuming you stored the token with key 'token'
-    }
-
-    Future<String?> _getid() async {
-      return await storage.read(key: 'id'); // Assuming you stored the token with key 'token'
-    }
-    Future<String?> _getKind() async {
-      return await storage.read(key: 'selected_value'); // Assuming you stored the token with key 'token'
-    }
-
 
     String? token = await _getToken();
     String? id = await _getid();
+    String? team_id = await _getTeamid();
     String? kind = await _getKind();
     print(kind);
     print (token);
@@ -326,7 +341,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     if (kind == 'solo_artist') {
       apiUrl = '${Config().apiDomain}/artist/info/$id';
     } else if (kind == 'team') {
-      apiUrl = '${Config().apiDomain}/artist/team_info/$id';
+      apiUrl = '${Config().apiDomain}/artist/team_info/$team_id';
     } else {
       // Handle the case where kind is not recognized
       return;
@@ -372,6 +387,47 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     } catch (e) {
       // Handle network errors
       print('Error saving user information: $e');
+    }
+  }
+
+
+  void _uploadImage(File imageFile) async {
+    String? token = await _getToken();
+    String? id = await _getid();
+    String? team_id = await _getTeamid();
+    String? kind = await _getKind();
+
+    // Initialize API URL for image upload
+    String apiUrl;
+    if (kind == 'solo_artist') {
+      apiUrl = '${Config().apiDomain}/artist/upload_image/$id';
+    } else if (kind == 'team') {
+      apiUrl = '${Config().apiDomain}/artist/upload_image/$team_id';
+    } else {
+      return;
+    }
+
+    // Create multipart request for the image upload
+    var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
+
+    // Add the image file to the request
+    request.files.add(await http.MultipartFile.fromPath(
+      'profile_photo', // The key expected by the backend
+      imageFile.path,  // Path of the image
+      contentType: MediaType('image', 'jpeg'), // Adjust the content type if necessary
+    ));
+
+    // Add headers, including the Authorization token
+    request.headers['Authorization'] = 'Bearer $token';
+    request.headers['Accept'] = 'application/vnd.api+json';
+
+    // Send the request
+    var response = await request.send();
+
+    if (response.statusCode == 200) {
+      print('Image uploaded successfully');
+    } else {
+      print('Failed to upload image. Status code: ${response.statusCode}');
     }
   }
 

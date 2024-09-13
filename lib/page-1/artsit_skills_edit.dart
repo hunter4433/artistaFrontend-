@@ -36,8 +36,12 @@ class _ArtistCredentials33State extends State<ArtistCredentials33> {
     return await storage.read(key: 'token'); // Assuming you stored the token with key 'token'
   }
   Future<String?> _getid() async {
-    return await storage.read(key: 'id'); // Assuming you stored the token with key 'token'
+    return await storage.read(key: 'artist_id'); // Assuming you stored the token with key 'token'
   }
+  Future<String?> _getTeamid() async {
+    return await storage.read(key: 'team_id'); // Assuming you stored the token with key 'token'
+  }
+
   Future<String?> _getKind() async {
     return await storage.read(key: 'selected_value'); // Assuming you stored the token with key 'token'
   }
@@ -59,10 +63,11 @@ class _ArtistCredentials33State extends State<ArtistCredentials33> {
 
     String? token = await _getToken();
     String? id = await _getid();
+    String? team_id = await _getTeamid();
     String? kind = await _getKind();
-    print (kind);
-    print (token);
-    print (id);
+    // print (kind);
+    // print (token);
+    // print (id);
 
 
 
@@ -73,7 +78,7 @@ class _ArtistCredentials33State extends State<ArtistCredentials33> {
     if (kind == 'solo_artist') {
       apiUrl = '${Config().apiDomain}/artist/info/$id';
     } else if (kind == 'team') {
-      apiUrl = '${Config().apiDomain}/artist/team_info/$id';
+      apiUrl = '${Config().apiDomain}/artist/team_info/$team_id';
     } else {
       // Handle the case where kind is not recognized
       return;
@@ -493,17 +498,18 @@ class _ArtistCredentials33State extends State<ArtistCredentials33> {
   Future<bool> _saveUserInformation() async {
     final storage = FlutterSecureStorage();
 
-    Future<String?> _getToken() async {
-      return await storage.read(key: 'token'); // Assuming you stored the token with key 'token'
-    }
-
-    Future<String?> _getid() async {
-      return await storage.read(key: 'id'); // Assuming you stored the token with key 'token'
-    }
+    // Future<String?> _getToken() async {
+    //   return await storage.read(key: 'token'); // Assuming you stored the token with key 'token'
+    // }
+    //
+    // Future<String?> _getid() async {
+    //   return await storage.read(key: 'id'); // Assuming you stored the token with key 'token'
+    // }
 
 
     String? token = await _getToken();
     String? id = await _getid();
+    String? team_id = await _getTeamid();
     String? kind = await _getKind();
     print (token);
     print (kind);
@@ -512,7 +518,7 @@ class _ArtistCredentials33State extends State<ArtistCredentials33> {
     if (kind == 'solo_artist') {
       apiUrl = '${Config().apiDomain}/artist/info/$id';
     } else {
-      apiUrl = '${Config().apiDomain}/artist/team_info/$id';
+      apiUrl = '${Config().apiDomain}/artist/team_info/$team_id';
     }
     // Prepare data to send to the backend
     Map<String, dynamic> userData = {

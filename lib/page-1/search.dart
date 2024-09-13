@@ -84,31 +84,62 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
   Future<List<Map<String, dynamic>>> searchArtists(String searchTerm) async {
     String? latitude = await _getLatitude();
     String? longitude = await _getLongitude();
-    final String apiUrl = '${Config().apiDomain}/artist/search';
-    // final String baseUrl = 'your-base-url';
-    final Uri uri = Uri.parse(apiUrl).replace(queryParameters: {
+
+    final String apiUrl1 = '${Config().apiDomain}/artist/search';
+    final String apiUrl2 = '${Config().apiDomain}/team/search'; // Second API endpoint
+
+    final Uri uri1 = Uri.parse(apiUrl1).replace(queryParameters: {
       'skill': searchTerm,
       'lat': latitude,
       'lng': longitude,
     });
 
+    final Uri uri2 = Uri.parse(apiUrl2).replace(queryParameters: {
+      'skill': searchTerm, // Modify query parameters as needed for the second endpoint
+      'lat': latitude,
+      'lng': longitude,
+    });
+
     try {
-      final response = await http.get(
-        uri,
-        headers: {
+      // Call both API endpoints simultaneously
+      final responses = await Future.wait([
+        http.get(uri1, headers: {
           'Content-Type': 'application/vnd.api+json',
           'Accept': 'application/vnd.api+json',
-        },
-      );
+        }),
+        http.get(uri2, headers: {
+          'Content-Type': 'application/vnd.api+json',
+          'Accept': 'application/vnd.api+json',
+        })
+      ]);
 
-      if (response.statusCode == 200) {
-        List<dynamic> data = jsonDecode(response.body);
-        return List<Map<String, dynamic>>.from(data.map((artist) {
-          artist['profile_photo'] = artist['profile_photo'];
-          return artist;
-        }));
+      final response1 = responses[0];
+      final response2 = responses[1];
+
+      if (response1.statusCode == 200 && response2.statusCode == 200) {
+        // Parse both responses
+        List<dynamic> data1 = jsonDecode(response1.body);
+        List<dynamic> data2 = jsonDecode(response2.body);
+
+        // Merge the data
+        List<Map<String, dynamic>> mergedData = [
+          ...List<Map<String, dynamic>>.from(data1.map((artist) {
+            artist['profile_photo'] = artist['profile_photo'];
+            artist['isTeam'] = 'false';
+            return artist;
+          })),
+          ...List<Map<String, dynamic>>.from(data2.map((artist) {
+            artist['profile_photo'] = artist['profile_photo'];
+            artist['isTeam'] = 'true';
+            return artist;
+          })),
+        ];
+       print(mergedData);
+        return mergedData;
       } else {
         print('Failed to load artists');
+        print(response1.body);
+        print(response2.body);
         return [];
       }
     } catch (e) {
@@ -117,34 +148,43 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
     }
   }
 
+
   void searchBySkill(String skill) async {
     List<Map<String, dynamic>> filteredData = await searchArtists(skill);
-    // Dispose the video when navigating to another page
+
+    // Pause the video when navigating to another page
     _controller.pause();
-    Navigator.push(
+
+    final returnedValue = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => Scaffold(
-          appBar: AppBar(title: Text('Search Result')),
-          body: Center(child: Text('Results for $skill')),
-        ),
+        builder: (context) => SearchedArtist(filteredArtistData: filteredData),
       ),
-    ).then((value) {
-      // Reinitialize the video when returning to this page
-      _controller.play();
-    });
+    );
+
+    // Optionally, you can handle the returned value here
+    if (returnedValue != null) {
+      // Do something with the returned value if necessary
+      print('Returned value: $returnedValue');
+    }
+
+    // Reinitialize the video when returning to this page
+    _controller.play();
   }
+
 
   @override
   Widget build(BuildContext context) {
     final List<String> skills = [
       'Classical Musician',
-      'DJ',
+      // 'DJ',
       'Dhol Artist',
+      'Ghazal',
       'Ghazal',
       'Magician',
       'Band',
-      'Chef'
+      'Chef',
+      'Comedian'
     ];
 
     double baseWidth = 390;
@@ -224,7 +264,7 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
                           context,
                           MaterialPageRoute(
                               builder: (context) =>
-                                  SearchedArtist(filteredArtistData: filteredData)),
+                                  SearchedArtist(filteredArtistData: filteredData, )),
                         ).then((value) {
                           // Reinitialize the video when returning to this page
                           _controller.play();

@@ -157,13 +157,18 @@ Future<String?>_getPhoneNumber()async {
       String? fCMToken = await _getFCMToken();
 
       // Prepare data to send to the backend
+      // Prepare data to send to the backend
       Map<String, String> artistData = {
         'phone_number': phoneNumber!,
         'price_per_hour': _hourlyPriceController.text,
         'skill_category': selectedSkill!,
         'special_message': _messageController.text,
         'fcm_token': fCMToken!,
+        // Convert "Yes" to "1" and "No" to "0" as strings
+        'sound_system': selectedOption == 'Yes' ? '1' : '0',
       };
+
+
 
       // Merge sharedPreferencesData with artistData
       Map<String, String?> mergedData = {...sharedPreferencesData, ...artistData};
@@ -1061,7 +1066,7 @@ Future<String?>_getPhoneNumber()async {
       var request = http.MultipartRequest('POST', uploadUrl);
 
       // Add user type as a field in the request
-      request.fields['user_type'] = 'team';
+      request.fields['usertype'] = 'team';
 
       // Add images to the request
       for (int i = 0; i < imageFiles.length; i++) {

@@ -297,40 +297,70 @@ class _artist_credState extends State<team_info> {
     );
   }
 
-  //location dialog box
   void _showLocationDialog(BuildContext context) {
-
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(backgroundColor:Color(0xfffff5f8) ,
-          title: Text('Address'),
-          content: isLoading
-              ? Center(child: CircularProgressIndicator())
-              : Text('How would you like to enter your Address?',style: TextStyle(fontSize: 17,color: Colors.black),),
-          actions: isLoading
-              ? []
-              : [
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                _showManualEntryDialog(context);
-              },
-              child: Text('Enter Manually',style: TextStyle(fontSize: 16, color: Colors.black),),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                _useCurrentLocation();
-                // Close the dialog after fetching the location
-                Navigator.of(context).pop();
-              },
-              child: Text('Use Current Location',style: TextStyle(fontSize: 16, color: Colors.black),),
-            ),
-          ],
+        bool isLoading = false; // Local state for loading inside dialog
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return AlertDialog(
+              backgroundColor: Color(0xfffff5f8),
+              title: Text('Address'),
+              content: SizedBox(
+                width: 300, // Set a fixed width for the dialog box
+                height: 100, // Set a fixed height for the dialog box
+                child: Center(
+                  child: isLoading
+                      ? CircularProgressIndicator() // Show loading spinner
+                      : Text(
+                    'How would you like to enter your Address?',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 17, color: Colors.black),
+                  ),
+                ),
+              ),
+              actions: isLoading
+                  ? [] // Disable buttons if loading
+                  : [
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    _showManualEntryDialog(context);
+                  },
+                  child: Text(
+                    'Enter Manually',
+                    style: TextStyle(fontSize: 16, color: Colors.black),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    setState(() {
+                      isLoading = true; // Show loading bar
+                    });
+
+                    await _useCurrentLocation();
+
+                    setState(() {
+                      isLoading = false; // Hide loading bar
+                    });
+
+                    Navigator.of(context).pop(); // Close the dialog
+                  },
+                  child: Text(
+                    'Use Current Location',
+                    style: TextStyle(fontSize: 16, color: Colors.black),
+                  ),
+                ),
+              ],
+            );
+          },
         );
       },
     );
   }
+
+
 
   //manual entry dialog box
   void _showManualEntryDialog(BuildContext context) {
