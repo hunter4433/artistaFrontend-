@@ -69,143 +69,172 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(0, 88, 0, 6.5),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              height: 35,
-              margin: EdgeInsets.fromLTRB(0, 15, 0, 15.5),
-              child: Text(
-                'Enter your mobile number',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.beVietnamPro(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w400,
-                  height: 1.25,
-                  letterSpacing: -0.7,
-                  color: Colors.white,
+      backgroundColor:Color(0xFF121217),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(0, 88, 0, 6.5),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                height: 35,
+                margin: EdgeInsets.fromLTRB(0, 15, 0, 0),
+                child: Text(
+                  'Enter your mobile number',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.beVietnamPro(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w400,
+                    height: 1.25,
+                    letterSpacing: -0.7,
+                    color: Colors.white,
+                  ),
                 ),
               ),
-            ),
-            Container(
-              margin: EdgeInsets.fromLTRB(18.7, 10, 18.7, 24),
-              child: Text(
-                "We'll send you a code to verify your number.",
-                textAlign: TextAlign.center,
-                style: GoogleFonts.beVietnamPro(
-                  fontWeight: FontWeight.w400,
-                  fontSize: 16,
-                  height: 1.5,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-            Container(
-              margin: EdgeInsets.fromLTRB(16, 0, 16, 24),
-              decoration: BoxDecoration(
-                border: Border.all(color: Color(0xFF292938)),
-                borderRadius: BorderRadius.circular(7),
-                color: Color(0xFF292938),
-              ),
-              padding: EdgeInsets.fromLTRB(14, 0, 14, 0),
-              child: TextField(
-                controller: _phoneController,
-                style: TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  border: InputBorder.none,
-                  hintText: 'Mobile number',
-                  hintStyle: GoogleFonts.inter(
+              Container(
+                margin: EdgeInsets.fromLTRB(18.7, 15, 18.7, 12),
+                child: Text(
+                  "We'll send you a code to verify your number.",
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.beVietnamPro(
                     fontWeight: FontWeight.w400,
                     fontSize: 16,
                     height: 1.5,
-                    color: Color(0xFF637587),
+                    color: Colors.white,
                   ),
                 ),
-                keyboardType: TextInputType.phone,
-                onChanged: (value) {
-                  if (!value.startsWith('+91 ')) {
-                    _phoneController.text = '+91 ';
-                    _phoneController.selection = TextSelection.fromPosition(
-                        TextPosition(offset: _phoneController.text.length));
-                  }
-                },
               ),
-            ),
-            Container(
-              margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                children: [
-                  Checkbox(
-                    value: isChecked,
-                    onChanged: (value) {
-                      setState(() {
-                        isChecked = value ?? false;
-                      });
-                    },
-                    activeColor: Color(0xFF2B8AE8),
-                    checkColor: Colors.white,
-                  ),
-                  Expanded(
-                    child: RichText(
-                      text: TextSpan(
-                        text: 'You agree to our ',
-                        style: GoogleFonts.beVietnamPro(
-                          fontWeight: FontWeight.w300,
-                          fontSize: 16.5,
-                          height: 1.5,
-                          color: Colors.white,
-                        ),
-                        children: [
-                          TextSpan(
-                            text: 'privacy policy',
-                            style: GoogleFonts.beVietnamPro(
-                              color: Colors.blue,
-                              fontStyle: FontStyle.italic,
-                            ),
-                            recognizer: TapGestureRecognizer()
-                              ..onTap = _navigateToPrivacyPolicy,
-                          ),
-                          TextSpan(
-                            text: ' and ',
-                            style: GoogleFonts.beVietnamPro(
-                              fontWeight: FontWeight.w300,
-                              fontSize: 16.5,
-                              height: 1.5,
-                              color: Colors.white,
-                            ),
-                          ),
-                          TextSpan(
-                            text: 'terms and conditions',
-                            style: GoogleFonts.beVietnamPro(
-                              color: Colors.blue,
-                              fontStyle: FontStyle.italic,
-                            ),
-                            recognizer: TapGestureRecognizer()
-                              ..onTap = _navigateToTermsConditions,
-                          ),
-                        ],
+              Container(height: 55,
+                margin: EdgeInsets.fromLTRB(16, 0, 16, 20),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(11),
+                  color: Color(0xFF292938),
+                ),
+
+                child: TextField(
+                  controller: _phoneController,
+                  style: TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    // Remove the default border to show the customized one
+                    border: InputBorder.none,
+                    hintText: 'Mobile number',
+                    hintStyle: GoogleFonts.inter(
+                      fontWeight: FontWeight.w400,
+                      fontSize: 16,
+                      height: 1.5,
+                      color: Color(0xFF637587),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(
+                        color: Color(0xFF637587), // Border color when not focused
+                        width: 1.5,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(
+                        color: Color(0xFFE0E0E0), // Border color when focused
+                        width: 1.5,
                       ),
                     ),
                   ),
-                ],
+                  keyboardType: TextInputType.phone,
+                  onChanged: (value) {
+                    if (!value.startsWith('+91 ')) {
+                      _phoneController.text = '+91 ';
+                      _phoneController.selection = TextSelection.fromPosition(
+                        TextPosition(offset: _phoneController.text.length),
+                      );
+                    }
+                  },
+                ),
               ),
-            ),
-            Container(
-              margin: EdgeInsets.fromLTRB(16, 20, 15.8, 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
+
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                child: Row(
+                  children: [
+                    Checkbox(
+                      value: isChecked,
+                      onChanged: (value) {
+                        setState(() {
+                          isChecked = value ?? false;
+                        });
+                      },
+                      activeColor: Color(0xFF2B8AE8),
+                      checkColor: Colors.white,
+                    ),
+                    Expanded(
+                      child: RichText(
+                        text: TextSpan(
+                          text: 'You agree to our ',
+                          style: GoogleFonts.beVietnamPro(
+                            fontWeight: FontWeight.w300,
+                            fontSize: 16.5,
+                            height: 1.5,
+                            color: Colors.white,
+                          ),
+                          children: [
+                            TextSpan(
+                              text: 'privacy policy',
+                              style: GoogleFonts.beVietnamPro(
+                                color: Colors.blue,
+                                fontStyle: FontStyle.italic,
+                              ),
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = _navigateToPrivacyPolicy,
+                            ),
+                            TextSpan(
+                              text: ' and ',
+                              style: GoogleFonts.beVietnamPro(
+                                fontWeight: FontWeight.w300,
+                                fontSize: 16.5,
+                                height: 1.5,
+                                color: Colors.white,
+                              ),
+                            ),
+                            TextSpan(
+                              text: 'terms and conditions',
+                              style: GoogleFonts.beVietnamPro(
+                                color: Colors.blue,
+                                fontStyle: FontStyle.italic,
+                              ),
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = _navigateToTermsConditions,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          Container(
+            margin: EdgeInsets.fromLTRB(16, 20, 15.8, 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      gradient: isChecked
+                          ? LinearGradient(
+                        colors: [Color(0xffe5195e), Color(0xffc2185b)], // Gradient colors when checked
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      )
+                          : null, // No gradient when unchecked
+                      color: isChecked ? null : Color(0xFF637587), // Grey background when unchecked
+                    ),
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isChecked ? Color(0xffe5195e) : Colors.grey, // Color when enabled/disabled
-                        disabledForegroundColor: Colors.grey.withOpacity(0.38), disabledBackgroundColor: Colors.grey.withOpacity(0.12), // Explicitly set color for disabled state
+                        backgroundColor: Colors.transparent, // Transparent to show container's color/gradient
+                        shadowColor: Colors.transparent, // No shadow
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(7),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         padding: EdgeInsets.symmetric(vertical: 12),
                       ),
@@ -214,7 +243,7 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
                         await storage.write(key: 'phone_number', value: _phoneController.text);
                         _verifyPhoneNumber();
                       }
-                          : null, // Disabled state when not checked
+                          : null, // Disabled when unchecked
                       child: Text(
                         'Send OTP',
                         style: GoogleFonts.inter(
@@ -227,14 +256,17 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
                       ),
                     ),
                   ),
-                ],
+                ),
+              ],
+            ),
+          ),
+
+          Container(
+                width: 390,
+                height: 20,
               ),
-            ),
-            Container(
-              width: 390,
-              height: 20,
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

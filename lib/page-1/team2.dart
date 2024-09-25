@@ -35,6 +35,14 @@ class _ArtistCredentials2State extends State<team2signup> {
   TextEditingController _hourlyPriceController = TextEditingController();
   TextEditingController _messageController = TextEditingController();
   String? selectedOption;
+  bool isUpiSelected = false;
+  bool isAccountSelected = false;
+  TextEditingController _upiController = TextEditingController();
+  TextEditingController _accountNumberController = TextEditingController();
+  TextEditingController _ifscController = TextEditingController();
+  TextEditingController _accountHolderNameController = TextEditingController();
+
+
 
   List<String> _skills = ['Musician', 'Comedian', 'Visual Artist', 'Dancer', 'Chef', 'Magician'];
   String? selectedSkill;
@@ -663,106 +671,23 @@ Future<String?>_getPhoneNumber()async {
                       SizedBox(
                         height: 24 * fem,
                       ),
-                      Container(
-                        width: double.infinity,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 3 * fem),
-                              child: Text(
-                                'How Much Do You Charge Per Hour ?',
-                                style: SafeGoogleFont(
-                                  'Be Vietnam Pro',
-                                  fontSize: 18 * ffem,
-                                  fontWeight: FontWeight.w500,
-                                  height: 1.5 * ffem / fem,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                            Container(
-                              margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 18 * fem),
-                              child: Text(
-                                '⦾ Include transportation in the total price for city bookings.'
-                                    ' For out-of-city bookings, charges can be discussed with the host \n\n'
-                                    '⦾ HomeStage will charge a 20% fee on the total price.',
-                                style: SafeGoogleFont(
-                                  'Be Vietnam Pro',
-                                  fontSize: 16.5 * ffem,
-                                  fontWeight: FontWeight.w400,
-                                  height: 1.5 * ffem / fem,
-                                  color: Colors.blue,
-                                ),
-                              ),
-                            ),
-                            Container(
-                              width: double.infinity,
-                              height: 56 * fem,
-                              child: TextField(
-                                controller: _hourlyPriceController,
-                                keyboardType: TextInputType.number, // Ensures that only numbers are entered
-                                decoration: InputDecoration(
-                                  hintText: _hourlyPriceController.text.isEmpty ? 'Your Total Per Hour Price' : null, // Hint text only when the field is empty
-                                  hintStyle: TextStyle(color: Color(0xFF9E9EB8)),
-                                  prefixText: 'Rs ', // Prefix Rs that stays in place as user types
-                                  prefixStyle: TextStyle(color: Colors.white, fontSize: 19), // Style for the Rs
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10 * fem),
-                                    borderSide: BorderSide(width: 1.25, color: Color(0xFF9E9EB8)),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10 * fem),
-                                    borderSide: BorderSide(width: 1.25, color: Colors.white),
-                                  ),
-                                ),
-                                style: TextStyle(color: Colors.white, fontSize: 19), // Style for the text entered by the user
-                                onChanged: (value) {
-                                  // Rebuild the widget when the text changes to manage the hintText visibility
-                                  (context as Element).markNeedsBuild();
-                                },
-                              ),
-                            )
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.fromLTRB(1 * fem, 30 * fem, 16 * fem, 0 * fem),
 
-                        child: const SizedBox(
-                          height: 23,
 
-                          child: Text(
-                            'Upload Your Work Samples',
-                            textAlign: TextAlign.left,
-                            style: TextStyle(
-                              fontSize: 20 ,
-                              fontWeight: FontWeight.w400,
-                              height: 1.5 ,
-                              color: Colors.white,
-                              fontFamily: 'Be Vietnam Pro',
-                            ),
-                          ),
-                        ),
-                      )
+
                     ],
                   ),
                 ),
 
                 Container(
-                  padding: EdgeInsets.fromLTRB(16 * fem, 0 * fem, 16 * fem, 1 * fem),
+                  padding: EdgeInsets.fromLTRB(16 * fem, 0 * fem, 16 * fem, 0 * fem),
                   width: double.infinity,
-                  height: 850 * fem,
+                  height: 485 * fem,
                   decoration: BoxDecoration(
-
+                    color: Color(0xFF121217),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-
-
-
-
 
                       const Padding(
                         padding: EdgeInsets.all(8.0),
@@ -773,68 +698,80 @@ Future<String?>_getPhoneNumber()async {
                             'Photos For the Portfolio',
                             textAlign: TextAlign.left,
                             style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w400,
+                              fontSize: 17,
+                              fontWeight: FontWeight.w500,
                               color: Colors.white,
                               fontFamily: 'Be Vietnam Pro',
                             ),
                           ),
                         ),
                       ),
-                      GridView.count(physics: const NeverScrollableScrollPhysics(),
-                        shrinkWrap: true,
-                        crossAxisCount: 2,
-                        mainAxisSpacing: 16.0,
-                        crossAxisSpacing: 16.0,
-                        children: [
-                          GestureDetector(
-                            onTap: _pickImage1,
-                            child: Container(
-                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10*fem),
-                                border: Border.all(color: Colors.grey),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            GestureDetector(
+                              onTap: _pickImage1,
+                              child: Container(
+                                width: 150 * fem,  // Set your desired width
+                                height: 170 * fem, // Set your desired height
+                                margin: EdgeInsets.only(right: 16.0), // Spacing between boxes
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10 * fem),
+                                  border: Border.all(color: Colors.grey),
+                                ),
+                                child: _image1 != null
+                                    ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(10 * fem), // Rounded corners
+                                  child: Image.file(_image1!, fit: BoxFit.cover),
+                                )
+                                    : Icon(Icons.add, color: Colors.white),
                               ),
-                              child: _image1 != null
-                                  ? Image.file(_image1!, fit: BoxFit.cover)
-                                  : Icon(Icons.add,color: Colors.white,),
                             ),
-                          ),
-                          GestureDetector(
-                            onTap: _pickImage2,
-                            child: Container(
-                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10*fem),
-                                border: Border.all(color: Colors.grey),
+                            GestureDetector(
+                              onTap: _pickImage2,
+                              child: Container(
+                                width: 150 * fem,
+                                height: 170 * fem,
+                                margin: EdgeInsets.only(right: 16.0),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10 * fem),
+                                  border: Border.all(color: Colors.grey),
+                                ),
+                                child: _image2 != null
+                                    ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(10 * fem), // Rounded corners
+                                  child: Image.file(_image2!, fit: BoxFit.cover),
+                                )
+                                    : Icon(Icons.add, color: Colors.white),
                               ),
-                              child: _image2 != null
-                                  ? Image.file(_image2!, fit: BoxFit.cover)
-                                  : Icon(Icons.add,color: Colors.white,),
                             ),
-                          ),
-                          GestureDetector(
-                            onTap: _pickImage3,
-                            child: Container(
-                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10*fem),
-                                border: Border.all(color: Colors.grey),
+                            GestureDetector(
+                              onTap: _pickImage3,
+                              child: Container(
+                                width: 150 * fem,
+                                height: 170 * fem,
+                                margin: EdgeInsets.only(right: 16.0),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10 * fem),
+                                  border: Border.all(color: Colors.grey),
+                                ),
+                                child: _image3 != null
+                                    ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(10 * fem), // Rounded corners
+                                  child: Image.file(_image3!, fit: BoxFit.cover),
+                                )
+                                    : Icon(Icons.add, color: Colors.white),
                               ),
-                              child: _image3 != null
-                                  ? Image.file(_image3!, fit: BoxFit.cover)
-                                  : Icon(Icons.add,color: Colors.white,),
                             ),
-                          ),
-                          GestureDetector(
-                            onTap: _pickImage4,
-                            child: Container(
-                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10*fem),
-                                border: Border.all(color: Colors.grey),
-                              ),
-                              child: _image4 != null
-                                  ? Image.file(_image4!, fit: BoxFit.cover)
-                                  : Icon(Icons.add,color: Colors.white,),
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
+
+
                       const Padding(
-                        padding: EdgeInsets.fromLTRB(0,20,0,0),
+                        padding: EdgeInsets.fromLTRB(0,30,0,0),
                         child: SizedBox(
                           height: 40,
 
@@ -842,101 +779,394 @@ Future<String?>_getPhoneNumber()async {
                             'Upload Your Videos Here',
                             textAlign: TextAlign.left,
                             style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w400,
+                              fontSize: 17,
+                              fontWeight: FontWeight.w500,
                               color: Colors.white,
                               fontFamily: 'Be Vietnam Pro',
                             ),
                           ),
                         ),
                       ),
-                      GridView.count(physics: const NeverScrollableScrollPhysics(),
-                        shrinkWrap: true,
-                        crossAxisCount: 2,
-                        mainAxisSpacing: 16.0,
-                        crossAxisSpacing: 16.0,
-                        children: [
-                          GestureDetector(
-                            onTap: _pickVideo1,
-                            child: Container(
-                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10*fem),
-                                border: Border.all(color: Colors.grey),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            GestureDetector(
+                              onTap: _pickVideo1,
+                              child: Container(
+                                width: 150 * fem,  // Set your desired width
+                                height: 170 * fem, // Set your desired height
+                                margin: EdgeInsets.only(right: 16.0), // Spacing between boxes
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10 * fem),
+                                  border: Border.all(color: Colors.grey),
+                                ),
+                                child: _controller1 != null
+                                    ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(10 * fem), // Rounded corners for the video
+                                  child: VideoPlayer(_controller1!),
+                                )
+                                    : Icon(Icons.add, color: Colors.white),
                               ),
-                              child: _controller1 != null
-                                  ? VideoPlayer(_controller1!)
-                                  : Icon(Icons.add,color: Colors.white,),
+                            ),
+                            GestureDetector(
+                              onTap: _pickVideo2,
+                              child: Container(
+                                width: 150 * fem,
+                                height: 170 * fem,
+                                margin: EdgeInsets.only(right: 16.0),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10 * fem),
+                                  border: Border.all(color: Colors.grey),
+                                ),
+                                child: _controller2 != null
+                                    ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(10 * fem),
+                                  child: VideoPlayer(_controller2!),
+                                )
+                                    : Icon(Icons.add, color: Colors.white),
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: _pickVideo3,
+                              child: Container(
+                                width: 150 * fem,
+                                height: 170 * fem,
+                                margin: EdgeInsets.only(right: 16.0),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10 * fem),
+                                  border: Border.all(color: Colors.grey),
+                                ),
+                                child: _controller3 != null
+                                    ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(10 * fem),
+                                  child: VideoPlayer(_controller3!),
+                                )
+                                    : Icon(Icons.add, color: Colors.white),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+
+                    ],
+                  ),
+
+                ),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(16 * fem, 0 * fem, 16 * fem, 18 * fem),
+                  child: Container(
+                    width: double.infinity,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 8* fem),
+                          child: Text(
+                            'How Much Do You Charge Per Hour ?',
+                            style: SafeGoogleFont(
+                                'Be Vietnam Pro',
+                                fontSize: 20 * ffem,
+                                fontWeight: FontWeight.w400,
+                                height: 1.5 * ffem / fem,
+                                color: Colors.white
                             ),
                           ),
-                          GestureDetector(
-                            onTap: _pickVideo2,
-                            child: Container(
-                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10*fem),
-                                border: Border.all(color: Colors.grey),
-                              ),
-                              child: _controller2 != null
-                                  ? VideoPlayer(_controller2!)
-                                  : Icon(Icons.add,color: Colors.white,),
+                        ),
+                        Container(
+                          margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 18 * fem),
+                          child: Text(
+                            '⦾ Include transportation in the total price for city bookings.'
+                                ' For out-of-city bookings, charges can be discussed with the host \n\n'
+                                '⦾ HomeStage will charge a 20% fee on the total price.',
+                            style: SafeGoogleFont(
+                              'Be Vietnam Pro',
+                              fontSize: 16.5 * ffem,
+                              fontWeight: FontWeight.w400,
+                              height: 1.5 * ffem / fem,
+                              color: Colors.blue,
                             ),
                           ),
-                          GestureDetector(
-                            onTap: _pickVideo3,
-                            child: Container(
-                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10*fem),
-                                border: Border.all(color: Colors.grey),
+                        ),
+                        Container(
+                          width: double.infinity,
+                          height: 56 * fem,
+                          child: TextField(
+                            controller: _hourlyPriceController,
+                            keyboardType: TextInputType.number, // Ensures that only numbers are entered
+                            decoration: InputDecoration(
+                              hintText: _hourlyPriceController.text.isEmpty ? 'Your Total Per Hour Price' : null, // Hint text only when the field is empty
+                              hintStyle: TextStyle(color: Color(0xFF9E9EB8)),
+                              prefixText: 'Rs ', // Prefix Rs that stays in place as user types
+                              prefixStyle: TextStyle(color: Colors.white, fontSize: 19), // Style for the Rs
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10 * fem),
+                                borderSide: BorderSide(width: 1.25, color: Color(0xFF9E9EB8)),
                               ),
-                              child: _controller3 != null
-                                  ? VideoPlayer(_controller3!)
-                                  : Icon(Icons.add,color: Colors.white,),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10 * fem),
+                                borderSide: BorderSide(width: 1.25, color: Colors.white),
+                              ),
                             ),
+                            style: TextStyle(color: Colors.white, fontSize: 19), // Style for the text entered by the user
+                            onChanged: (value) {
+                              // Rebuild the widget when the text changes to manage the hintText visibility
+                              (context as Element).markNeedsBuild();
+                            },
                           ),
-                        ],
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.fromLTRB(16 * fem, 0 * fem, 16 * fem, 10 * fem),
+                  width: double.infinity,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                        color: Color(0xFF121217),
+                        margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 20 * fem),
+                        width: double.infinity,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 14 * fem),
+                              child: Text(
+                                'For Receiving Payments',
+                                style: TextStyle(
+                                  fontSize: 17 * ffem,
+                                  fontWeight: FontWeight.w400,
+                                  height: 1.5 * ffem / fem,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                            // Radio Buttons for Payment Options
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: RadioListTile<bool>(
+                                    title: Text(
+                                      'UPI ID',
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                    value: true,
+                                    groupValue: isUpiSelected,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        isUpiSelected = value!;
+                                        isAccountSelected = !value;
+                                      });
+                                    },
+                                  ),
+                                ),
+                                Expanded(
+                                  child: RadioListTile<bool>(
+                                    title: Text(
+                                      'Account',
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                    value: true,
+                                    groupValue: isAccountSelected,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        isAccountSelected = value!;
+                                        isUpiSelected = !value;
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                            // UPI ID Input Box
+                            Visibility(
+                              visible: isUpiSelected,
+                              child: Container(
+                                width: double.infinity,
+                                height: 70 * fem,
+                                margin: EdgeInsets.only(top: 10 * fem),
+                                child: TextField(
+                                  controller: _upiController,
+                                  decoration: InputDecoration(
+                                    hintText: 'Your UPI ID',
+                                    hintStyle: TextStyle(color: Color(0xFF9E9EB8)),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12 * fem),
+                                      borderSide: BorderSide(
+                                        width: 1.25,
+                                        color: Color(0xFF9E9EB8),
+                                      ),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12 * fem),
+                                      borderSide: BorderSide(
+                                        width: 1.25,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                            ),
+                            // Account Details Input Box (Account No, IFSC, Holder Name)
+                            Visibility(
+                              visible: isAccountSelected,
+                              child: Column(
+                                children: [
+                                  Container(
+                                    width: double.infinity,
+                                    height: 70 * fem,
+                                    margin: EdgeInsets.only(top: 10 * fem),
+                                    child: TextField(
+                                      controller: _accountNumberController,
+                                      decoration: InputDecoration(
+                                        hintText: 'Account Number',
+                                        hintStyle: TextStyle(color: Color(0xFF9E9EB8)),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12 * fem),
+                                          borderSide: BorderSide(
+                                            width: 1.25,
+                                            color: Color(0xFF9E9EB8),
+                                          ),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12 * fem),
+                                          borderSide: BorderSide(
+                                            width: 1.25,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                  ),
+                                  Container(
+                                    width: double.infinity,
+                                    height: 70 * fem,
+                                    margin: EdgeInsets.only(top: 10 * fem),
+                                    child: TextField(
+                                      controller: _ifscController,
+                                      decoration: InputDecoration(
+                                        hintText: 'IFSC Code',
+                                        hintStyle: TextStyle(color: Color(0xFF9E9EB8)),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12 * fem),
+                                          borderSide: BorderSide(
+                                            width: 1.25,
+                                            color: Color(0xFF9E9EB8),
+                                          ),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12 * fem),
+                                          borderSide: BorderSide(
+                                            width: 1.25,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                  ),
+                                  Container(
+                                    width: double.infinity,
+                                    height: 70 * fem,
+                                    margin: EdgeInsets.only(top: 10 * fem),
+                                    child: TextField(
+                                      controller: _accountHolderNameController,
+                                      decoration: InputDecoration(
+                                        hintText: 'Account Holder Name',
+                                        hintStyle: TextStyle(color: Color(0xFF9E9EB8)),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12 * fem),
+                                          borderSide: BorderSide(
+                                            width: 1.25,
+                                            color: Color(0xFF9E9EB8),
+                                          ),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12 * fem),
+                                          borderSide: BorderSide(
+                                            width: 1.25,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
                 ),
+                Container(color: Color(0xFF121217),
+                  margin: EdgeInsets.fromLTRB(16 * fem, 0 * fem, 16 * fem, 24 * fem),
+                  width: double.infinity,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 18 * fem),
+                        child: Text(
+                          'Special message for the host',
+                          style: SafeGoogleFont(
+                              'Be Vietnam Pro',
+                              fontSize: 20 * ffem,
+                              fontWeight: FontWeight.w400,
+                              height: 1.5 * ffem / fem,
+                              color: Colors.white
+                          ),
+                        ),
+                      ),
+                      Container(
+
+                        width: double.infinity,
+                        height: 70 * fem,
+
+                        child: TextField(
+                          controller: _messageController,
+                          maxLines: null,
+                          decoration: InputDecoration(
+                            hintText: 'I don\'t work after 11 !',
+                            hintStyle: TextStyle(color:  Color(0xFF9E9EB8)),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12 * fem),
+                              borderSide: BorderSide(width: 1.25, color: Color(0xFF9E9EB8),),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12 * fem),
+                              borderSide: BorderSide(width: 1.25, color: Colors.white),
+                            ),
+                          ),
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+
+
+
+
+
                 Container(
                   padding: EdgeInsets.fromLTRB(16 * fem, 0 * fem, 16 * fem, 12 * fem),
                   width: double.infinity,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 8 * fem),
-                            child: Text(
-                              'Leave a special message for the host',
-                              style: SafeGoogleFont(
-                                'Be Vietnam Pro',
-                                fontSize: 17 * ffem,
-                                fontWeight: FontWeight.w500,
-                                height: 1.5 * ffem / fem,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                          Container(
-                            width: double.infinity,
-                            height: 80 * fem,
-                            child: TextField(
-                              controller: _messageController,
-                              maxLines: null,
-                              decoration: InputDecoration(
-                                hintText: 'I don\'t work after 11 !',
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12 * fem),
-                                  borderSide: BorderSide(width: 1.25, color: Color(0xffeac6d3)),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12 * fem),
-                                  borderSide: BorderSide(width: 1.25, color: Color(0xffe5195e)),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+
                       Padding(
                         padding: const EdgeInsets.only(left: 20, right: 20),
                         child: ElevatedButton(

@@ -1,77 +1,61 @@
-import 'package:flutter/material.dart';
-import 'package:video_player/video_player.dart';
 import 'dart:async';
 
-void main() {
-  runApp(MyApp());
-}
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
-class MyApp extends StatelessWidget {
+class AnimatedSearchBox extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: SplashScreen(),
-    );
-  }
+  _AnimatedSearchBoxState createState() => _AnimatedSearchBoxState();
 }
 
-class SplashScreen extends StatefulWidget {
-  @override
-  _SplashScreenState createState() => _SplashScreenState();
-}
-
-class _SplashScreenState extends State<SplashScreen> {
-  late VideoPlayerController _controller;
+class _AnimatedSearchBoxState extends State<AnimatedSearchBox> {
+  final List<String> _hintTexts = [
+    'Musician',
+    'Dhol Artist',
+    'Singer',
+    'Band',
+    'DJ'
+  ]; // List of hint texts
+  int _currentHintIndex = 0;
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.asset('assets/page-1/images/splash.mov')
-      ..initialize().then((_) {
-        setState(() {});
-        _controller.play();
-      });
-
-    // Navigate to Scene after video ends
-    _controller.addListener(() {
-      if (_controller.value.position == _controller.value.duration) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => Scene()), // Navigate to Scene page
-        );
-      }
-    });
+    _startHintTextAnimation();
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _timer?.cancel(); // Cancel the timer when the widget is disposed
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: _controller.value.isInitialized
-            ? AspectRatio(
-          aspectRatio: _controller.value.aspectRatio,
-          child: VideoPlayer(_controller),
-        )
-            : CircularProgressIndicator(),
-      ),
-    );
+  void _startHintTextAnimation() {
+    _timer = Timer.periodic(Duration(seconds: 3), (timer) {
+      setState(() {
+        _currentHintIndex = (_currentHintIndex + 1) % _hintTexts.length;
+      });
+    });
   }
-}
 
-class Scene extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Scene Page'),
-      ),
-      body: Center(
-        child: Text('Welcome to the Scene page!'),
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      child: Material( // Wrap the TextField with Material
+        borderRadius: BorderRadius.circular(12),
+        elevation: 2,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: TextField(
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              hintText: _hintTexts[_currentHintIndex],
+              hintStyle: TextStyle(color: Colors.grey, fontSize: 16),
+            ),
+          ),
+        ),
       ),
     );
   }

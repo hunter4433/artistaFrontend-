@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
@@ -111,28 +112,36 @@ class _artist_credState extends State<artist_cred> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      GestureDetector(
-                        onTap: () {
-                          _getImage();
-                        },
-                        child: Container(
-                          width: 190 * fem,
-                          height: 220 * fem,
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Color(0xFF9E9EB8),),
-                            borderRadius: BorderRadius.circular(10 * fem),
-                          ),
-                          child: _imageFile != null
-                              ? Image.file(
-                            _imageFile!,
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10 * fem), // Apply rounded corners here
+                        child: GestureDetector(
+                          onTap: () {
+                            _getImage();
+                          },
+                          child: Container(
                             width: 190 * fem,
                             height: 220 * fem,
-                            fit: BoxFit.cover,
-                          )
-                              : Icon(
-                            Icons.add_photo_alternate,
-                            size: 50 * fem,
-                            color: Colors.grey,
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: Color(0xFF9E9EB8),
+                              ),
+                              borderRadius: BorderRadius.circular(10 * fem), // Apply rounded corners to the container
+                            ),
+                            child: _imageFile != null
+                                ? ClipRRect(
+                              borderRadius: BorderRadius.circular(10 * fem), // Ensure the image inside also has rounded corners
+                              child: Image.file(
+                                _imageFile!,
+                                width: 190 * fem,
+                                height: 220 * fem,
+                                fit: BoxFit.cover,
+                              ),
+                            )
+                                : Icon(
+                              Icons.add_photo_alternate,
+                              size: 50 * fem,
+                              color: Colors.grey,
+                            ),
                           ),
                         ),
                       ),

@@ -689,7 +689,7 @@ print('team name is $team_name');
                             Row(
                               children:[
                                 Container(
-                                  width: 178.5*fem,
+                                  width: 165*fem,
                                   height: 56 * fem,
                                   child: TextField(
                                     controller: fromTimeController,
@@ -725,10 +725,10 @@ print('team name is $team_name');
                                   ),
                                 ),
                                 SizedBox(
-                                  width: 10,
+                                  width: 25,
                                 ),
                                 Container(
-                                  width: 178.5,
+                                  width: 165*fem,
                                   height: 56 * fem,
                                   child: TextField(
                                     controller: toTimeController,
@@ -1053,7 +1053,7 @@ print('team name is $team_name');
                                       children: [
                                         Text(
                                           '(Includes all the taxes)',
-                                          style: TextStyle(fontSize: 16.0, fontStyle: FontStyle.italic),
+                                          style: TextStyle(fontSize: 16.0, ),
                                         ),
                                            ], ),
                                         ],

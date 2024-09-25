@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -27,6 +29,9 @@ class _VerificationCodeInputScreenState
   List<FocusNode> _focusNodes = List.generate(6, (index) => FocusNode());
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  int _countdown = 30; // Countdown timer in seconds
+  bool _isButtonVisible = false; // Control visibility of the button
+
   final storage = FlutterSecureStorage();
 
   Future<String?> _getFCMToken() async {
@@ -40,6 +45,12 @@ class _VerificationCodeInputScreenState
   Future<String?> _getSelectedValue() async {
     return await storage.read(key: 'selected_value');
   }
+  @override
+  void initState() {
+    super.initState();
+    _startCountdown(); // Start the countdown timer when the screen loads
+  }
+
 
   @override
   void dispose() {
@@ -179,9 +190,11 @@ print("love");
 
       print(loginSuccessful);
       if (loginSuccessful) {
+        print('lodu here ');
         // Store authorization and navigate to home
         await storage.write(key: 'authorised', value: 'true');
         _navigateToHome(userType);
+
       } else {
         // If login fails, try sending the FCM token to the backend
         bool success = await sendFCMTokenBackend(fCMToken, phoneNumber);
@@ -229,141 +242,214 @@ print("love");
     );
   }
 
+  // Start the countdown timer
+  void _startCountdown() {
+    Timer.periodic(Duration(seconds: 1), (timer) {
+      setState(() {
+        if (_countdown > 0) {
+          _countdown--;
+        } else {
+          _isButtonVisible = true; // Show the button after countdown ends
+          timer.cancel();
+        }
+      });
+    });
+  }
+
+  // Function to handle Resend Code functionality
+  void _resendCode() {
+    // Call your resend code logic here...
+
+    // Restart the countdown and hide the button
+    setState(() {
+      _countdown = 30;
+      _isButtonVisible = false;
+    });
+    _startCountdown();
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(0, 0, 0, 6.5),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.black,
-              ),
-              child: SizedBox(
-                width: double.infinity,
-                child: Container(
-                  padding: EdgeInsets.fromLTRB(0, 0, 0, 6),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        margin: EdgeInsets.fromLTRB(16, 110, 16, 24),
-                        child: Center(
-                          child: Text(
-                            'Enter the code we just texted you',
-                            style: GoogleFonts.beVietnamPro(
-                              fontWeight: FontWeight.w400,
-                              fontSize: 23,
-                              height: 1.25,
-                              letterSpacing: -0.7,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Container(
-                        margin: EdgeInsets.fromLTRB(16, 0, 16, 24),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: List.generate(6, (index) {
-                            return Expanded(
-                              child: Container(
-                                margin: EdgeInsets.symmetric(horizontal: 4),
-                                decoration: BoxDecoration(
-                                  border: Border.all(color: Color(0xFF292938)),
-                                  borderRadius: BorderRadius.circular(9),
-                                  color: Color(0xFF292938),
-                                ),
-                                child: AspectRatio(
-                                  aspectRatio: 0.75,
-                                  child: TextField(
-                                    controller: _codeController[index],
-                                    focusNode: _focusNodes[index],
-                                    textAlign: TextAlign.center,
-                                    style: GoogleFonts.manrope(
-                                      color: Colors.white, // Text color
-                                      fontSize: 24, // Text size
-                                      fontWeight: FontWeight.w500, // Font weight
-                                    ),
-                                    decoration: InputDecoration(
-                                      border: InputBorder.none,
-                                      counterText: '',
-                                    ),
-                                    keyboardType: TextInputType.number,
-                                    maxLength: 1,
-                                    onChanged: (value) {
-                                      if (value.length == 1) {
-                                        if (index < _focusNodes.length - 1) {
-                                          _focusNodes[index].unfocus();
-                                          FocusScope.of(context)
-                                              .requestFocus(
-                                              _focusNodes[index + 1]);
-                                        } else {
-                                          _focusNodes[index].unfocus();
-                                        }
-                                      } else if (value.isEmpty) {
-                                        if (index > 0) {
-                                          _focusNodes[index].unfocus();
-                                          FocusScope.of(context)
-                                              .requestFocus(
-                                              _focusNodes[index - 1]);
-                                        }
-                                      }
-                                    },
-                                  ),
-                                ),
-                              ),
-                            );
-                          }),
-                        ),
-                      ),
-                      SizedBox(height: 24),
-                      Center(
-                        child: SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.9,
-                          child: TextButton(
-                            style: TextButton.styleFrom(
-                              padding: EdgeInsets.symmetric(vertical: 16),
-                              backgroundColor:  Color(0xffe5195e),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            onPressed: _signInWithPhoneNumber,
+      backgroundColor: Color(0xFF121217),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(0, 0, 0, 6.5),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: Color(0xFF121217),
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: Container(
+                    padding: EdgeInsets.fromLTRB(0, 0, 0, 6),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          margin: EdgeInsets.fromLTRB(16, 110, 16, 24),
+                          child: Center(
                             child: Text(
-                              'Confirm',
+                              'Enter the code we just texted You',
                               style: GoogleFonts.beVietnamPro(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 19,
+                                fontWeight: FontWeight.w400,
+                                fontSize: 24,
+                                height: 1.25,
+                                letterSpacing: -0.7,
                                 color: Colors.white,
                               ),
                             ),
                           ),
                         ),
-                      ),
-                      SizedBox(height: 24),
-                      Center(
-                        child: Text(
-                          'Didn\'t receive the code? Resend Code',
-                          style: GoogleFonts.beVietnamPro(
-                            fontSize: 16,
-                            color: Colors.white.withOpacity(0.7),
+                        Container(
+                          margin: EdgeInsets.fromLTRB(16, 0, 16, 16),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: List.generate(6, (index) {
+                              return Expanded(
+                                child: Container(
+                                  margin: EdgeInsets.symmetric(horizontal: 5),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(11),
+                                    color: Color(0xFF292938),
+                                  ),
+                                  child: AspectRatio(
+                                    aspectRatio: 0.81,
+                                    child: TextField(
+                                      controller: _codeController[index],
+                                      focusNode: _focusNodes[index],
+                                      textAlign: TextAlign.center,
+                                      style: GoogleFonts.manrope(
+                                        color: Colors.white, // Text color
+                                        fontSize: 24, // Text size
+                                        fontWeight: FontWeight.w500, // Font weight
+                                      ),
+                                      decoration: InputDecoration(
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(11),
+                                          borderSide: BorderSide(
+                                            color: Color(0xFF292938), // Border color when not focused
+                                            width: 1.5,
+                                          ),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(11),
+                                          borderSide: BorderSide(
+                                            color: Color(0xFFE0E0E0),  // Border color when focused
+                                            width: 1.5,
+                                          ),
+                                        ),
+                                        counterText: '',
+                                        // Adjust the padding to center the text vertically.
+                                        contentPadding: EdgeInsets.symmetric(vertical: 12.0),
+                                      ),
+                                      keyboardType: TextInputType.number,
+                                      maxLength: 1,
+                                      onChanged: (value) {
+                                        if (value.length == 1) {
+                                          if (index < _focusNodes.length - 1) {
+                                            _focusNodes[index].unfocus();
+                                            FocusScope.of(context).requestFocus(_focusNodes[index + 1]);
+                                          } else {
+                                            _focusNodes[index].unfocus();
+                                          }
+                                        } else if (value.isEmpty) {
+                                          if (index > 0) {
+                                            _focusNodes[index].unfocus();
+                                            FocusScope.of(context).requestFocus(_focusNodes[index - 1]);
+                                          }
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }),
                           ),
                         ),
-                      ),
-                    ],
+
+                        SizedBox(height: 15),
+                        Center(
+                          child: SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.9,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(11),
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Color(0xffe5195e), // Starting color
+                                    Color(0xffc2185b), // Ending color
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                              ),
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  padding: EdgeInsets.symmetric(vertical: 12.5),
+                                  backgroundColor: Colors.transparent, // Set transparent to show gradient
+                                  shadowColor: Colors.transparent, // Remove shadow to avoid overlay issues
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(11),
+                                  ),
+                                ),
+                                onPressed: _signInWithPhoneNumber,
+                                child: Text(
+                                  'Confirm',
+                                  style: GoogleFonts.beVietnamPro(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 19,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 12),
+                        // Countdown timer and Resend Code button
+                        // Countdown timer and Resend Code button in a single row
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              _countdown > 0
+                                  ? 'Resend code in $_countdown seconds'
+                                  : '',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
+                            ),
+                            if (_isButtonVisible)
+                              TextButton(
+                                onPressed: _resendCode,
+                                child: Text(
+                                  'Resend Code',
+                                  style: TextStyle(fontSize: 16,
+                                    color: Colors.blue, // Change button color
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 }
+

@@ -259,16 +259,16 @@ String baseUrl='http://192.0.0.2:8000/storage';
         children: [
           Container(
             margin: EdgeInsets.only(right: 8),
-            width: 12,
-            height: 12,
+            width: 12*fem,
+            height: 12*fem,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: lightColor,
               boxShadow: [
                 BoxShadow(
                   color: lightColor.withOpacity(0.5),
-                  spreadRadius: 3,
-                  blurRadius: 7,
+                  spreadRadius: 3*fem,
+                  blurRadius: 7*fem,
                   offset: Offset(0, 0), // changes position of shadow
                 ),
               ],
@@ -277,7 +277,7 @@ String baseUrl='http://192.0.0.2:8000/storage';
           Text(
             status,
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 16*fem,
               fontWeight: FontWeight.bold,
               color: Colors.black,
             ),
@@ -581,7 +581,7 @@ String baseUrl='http://192.0.0.2:8000/storage';
 
                       Container(
 
-                        margin: EdgeInsets.fromLTRB(0*fem, 20*fem, 0*fem, 5*fem),
+                        margin: EdgeInsets.fromLTRB(0*fem, 20*fem, 0*fem, 4*fem),
                         child: Text(
                           'About',
                           style: SafeGoogleFont (
@@ -602,14 +602,8 @@ String baseUrl='http://192.0.0.2:8000/storage';
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                'Good At: ',
-                                style: TextStyle(
-                                  fontSize: 18.0,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              SizedBox(width: 8.0),
+
+
 
                               Expanded(
                                 child: Wrap(
@@ -617,14 +611,14 @@ String baseUrl='http://192.0.0.2:8000/storage';
                                   runSpacing: 10.0,
                                   children: demoSkills.map((skill) {
                                     return Container(
-                                      padding: EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+                                      padding: EdgeInsets.symmetric(vertical: 4.0, horizontal: 9.0),
                                       decoration: BoxDecoration(
                                         color: Color(0xfff5e1e5) ,
                                         borderRadius: BorderRadius.circular(10.0),
                                       ),
                                       child: Text(
                                         skill,
-                                        style: TextStyle(fontSize: 16.0,fontWeight: FontWeight.w500),
+                                        style: TextStyle(fontSize: 15.0,fontWeight: FontWeight.w500),
                                       ),
                                     );
                                   }).toList(),
@@ -642,7 +636,7 @@ String baseUrl='http://192.0.0.2:8000/storage';
                               Text(
                                 'Experience: ',
                                 style: TextStyle(
-                                  fontSize: 18.0,
+                                  fontSize: 16.0,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -651,7 +645,7 @@ String baseUrl='http://192.0.0.2:8000/storage';
                               Text(
                                 experience ?? teamAbout ?? '',
                                 style: TextStyle(fontWeight: FontWeight.w400,
-                                  fontSize: 18.0,
+                                  fontSize: 16.0,
                                 ),
                               ),
                             ],
@@ -664,19 +658,19 @@ String baseUrl='http://192.0.0.2:8000/storage';
                             children: [
                               // Subheading for Sound System
                               Text(
-                                'Has Sound System?: ',
+                                'Has Sound System?:',
                                 style: TextStyle(
-                                  fontSize: 18.0,
+                                  fontSize: 16.0,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
-                              SizedBox(width: 8.0),
+                              SizedBox(width: 8.0*fem),
                               // Display Yes/No for Sound System
                               Text(
-                                hasSoundSystem != null ? 'Yes' : 'No',
+                                hasSoundSystem != null ? 'Yes' :'Will be arranged by\n Homestage',
                                 style: TextStyle(fontWeight: FontWeight.w400,
-                                  fontSize: 19.0,
-                                  color: hasSoundSystem != null ? Colors.green : Colors.red,
+                                  fontSize: 16.0,
+                                  color: hasSoundSystem != null ? Colors.green : Colors.pink,
                                 ),
                               ),
                             ],
@@ -915,7 +909,7 @@ String baseUrl='http://192.0.0.2:8000/storage';
                         ),
                       ),
                   SizedBox(
-                    height: 10,
+                    height: 10*fem,
                   ),
 
 
@@ -933,7 +927,7 @@ String baseUrl='http://192.0.0.2:8000/storage';
                       ),
 
                 Padding(
-                  padding: const EdgeInsets.only(left: 5,top: 20, right: 5, bottom: 45),
+                  padding: EdgeInsets.only(left: 5*fem,top: 20*fem, right: 5*fem, bottom: 45*fem),
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.push(context, MaterialPageRoute(builder: (context)=>booking_artist(artist_id: widget.artist_id)));
@@ -1119,79 +1113,63 @@ class ReviewsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    double baseWidth = 390; // Your base width for scaling
+    double fem = MediaQuery.of(context).size.width / baseWidth;
+    double ffem = fem * 0.97;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Average Rating Row
         Row(
           children: [
-            Icon(Icons.star, color: Colors.amber, size: 30),
-            SizedBox(width: 8),
+            Icon(Icons.star, color: Color(0xFFFFB300), size: 30 * fem), // Scaled icon size
+            SizedBox(width: 8 * fem),
             Text(
               averageRating.toStringAsFixed(1),
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 24 * fem, fontWeight: FontWeight.bold),
             ),
-            SizedBox(width: 8),
-            Text(" ($totalReviews reviews)",
-                style: TextStyle(color: Colors.black,fontSize: 17,fontWeight: FontWeight.w500)),
+            SizedBox(width: 8 * fem),
+            Text(
+              " ($totalReviews reviews)",
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 17 * fem,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ],
         ),
-        SizedBox(height: 16),
+        SizedBox(height: 16 * fem),
 
         // Rating Distribution (5-star, 4-star, etc.)
         Column(
           children: List.generate(5, (index) {
             int starCount = 5 - index;
-            return _buildRatingLine(starCount, ratingDistribution[starCount] ?? 0.0);
+            return _buildRatingLine(starCount, ratingDistribution[starCount] ?? 0.0, fem);
           }),
         ),
 
-        SizedBox(height: 16),
+        SizedBox(height: 16 * fem),
 
         // Button to see all reviews
         Center(
           child: ElevatedButton(
             onPressed: () {
               // Navigate to a page that shows all reviews
-              Navigator.push(context, MaterialPageRoute(
-                builder: (context) => AllReviewsPage(),
-              ));
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AllReviewsPage(),
+                ),
+              );
             },
-            child: Text("See All Reviews",style: TextStyle(color: Colors.black,fontWeight: FontWeight.w500,
-            fontSize: 16),),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // Helper function to build rating lines
-  Widget _buildRatingLine(int starCount, double percentage) {
-    return Row(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(5.0, 0, 0, 0),
-          child: Text(
-            "$starCount star",
-            style: TextStyle(
-              color: Colors.grey,
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-        SizedBox(width: 8),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(15.0, 0, 0, 0),
-          child: Container(
-            width: 280,
-            height: 9, // Set the desired height for the progress bar
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(5), // Round the corners
-              child: LinearProgressIndicator(
-                value: percentage, // Percentage of reviews for this star
-                backgroundColor: Colors.white,
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xffe5195e)),
+            child: Text(
+              "See All Reviews",
+              style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.w500,
+                fontSize: 16 * fem,
               ),
             ),
           ),
@@ -1199,10 +1177,43 @@ class ReviewsSection extends StatelessWidget {
       ],
     );
   }
-}
 
+// Helper function to build rating lines
+  Widget _buildRatingLine(int starCount, double percentage, double fem) {
+    return Row(
+      children: [
+        Padding(
+          padding: EdgeInsets.fromLTRB(5.0 * fem, 0, 0, 0),
+          child: Text(
+            "$starCount star",
+            style: TextStyle(
+              color: Colors.grey,
+              fontSize: 18 * fem, // Scale the font size
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+        SizedBox(width: 8 * fem),
+        Padding(
+          padding: EdgeInsets.fromLTRB(12.0 * fem, 0, 0, 0),
+          child: Container(
+            width: 270 * fem, // Scale the width
+            height: 9 * fem,  // Scale the height
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(5 * fem), // Scale border radius
+              child: LinearProgressIndicator(
+                value: percentage, // Percentage of reviews for this star
+                backgroundColor: Colors.grey.shade100,
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xffe5195e)),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }}
 
-class AllReviewsPage extends StatelessWidget {
+  class AllReviewsPage extends StatelessWidget {
   // Simulating reviews fetched from backend
   final List<Map<String, dynamic>> reviews = [
     {
@@ -1225,12 +1236,13 @@ class AllReviewsPage extends StatelessWidget {
 
   // Star rating widget
   Widget buildStarRating(int rating) {
+    double baseWidth = 390;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: List.generate(5, (index) {
         return Icon(
           index < rating ? Icons.star : Icons.star_border,
-          color: Colors.yellow,
+          color: Color(0xFFFFB300),
           size: 22,
         );
       }),
@@ -1318,6 +1330,7 @@ class AllReviewsPage extends StatelessWidget {
               ],
             ),
           ),
+
         ],
       ),
     );
@@ -1332,6 +1345,13 @@ class AllReviewsPage extends StatelessWidget {
       appBar: AppBar(
         title: Text('All Reviews',style: TextStyle(color: Colors.black),),
         backgroundColor: Colors.white,
+        leading: IconButton(color: Colors.black,
+          icon: Icon(Icons.arrow_back_ios_new_rounded),
+          onPressed: () {
+            // Use Navigator.pop() to close the current screen (Scene2) and go back to the previous screen (Scene1)
+            Navigator.pop(context);
+          },
+        ),
       ),
       body: ListView.builder(
         itemCount: reviews.length, // Number of reviews from the backend

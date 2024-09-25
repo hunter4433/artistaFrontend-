@@ -351,12 +351,13 @@ class _UserBookingsState extends State<UserBookings> {
         itemCount: bookings.length,
         itemBuilder: (context, index) {
           final booking = bookings[index];
+          int idtouse= booking['artist_id'] ?? booking['team_id'] ;
           return _buildRequestCard(
             booking['category'],
             booking['booking_date'],
             booking['booked_from'],
             booking['id'],
-            booking['artist_id'],
+            idtouse,
             index,
           );
         },

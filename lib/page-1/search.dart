@@ -174,7 +174,7 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
           SafeArea(
             child: SingleChildScrollView(
               child: Padding(
-                padding: EdgeInsets.all(16 * fem),
+                padding: EdgeInsets.all(15 * fem),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -192,44 +192,47 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
                     ),
                     SizedBox(height: 20 * fem),
                     // Search bar
-                    TextFormField(
-                      focusNode: _searchFocusNode,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Color(0xFF292938).withOpacity(0.75), // Transparent background
-                        hintText: ' Search your requirement',
-                        hintStyle: TextStyle(color: Color(0xFF9E9EB8)),
-                        prefixIcon: Icon(Icons.search, color: Color(0xFF9E9EB8)),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10 * fem),
-                          borderSide: BorderSide(
-                            color: _isSearchBarSelected
-                                ? Color(0xffe5195e)
-                                : Color(0xFFA63B5E),
+                    Container(
+                      height: 60*fem,
+                      child: TextFormField(
+                        focusNode: _searchFocusNode,
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Color(0xFF292938).withOpacity(0.75), // Transparent background
+                          hintText: 'Musician/ Band/ Dhol Artist....',
+                          hintStyle: TextStyle(color: Color(0xFF9E9EB8)),
+                          prefixIcon: Icon(Icons.search, color: Color(0xFF9E9EB8)),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16 * fem),
+                            borderSide: BorderSide(
+                              color: _isSearchBarSelected
+                                  ? Color(0xffe5195e)
+                                  : Color(0xFFA63B5E),
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16 * fem),
+                            borderSide: BorderSide(color: Color(0xFF9E9EB8)),
                           ),
                         ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16 * fem),
-                          borderSide: BorderSide(color: Color(0xFF9E9EB8)),
-                        ),
+                        style: TextStyle(color: Colors.white),
+                        onFieldSubmitted: (value) async {
+                          List<Map<String, dynamic>> filteredData =
+                          await searchArtists(value);
+                          // Dispose the video when navigating to another page
+                          _controller.pause();
+                          // Navigate to your search results screen
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    SearchedArtist(filteredArtistData: filteredData)),
+                          ).then((value) {
+                            // Reinitialize the video when returning to this page
+                            _controller.play();
+                          });
+                        },
                       ),
-                      style: TextStyle(color: Colors.white),
-                      onFieldSubmitted: (value) async {
-                        List<Map<String, dynamic>> filteredData =
-                        await searchArtists(value);
-                        // Dispose the video when navigating to another page
-                        _controller.pause();
-                        // Navigate to your search results screen
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  SearchedArtist(filteredArtistData: filteredData)),
-                        ).then((value) {
-                          // Reinitialize the video when returning to this page
-                          _controller.play();
-                        });
-                      },
                     ),
                     SizedBox(height: 20 * fem),
                     // Skill buttons
