@@ -84,7 +84,7 @@ class MyApp extends StatelessWidget {
       return Scene();
     }
     if (selectedValue == 'hire') {
-      return BottomNav(data: {},); // Home page for "hire"
+      return BottomNav(); // Home page for "hire"
     } else if (selectedValue == 'solo_artist' || selectedValue == 'team') {
       return BottomNavart(data: {},); // Home page for "solo artist" or "team"
     } else {

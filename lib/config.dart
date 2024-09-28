@@ -9,7 +9,7 @@ class Config {
 
   Config._internal();
 
-  final String apiDomain = "http://52.66.8.103/api";
+  final String apiDomain = "http://52.66.243.26/api";
 
   String get baseDomain => apiDomain.replaceFirst('/api', '');
 }

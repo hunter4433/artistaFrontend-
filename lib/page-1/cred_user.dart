@@ -430,7 +430,7 @@ class _Signup_userState extends State<Signup_user> {
                             _sendDataToBackend();
                             Navigator.pushAndRemoveUntil(
                               context,
-                              MaterialPageRoute(builder: (context) => BottomNav(data: {},)),
+                              MaterialPageRoute(builder: (context) => BottomNav()),
                                   (route) => false,
                             );
                           }

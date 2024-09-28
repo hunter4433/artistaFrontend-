@@ -35,7 +35,7 @@ class _Home_userState extends State<Home_user> {
   final List<Map<String, dynamic>> bestArtists = [
     {
 
-      'name':'Infuse your gathering with the vocals of a premier singer.',
+      'name':'Infuse your gathering with the singer.',
       'type': 'video',
       'url': 'assets/page-1/images/newmarraige.mov'
     },
@@ -57,9 +57,22 @@ class _Home_userState extends State<Home_user> {
   void initState() {
     super.initState();
     fetchFeaturedArtists();
+
     // fetchFeaturedTeams();
     // fetchAssets();
   }
+
+
+  // Future<Map<String, dynamic>> fetchCombinedData() async {
+  //   // Call both fetchAssets and fetchFeaturedArtists in parallel
+  //   final responses = await Future.wait([fetchAssets(), fetchFeaturedArtists()]);
+  //
+  //   // Combine the results into a single map
+  //   return {
+  //     'assets': responses[0], // The result of fetchAssets
+  //     // 'featuredArtists': responses[1], // The result of fetchFeaturedArtists
+  //   };
+  // }
 
   Future<void> fetchFeaturedArtists() async {
 // <<<<<<< HEAD
@@ -100,7 +113,7 @@ class _Home_userState extends State<Home_user> {
 
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);
-print(data);
+// print(data);
         setState(() {
           featuredArtists.clear();
 
@@ -116,10 +129,12 @@ print(data);
               'skill': item['skills'],
             });
           }
-          print(featuredArtists);
+
         });
 
-        print('fetauredartist rae as follows:$featuredArtists');
+        fetchFeaturedTeams();
+
+        // print('fetauredartist rae as follows:$featuredArtists');
       } else {
         print('Failed to load data: ${response.body}');
       }
@@ -131,7 +146,10 @@ print(data);
   // final List<Map<String, dynamic>> categories = [];
 
   Future<Map<String, List<dynamic>>> fetchAssets() async {
+
     try {
+
+
       String apiUrl = '${Config().apiDomain}/sections';
 
       var response = await http.get(
@@ -195,7 +213,7 @@ print(data);
           }
 
         }
-        print(seasonal);
+        print('seasonal is very  coomon $seasonal');
 
 
         return {
@@ -219,8 +237,18 @@ print(data);
 
   Future<void> fetchFeaturedTeams() async {
     try {
+      Future<String?> _getLatitude() async {
+        return await storage.read(key: 'latitude'); // Assuming you stored the token with key 'token'
+      }
+      Future<String?> _getLongitude() async {
+        return await storage.read(key: 'longitude'); // Assuming you stored the token with key 'token'
+// >>>>>>> 7351e5c0eb3d956ca9c6894a0710f105a9f2df77
+      }
 
-      String apiUrl = '${Config().apiDomain}/home/featured/team';
+      String? latitude = await _getLatitude();
+      String? longitude = await _getLongitude();
+
+      String apiUrl = '${Config().apiDomain}/home/featured/team?lat=$latitude&lng=$longitude';
       // Make the HTTP GET request
 
       var response = await http.get(
@@ -233,33 +261,30 @@ print(data);
 
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);
-
+        // print(data);
         setState(() {
-          bestArtists.clear();
-          // String baseUrl = 'http://192.0.0.2:8000/storage/';
+          // featuredArtists.clear();
+
 
           for (var item in data) {
-            if (item != null) {
-              String? name = item['team_name'];
-              String? profilePhoto = item['profile_photo'];
-              String? skills = item['skill_category'];
+            featuredArtists.add({
+              'id': item['id'],
+              'name': item['team_name'],
 
-              if (name != null && profilePhoto != null && item['id'] != null) {
-                String id = item['id'].toString();
-                bestArtists.add({
-                  'id': id,
-                  'name': name,
-                  'image': '${Config().baseDomain}/storage/$profilePhoto',
-                  'skill': skills,
-                });
-              }
-            }
+              'image': '${item['profile_photo']}',
+              // 'rating': item['rating'].toString(),
+
+              'skill': item['skill_category'],
+              'team': 'true',
+            });
           }
+
         });
 
-        print(bestArtists);
+
+        // print('team artista are $featuredArtists');
       } else {
-        print('Failed to load data: ${response.body}');
+        print('Failed to load datasssssss: ${response.body}');
       }
     } catch (error) {
       print('Error fetching data: $error');
@@ -277,20 +302,19 @@ print(data);
   final List<Map<String, dynamic>> best = [
     {
 
-      'name':'Infuse your gathering with the vocals of a premier singer.',
+      'name':'Experience Unforgettable Entertainment for Your Grand Wedding',
       'type': 'video',
       'url': 'assets/page-1/images/newmarraige.mov'
     },
     {
-      'subheading': 'Let the aroma flow',
-      'name': 'Treat your elite guests to culinary perfection.',
+      'name': 'Exclusive Haldi Entertainment to Complement Your Traditional Celebration',
       'type': 'video',
       'url': 'assets/page-1/images/homestage2.mov'
 
     },
     {
-      'subheading': 'Magical touch',
-      'name': 'Make your little one’s birthday magical.',
+
+      'name': 'Enhance Your Mehndi Event with Exquisite Talent and Elegant Performances',
       'type': 'video',
       'url': 'assets/page-1/images/mehandi.mov'
 
@@ -306,38 +330,64 @@ print(data);
   }
 
   Future<List<Map<String, dynamic>>> searchArtists(String searchTerm) async {
-    print('skill is $searchTerm');
     String? latitude = await _getLatitude();
-    print(latitude);
     String? longitude = await _getLongitude();
-    print(longitude);
-    final String apiUrl = '${Config().apiDomain}/artist/search';
-    // final String baseUrl = 'your-base-url';
-    final Uri uri = Uri.parse(apiUrl).replace(queryParameters: {
+
+    final String apiUrl1 = '${Config().apiDomain}/artist/search';
+    final String apiUrl2 = '${Config().apiDomain}/team/search'; // Second API endpoint
+
+    final Uri uri1 = Uri.parse(apiUrl1).replace(queryParameters: {
       'skill': searchTerm,
       'lat': latitude,
       'lng': longitude,
     });
-    print(uri);
+
+    final Uri uri2 = Uri.parse(apiUrl2).replace(queryParameters: {
+      'skill': searchTerm, // Modify query parameters as needed for the second endpoint
+      'lat': latitude,
+      'lng': longitude,
+    });
 
     try {
-      final response = await http.get(
-        uri,
-        headers: {
+      // Call both API endpoints simultaneously
+      final responses = await Future.wait([
+        http.get(uri1, headers: {
           'Content-Type': 'application/vnd.api+json',
           'Accept': 'application/vnd.api+json',
-        },
-      );
+        }),
+        http.get(uri2, headers: {
+          'Content-Type': 'application/vnd.api+json',
+          'Accept': 'application/vnd.api+json',
+        })
+      ]);
 
-      if (response.statusCode == 200) {
-        List<dynamic> data = jsonDecode(response.body);
-        print('data is $data');
-        return List<Map<String, dynamic>>.from(data.map((artist) {
-          artist['profile_photo'] = artist['profile_photo'];
-          return artist;
-        }));
+      final response1 = responses[0];
+      final response2 = responses[1];
+
+      if (response1.statusCode == 200 && response2.statusCode == 200) {
+        // Parse both responses
+        List<dynamic> data1 = jsonDecode(response1.body);
+        List<dynamic> data2 = jsonDecode(response2.body);
+
+        // Merge the data
+        List<Map<String, dynamic>> mergedData = [
+          ...List<Map<String, dynamic>>.from(data1.map((artist) {
+            artist['profile_photo'] = artist['profile_photo'];
+            artist['isTeam'] = 'false';
+            return artist;
+          })),
+          ...List<Map<String, dynamic>>.from(data2.map((artist) {
+            artist['profile_photo'] = artist['profile_photo'];
+            artist['isTeam'] = 'true';
+            return artist;
+          })),
+        ];
+        print(mergedData);
+        return mergedData;
       } else {
         print('Failed to load artists');
+        print(response1.body);
+        print(response2.body);
         return [];
       }
     } catch (e) {
@@ -345,7 +395,6 @@ print(data);
       return [];
     }
   }
-
 
 
   @override
@@ -424,13 +473,14 @@ print(data);
                           physics: NeverScrollableScrollPhysics(),
                           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
-                            crossAxisSpacing: 15.0,
-                            mainAxisSpacing: 15.0,
-                            childAspectRatio: 2.5,
+                            crossAxisSpacing: 15.0*fem,
+                            mainAxisSpacing: 15.0*fem,
+                            childAspectRatio: 2.5*fem,
                           ),
                           itemCount: categories?.length,
                           itemBuilder: (context, index) {
                             final category = categories?[index];
+// <<<<<<< HEAD
 
                             return GestureDetector(
                               onTap: () async {
@@ -463,6 +513,22 @@ print(data);
                                     fit: BoxFit.cover,
                                     image: NetworkImage(category['image']),
                                   ),
+// =======
+//                             return Container(
+//                               height: 83.0*fem,
+//                               decoration: BoxDecoration(
+//                                 borderRadius: BorderRadius.circular(10),
+//                                 gradient: LinearGradient(
+//                                   begin: Alignment(0, 1),
+//                                   end: Alignment(0, -1),
+//                                   colors: <Color>[
+//                                     Color(0x66000000),
+//                                     Color(0x00000000),
+//                                     Color(0x1A000000),
+//                                     Color(0x00000000),
+//                                   ],
+//                                   stops: <double>[0, 1, 1, 1],
+// >>>>>>> 7843d0fd9f9f56e19be3ee78285dd0192d2cb138
                                 ),
                                 child: Align(
                                   alignment: Alignment.bottomLeft,
@@ -520,7 +586,7 @@ print(data);
                                   ),
                                 ),
                                 Container(
-                                  height: 575,
+                                  height: 575*fem,
                                   margin: EdgeInsets.zero,
                                   child: PageView.builder(
                                     controller: PageController(viewportFraction: 0.87),
@@ -547,8 +613,8 @@ print(data);
                                             children: [
                                               // Main image or video
                                               Container(
-                                                width: 330,
-                                                height: 495,
+                                                width: 330*fem,
+                                                height: 495*fem,
                                                 child: ClipRRect(
                                                   borderRadius: BorderRadius.circular(12),
                                                   child: artist['type'] == 'image'
@@ -566,20 +632,20 @@ print(data);
                                               Positioned.fill(
                                                 child: Container(
                                                   decoration: BoxDecoration(
-                                                    color: Colors.black.withOpacity(0.2), // Adjust transparency for individual items
+                                                    color: Colors.black.withOpacity(0.1), // Adjust transparency for individual items
                                                     borderRadius: BorderRadius.circular(10),
                                                   ),
                                                 ),
                                               ),
                                               // Artist name text
                                               Positioned(
-                                                bottom: 100,
-                                                left: 16,
-                                                right: 34,
+                                                bottom: 100*fem,
+                                                left: 16*fem,
+                                                right: 16*fem,
                                                 child: Text(
                                                   artist['name'] ?? '',
                                                   style: TextStyle(
-                                                    fontSize: 18,
+                                                    fontSize: 18*fem,
                                                     fontWeight: FontWeight.w400,
                                                     color: Colors.white,
                                                   ),
@@ -634,14 +700,15 @@ print(data);
                                         // Get the id of the selected artist
                                         String id = featuredArtists[index]['id']
                                             .toString(); // Convert id to String
-
+                                       String isteam= featuredArtists[index]['team'] ?? '';
+                                       print('isteam $isteam');
                                         // Navigate to the ArtistProfile screen
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
                                             builder: (context) =>
                                                 ArtistProfile(
-                                                  artist_id: id.toString(),),
+                                                  artist_id: id.toString(), isteam : isteam ),
                                           ),
                                         );
                                       },
@@ -908,10 +975,10 @@ print(data);
 
 
                         Container(
-                          height: 790, // Full height for the container
+                          height: 790*fem, // Full height for the container
                           decoration: BoxDecoration(
                             image: DecorationImage(
-                              image: AssetImage('assets/page-1/images/bulbs.jpg'), // Background image
+                              image: AssetImage('assets/page-1/images/party.jpg'), // Background image
                               fit: BoxFit.cover, // Adjust image to cover the container
                             ),
                           ),
@@ -927,8 +994,8 @@ print(data);
                               ),
                               // "Best Teams" title at the top
                               Positioned(
-                                top: 65, // Adjust top padding as needed
-                                left: 25, // Adjust left padding as needed
+                                top: 65*fem, // Adjust top padding as needed
+                                left: 25*fem, // Adjust left padding as needed
                                 child: Text(
                                   'Best Teams',
                                   style: TextStyle(
@@ -940,12 +1007,12 @@ print(data);
                               ),
                               // PageView for videos or images
                               Positioned(
-                                top: 110, // Position this below the "Best Teams" title
+                                top: 110*fem, // Position this below the "Best Teams" title
                                 left: 0,
                                 right: 0,
                                 child: Container(
-                                  width: 330,
-                                  height: 495,// Full height for PageView to match the container
+                                  width: 330*fem,
+                                  height: 495*fem,// Full height for PageView to match the container
                                   child: PageView.builder(
                                     controller: PageController(viewportFraction: 0.87),
                                     scrollDirection: Axis.horizontal,
@@ -971,8 +1038,8 @@ print(data);
                                             children: [
                                               // Main image or video
                                               Container(
-                                                width: 330,
-                                                height: 495,
+                                                width: 330*fem,
+                                                height: 495*fem,
                                                 child: ClipRRect(
                                                   borderRadius: BorderRadius.circular(12),
                                                   child: artist['type'] == 'image'
@@ -997,9 +1064,9 @@ print(data);
                                               ),
                                               // Artist name text on each image/video
                                               Positioned(
-                                                bottom: 30, // Position near the bottom of each video/image
-                                                left: 16,
-                                                right: 34,
+                                                bottom: 30*fem, // Position near the bottom of each video/image
+                                                left: 16*fem,
+                                                right: 34*fem,
                                                 child: Text(
                                                   artist['name'] ?? '',
                                                   style: TextStyle(

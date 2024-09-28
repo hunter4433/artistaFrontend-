@@ -7,13 +7,15 @@ import 'package:test1/page-1/user_bookings.dart';
 
 class BottomNav extends StatefulWidget {
 
-  final Map<String, dynamic> data;
+  // final Map<String, dynamic> data;
   final int initialPageIndex;
   final String? newBookingTitle;
   final String? newBookingDateTime;
+  String? isteam;
 
   BottomNav({
-    required this.data,
+    // required this.data,
+    this.isteam,
     this.initialPageIndex = 0,
     this.newBookingTitle,
     this.newBookingDateTime,
@@ -31,11 +33,10 @@ class _BottomNavState extends State<BottomNav> {
   void initState() {
     super.initState();
     _currentIndex = widget.initialPageIndex;
-    _pages=[ Home_user(),
+    _pages=[
+      Home_user(),
     Search(),
-    UserBookings( data: widget.data,
-    newBookingTitle: widget.newBookingTitle,
-    newBookingDateTime: widget.newBookingDateTime,),
+      UserBookings(isteam: widget.isteam),
     setting(),
     ];
   }
@@ -57,7 +58,7 @@ class _BottomNavState extends State<BottomNav> {
         showSelectedLabels: true,
         showUnselectedLabels: true,
         type: BottomNavigationBarType.fixed,
-        backgroundColor:Color(0xFF292938), // Set your desired background color here
+        backgroundColor:Colors.black, // Set your desired background color here
         items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_filled),

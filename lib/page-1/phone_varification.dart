@@ -1,9 +1,12 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:test1/page-1/otp_page.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:flutter/gestures.dart'; // Import for GestureRecognizer
+import 'package:http/http.dart' as http;  // Import for HTTP requests
+import 'dart:convert';
+
+import '../config.dart'; // For JSON encoding/decoding
 
 class PhoneNumberInputScreen extends StatefulWidget {
   @override
@@ -13,57 +16,50 @@ class PhoneNumberInputScreen extends StatefulWidget {
 class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
   bool isChecked = false;
   final _phoneController = TextEditingController(text: '+91 ');
-  final FirebaseAuth _auth = FirebaseAuth.instance;
   final storage = FlutterSecureStorage();
 
-  void _verifyPhoneNumber() async {
-    await _auth.verifyPhoneNumber(
-      phoneNumber: _phoneController.text,
-      verificationCompleted: (PhoneAuthCredential credential) async {
-        await _auth.signInWithCredential(credential);
-      },
-      verificationFailed: (FirebaseAuthException e) {
-        String errorMessage;
-        if (e.code == 'invalid-phone-number') {
-          errorMessage = 'The provided phone number is not valid.';
-        } else {
-          errorMessage = 'Something went wrong: ${e.message}';
-        }
-        _showSnackBar(errorMessage);
-      },
-      codeSent: (String verificationId, int? resendToken) {
+  // Function to send phone number to backend for Twilio OTP
+  void _sendPhoneNumberToBackend() async {
+    final phoneNumber = _phoneController.text.trim();
+
+    // Prepare the API request
+    final url = '${Config().apiDomain}/send-otp'; // Update this with your backend URL
+    final body = json.encode({
+      'phone_number': phoneNumber,
+    });
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: body,
+      );
+
+      // Handle the response
+      if (response.statusCode == 200) {
+        // Navigate to OTP input screen if successful
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => VerificationCodeInputScreen(
-              verificationId: verificationId,
+              // phoneNumber: phoneNumber,  // Pass phone number to OTP screen
             ),
           ),
         );
-      },
-      codeAutoRetrievalTimeout: (String verificationId) {
-        print('Code auto retrieval timeout');
-      },
-    );
+      } else {
+        final error = json.decode(response.body)['message'];
+        _showSnackBar('Error: $error');
+      }
+    } catch (e) {
+      _showSnackBar('Something went wrong: $e');
+    }
   }
 
   void _showSnackBar(String message) {
     final snackBar = SnackBar(content: Text(message));
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  }
-
-  void _navigateToPrivacyPolicy() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => PrivacyPolicyPage()), // Define this page separately
-    );
-  }
-
-  void _navigateToTermsConditions() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => TermsConditionsPage()), // Define this page separately
-    );
   }
 
   @override
@@ -166,8 +162,8 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
                               color: Colors.blue,
                               fontStyle: FontStyle.italic,
                             ),
-                            recognizer: TapGestureRecognizer()
-                              ..onTap = _navigateToPrivacyPolicy,
+                            recognizer: TapGestureRecognizer()..onTap = () => PrivacyPolicyPage(),
+
                           ),
                           TextSpan(
                             text: ' and ',
@@ -184,8 +180,7 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
                               color: Colors.blue,
                               fontStyle: FontStyle.italic,
                             ),
-                            recognizer: TapGestureRecognizer()
-                              ..onTap = _navigateToTermsConditions,
+                            recognizer: TapGestureRecognizer()..onTap = () => PrivacyPolicyPage(),
                           ),
                         ],
                       ),
@@ -212,7 +207,7 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
                       onPressed: isChecked
                           ? () async {
                         await storage.write(key: 'phone_number', value: _phoneController.text);
-                        _verifyPhoneNumber();
+                        _sendPhoneNumberToBackend(); // Send phone number to backend
                       }
                           : null, // Disabled state when not checked
                       child: Text(
@@ -239,6 +234,8 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
       ),
     );
   }
+
+
 }
 
 // Create separate pages for Privacy Policy and Terms & Conditions

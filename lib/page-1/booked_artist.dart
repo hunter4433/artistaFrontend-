@@ -3,6 +3,7 @@ import 'dart:ffi';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:test1/page-1/user_bookings.dart';
 import '../config.dart';
 import '../utils.dart';
 import 'package:http/http.dart' as http;
@@ -10,12 +11,15 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'bottom_nav.dart';
+
 
 
 class Booked extends StatefulWidget {
   final String BookingId;
   final String artistId;
-  Booked({required this.BookingId, required this.artistId});
+  String? isteam;
+  Booked({required this.BookingId, required this.artistId , this.isteam});
 
   @override
   _BookedState createState() => _BookedState();
@@ -25,7 +29,7 @@ class _BookedState extends State<Booked> {
   // Fetched text from backend
 
   String? name;
-  String? price;
+  double? price;
   String? image;
   String? phone_number;
    String? dateText ;
@@ -40,6 +44,7 @@ String? fcm_token;
 String? totalprice;
  int? status;
  String? skill;
+  String? teamName;
   String? fcmToken;
    TextEditingController _locationController= TextEditingController();
    TextEditingController _dateTextController= TextEditingController();
@@ -91,15 +96,15 @@ String? totalprice;
   //   }
   // }
 
-  Future<String> calculateTotalAmount (String pricePerHour, int hours, int minutes)  async {
+  Future<String> calculateTotalAmount (double pricePerHour, int hours, int minutes)  async {
     // Convert total time to hours
     double totalTimeInHours = hours + (minutes / 60.0);
 
     // Convert pricePerHour to double
-    double pricePerHourDouble = double.parse(pricePerHour);
+    // double pricePerHourDouble = double.parse(pricePerHour );
 
     // Calculate the total amount
-    double totalAmount = (totalTimeInHours * pricePerHourDouble) ;
+    double totalAmount = (totalTimeInHours * pricePerHour) ;
     // print(totalAmount);
     String amount= totalAmount.toString();
 
@@ -108,6 +113,8 @@ String? totalprice;
 
 
   Future<String?> fetchBookingDetails(String BookingId)async{
+
+    print('booking id is nck ${widget.BookingId}');
   String? token = await _getToken();
   String? booking_id = await _getbookingid();
 
@@ -189,7 +196,14 @@ String? totalprice;
     print(id);
 
 
-    String apiUrl = '${Config().apiDomain}/featured/artist_info/$artistId';
+    String apiUrl;
+    if (widget.isteam =='true') {
+      apiUrl= '${Config().apiDomain}/featured/team/$artistId';
+      print(apiUrl);
+
+    }else{
+      apiUrl = '${Config().apiDomain}/featured/artist_info/$artistId';
+    }
 
     try {
       var response = await http.get(
@@ -201,17 +215,18 @@ String? totalprice;
       );
       if (response.statusCode == 200) {
         List<dynamic> userDataList = json.decode(response.body);
-
+// print('the dtata is $userDataList');
         // Check if the widget is mounted before calling setState
         if (mounted) {
           for (var userData in userDataList) {
             // setState(() {
-            name = userData['name'] ?? '';
-            price = userData['price_per_hour'] ?? '';
+            // teamName=
+            name = userData['name'] ?? userData['team_name'] ?? '';
+            price = userData['price_per_hour'] ;
             image = '${userData['profile_photo']}' ;
             phone_number=userData['phone_number'] ?? '';
             fcm_token=userData['fcm_token']??'';
-            skill= userData['skills']??'';
+            skill= userData['skills']?? userData['skill_category'] ?? '';
             print('token is $fcm_token');
             // });
           }
@@ -270,7 +285,6 @@ print(formData);
 
   @override
   Widget build(BuildContext context) {
-    //
     // final message =ModalRoute.of(context)!.settings.arguments;
 
     double baseWidth = 390;
@@ -309,12 +323,22 @@ print(formData);
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           IconButton(
-                            icon: Icon(Icons.arrow_back_ios_new_rounded,
-                                color: Colors.black),
+                            icon: Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black),
                             onPressed: () {
-                              Navigator.of(context).pop();
+                              // Navigate and replace the current page
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => BottomNav(
+                                     isteam: widget.isteam,        // Pass any relevant data
+                                    initialPageIndex: 2,   // Index 2 corresponds to UserBookings
+                                  ),
+                                ),
+                              );
+
                             },
                           ),
+
                           Expanded(
                             child: Center(
                               child: Text(

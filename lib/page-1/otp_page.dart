@@ -12,9 +12,9 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class VerificationCodeInputScreen extends StatefulWidget {
-  final String verificationId;
-
-  VerificationCodeInputScreen({required this.verificationId});
+  // final String verificationId;
+  //
+  // VerificationCodeInputScreen({required this.verificationId});
 
   @override
   _VerificationCodeInputScreenState createState() =>
@@ -52,6 +52,50 @@ class _VerificationCodeInputScreenState
     }
     super.dispose();
   }
+
+  // Future<void> _sendTwilioOTP(String phoneNumber) async {
+  //   // Your backend endpoint that integrates with Twilio Verify API
+  //   final String url = '${Config().apiDomain}/twilio/send-verification';
+  //
+  //   final response = await http.post(
+  //     Uri.parse(url),
+  //     headers: {'Content-Type': 'application/json'},
+  //     body: jsonEncode({'phone_number': phoneNumber}),
+  //   );
+  //
+  //   if (response.statusCode == 200) {
+  //     print('OTP sent successfully');
+  //   } else {
+  //     print('Failed to send OTP: ${response.body}');
+  //   }
+  // }
+
+  Future<bool> _verifyTwilioOTP(String phoneNumber, String otpCode) async {
+    // Your backend endpoint that verifies the OTP via Twilio
+    final String url = '${Config().apiDomain}/verify-otp';
+    String? userType = await _getSelectedValue();
+
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {'Content-Type': 'application/vnd.api+json',
+        'Accept': 'application/vnd.api+json'},
+      body: jsonEncode({'phone_number': phoneNumber, 'otp_code': otpCode}),
+    );
+
+    if (response.statusCode == 200) {
+      print('OTP verified successfully');
+      // Navigate to the relevant home page
+      _navigateToHome(userType);
+      return true;
+    } else {
+      print('Failed to verify OTP: ${response.body}');
+      return false;
+      _showSnackBar('Invalid OTP. Please try again.');
+    }
+    return false;
+  }
+
+
 
   Future<bool> login(String? fCMToken, String? phoneNumber) async {
     if (fCMToken == null || phoneNumber == null) return false;
@@ -160,53 +204,53 @@ class _VerificationCodeInputScreenState
   void _signInWithPhoneNumber() async {
     final smsCode = _codeController.map((controller) => controller.text.trim()).join();
 
-    final credential = PhoneAuthProvider.credential(
-      verificationId: widget.verificationId,
-      smsCode: smsCode,
-    );
-
     try {
-      // Sign in the user with the phone credential
-      await _auth.signInWithCredential(credential);
+      // Fetch the stored phone number
+      String? phoneNumber = await _getPhoneNumber();
+
+      // Verify the OTP with Twilio
+      bool otpVerified = await _verifyTwilioOTP(phoneNumber!, smsCode);
+
+      if (!otpVerified) {
+        // If OTP verification fails, show Snackbar and stop further execution
+        _showSnackBar('OTP verification failed. Please try again.');
+        return; // Stop further execution
+      }
 
       // Fetch the FCM token, phone number, and user type
       String? fCMToken = await _getFCMToken();
-      String? phoneNumber = await _getPhoneNumber();
       String? userType = await _getSelectedValue();
 
       // Attempt to log in with the appropriate user type
       bool loginSuccessful = await login(fCMToken, phoneNumber);
 
-
-      print(loginSuccessful);
       if (loginSuccessful) {
-        // Store authorization and navigate to home
         await storage.write(key: 'authorised', value: 'true');
         _navigateToHome(userType);
       } else {
-
-        if(userType=='hire') {
-          // If login fails, try sending the FCM token to the backend
+        if (userType == 'hire') {
           bool success = await sendFCMTokenBackend(fCMToken, phoneNumber);
           if (success) {
             await storage.write(key: 'authorised', value: 'true');
             _navigateToSignUp(userType);
           }
+        } else {
+          _navigateToSignUp(userType);
         }
-        else{
-            _navigateToSignUp(userType);
-        }
-
-          // _navigateToSignUp(userType);
-        // } else {
-        //   _showSnackBar('Check your internet connection');
-        // }
       }
     } catch (e) {
-      print('Failed to sign ins: $e');
+      print('Failed to sign in: $e');
       _showSnackBar('Failed to sign in: $e');
     }
   }
+
+// Function to show the SnackBar
+  void _showSnackBar(String message) {
+    final snackBar = SnackBar(content: Text(message));
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+
 
   void _navigateToHome(String? userType) {
     // Navigate to the correct screen based on user type
@@ -260,11 +304,11 @@ class _VerificationCodeInputScreenState
     );
   }
 
-  void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
-  }
+  // void _showSnackBar(String message) {
+  //   ScaffoldMessenger.of(context).showSnackBar(
+  //     SnackBar(content: Text(message)),
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {

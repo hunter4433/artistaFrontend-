@@ -94,10 +94,15 @@ class SearchedArtist extends StatelessWidget {
                               topLeft: Radius.circular(14 * fem),
                               topRight: Radius.circular(14 * fem),
                             ),
+// <<<<<<< HEAD
                             child: (filteredArtistData[index]['profile_photo'] != null &&
                                 filteredArtistData[index]['profile_photo'].isNotEmpty)
                                 ? Image.network(
                               filteredArtistData[index]['profile_photo'],
+// =======
+//                             child: Image.network(
+//                               filteredArtistData[index]['profile_photo'] ?? '',
+// >>>>>>> 7843d0fd9f9f56e19be3ee78285dd0192d2cb138
                               fit: BoxFit.cover,
                               width: double.infinity,
                               height: double.infinity,
@@ -131,6 +136,7 @@ class SearchedArtist extends StatelessWidget {
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
+// <<<<<<< HEAD
                                   Text(
                                     filteredArtistData[index]['name'] ?? filteredArtistData[index]['team_name'] ?? '',
                                     style: TextStyle(
@@ -140,6 +146,7 @@ class SearchedArtist extends StatelessWidget {
                                       letterSpacing: 0.703 * fem,
                                       color: Colors.black,
                                     ),
+
                                   ),
                                   SizedBox(height: 8 * fem),
                                   Row(

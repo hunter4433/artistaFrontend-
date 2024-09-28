@@ -12,10 +12,12 @@ import 'booked_artist.dart';
 
 
 class UserBookings extends StatefulWidget {
-  final String? newBookingTitle;
-  final String? newBookingDateTime;
+  // final String? newBookingTitle;
+  // final String? newBookingDateTime;
+  //
+  String? isteam;
 
-  UserBookings({this.newBookingTitle, this.newBookingDateTime, required Map<String, dynamic> data});
+  UserBookings({this.isteam});
 
   @override
   _UserBookingsState createState() => _UserBookingsState();
@@ -28,6 +30,7 @@ class _UserBookingsState extends State<UserBookings> {
   String? bookingsString;
   String? fcmToken;
   String? phone_number;
+  bool isCacheLoaded = false; // Cache flag
 
 
 
@@ -38,7 +41,13 @@ class _UserBookingsState extends State<UserBookings> {
 
 
 
-    String apiUrl = '${Config().apiDomain}/featured/artist_info/$artistId';
+    String apiUrl;
+    if (widget.isteam =='true') {
+      apiUrl= '${Config().apiDomain}/featured/team/$artistId';
+
+    }else{
+      apiUrl = '${Config().apiDomain}/featured/artist_info/$artistId';
+    }
 
     try {
       var response = await http.get(
@@ -85,14 +94,21 @@ class _UserBookingsState extends State<UserBookings> {
     }
   }
 
-  Future<void> _loadBookings() async {
 
-    // String? id = await _getArtist_id();
-    Future<String?> _getUser_id() async {
-      return await storage.read(key: 'user_id'); // Assuming you stored the token with key 'token'
+  Future<void> _loadBookings({bool forceReload = false}) async {
+    if (!forceReload && isCacheLoaded) {
+      // If cache is loaded and forceReload is false, return without fetching
+      setState(() {
+        isLoading = false;
+      });
+      return;
     }
 
-     String? id = await _getUser_id();
+    Future<String?> _getUser_id() async {
+      return await storage.read(key: 'user_id');
+    }
+
+    String? id = await _getUser_id();
     print(id);
 
     final response = await http.get(Uri.parse('${Config().apiDomain}/user/bookings/$id'));
@@ -101,11 +117,14 @@ class _UserBookingsState extends State<UserBookings> {
       List<dynamic> decodedList = json.decode(response.body);
       bookings = decodedList.map((item) => Map<String, dynamic>.from(item)).toList();
       print('bookings are :$bookings ');
+
+      // Cache the bookings
+      isCacheLoaded = true;
+
       setState(() {
         isLoading = false;
       });
     } else {
-      // Handle the error case
       setState(() {
         isLoading = false;
       });
@@ -155,7 +174,7 @@ class _UserBookingsState extends State<UserBookings> {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) =>
-                Booked(BookingId: booking_id.toString(), artistId: artist_id.toString())),
+                Booked(BookingId: booking_id.toString(), artistId: artist_id.toString(), isteam: widget.isteam)),
           );
         },
         child: Stack(
@@ -314,27 +333,22 @@ class _UserBookingsState extends State<UserBookings> {
       DateTime createdAtB = DateTime.parse(b['created_at']);
       return createdAtB.compareTo(createdAtA); // Descending order
     });
-    double baseWidth = 390;
-    double fem = MediaQuery.of(context).size.width / baseWidth;
-    double ffem = fem * 0.97;
+
     return Scaffold(
-      backgroundColor:  Color(0xFF121217),
-      appBar:AppBar(
+      backgroundColor: Color(0xFF121217),
+      appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Padding(
-          padding: const EdgeInsets.fromLTRB(0, 0, 8, 0),
-          child: Center(
-            child: Text(
-              'Booking Requests',
-              style: TextStyle(
-                fontSize: 22 ,
-                fontWeight: FontWeight.w400,
-                color: Colors.white,
-              ),
+        title: Center(
+          child: Text(
+            'Booking Requests',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w400,
+              color: Colors.white,
             ),
           ),
         ),
-        backgroundColor:  Color(0xFF121217),
+        backgroundColor: Color(0xFF121217),
       ),
       body: bookings.isEmpty
           ? Center(
@@ -351,19 +365,20 @@ class _UserBookingsState extends State<UserBookings> {
         itemCount: bookings.length,
         itemBuilder: (context, index) {
           final booking = bookings[index];
+          final idToUse = booking['artist_id'] ?? booking['team_id'];
+          print('team_id is ${booking['team_id']}');
+          widget.isteam = booking['team_id'] != '0' ? 'true' : 'false';
+print('team nam,e ${widget.isteam}');
           return _buildRequestCard(
             booking['category'],
             booking['booking_date'],
             booking['booked_from'],
             booking['id'],
-            booking['artist_id'],
+            idToUse,
             index,
           );
         },
       ),
     );
   }
-
-
-
 }

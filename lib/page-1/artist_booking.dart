@@ -19,7 +19,8 @@ import'google_map_page.dart';
 
 class booking_artist extends StatefulWidget {
   late String  artist_id;
-  booking_artist({required this.artist_id});
+  String? isteam;
+  booking_artist({required this.artist_id , this.isteam});
   @override
   _BookingArtistState createState() => _BookingArtistState();
 }
@@ -32,9 +33,10 @@ class _BookingArtistState extends State<booking_artist> {
   String? selectedFromTimeBack;
   String? selectedToTimeBack;
   String? name;
-  String? price;
+  String? team_name;
+  double? price;
   String? amount;
-  String? netAmount;
+  double? netAmount;
   String? image;
   String? orderId;
   int? hours;
@@ -47,8 +49,9 @@ class _BookingArtistState extends State<booking_artist> {
   String? selectedAudienceSize;// Define selectedToTime variable here
   double? artistPrice=10.0;
   String? crowdSize;
-double? soundSystemPrice=20.0;
-  bool hasSoundSystem = true;
+double? soundSystemPrice=0.0;
+  bool hasSoundSystem = false ;
+  double? totalAmount=0.0;
   // Place this outside the build method in your widget tree
 
 
@@ -83,6 +86,36 @@ double? soundSystemPrice=20.0;
   void initState() {
     super.initState();
     fetchArtistInformation(widget.artist_id);
+
+    // Add a listener to the durationController to listen for changes
+    durationController.addListener(() async {
+      if (durationController.text.isNotEmpty) {
+        await Future.delayed(const Duration(seconds: 2));
+
+        // Call the function to calculate the total amount
+          // _calculateTotalAmount();
+print('price is $price');
+print('hour is $hours');
+print('minute is $minutes');
+          double? result = await calculateTotalAmount(price!, hours!, minutes!);
+          if (result != null) {
+
+            // Extract the total amount and sound system price from the result
+            setState(() {
+              totalAmount = result.toDouble();
+              soundSystemPrice = result.toDouble();
+              netAmount = totalAmount! + soundSystemPrice!; // Calculate the net amount
+            });
+
+            // Print the results or update the UI accordingly
+            print('Total Amount: \$${totalAmount}');
+            print('Sound System Price: \$${soundSystemPrice}');
+          } else {
+            print('Failed to calculate total amount');
+          }
+        // }
+      }
+    });
 
   }
 
@@ -134,15 +167,58 @@ double? soundSystemPrice=20.0;
       }
     }
 
-    double calculateTotalAmount(String pricePerHour, int hours, int minutes) {
+//   Future<Map<String, dynamic>?> calculateTotalAmount(
+//       String pricePerHour, int hours, int minutes, bool hasSoundSystem) async {
+//     // Define the API endpoint URL (Replace with your actual API URL)
+//     final String apiUrl = '${Config().apiDomain}/calculate-total-amount';
+//
+//     try {
+//       // Prepare the request body
+//       Map<String, dynamic> requestBody = {
+//         'price_per_hour': pricePerHour,
+//         'hours': hours,
+//         'minutes': minutes,
+//         'has_sound_system': hasSoundSystem,
+//       };
+//
+//       // Send the POST request
+//       final response = await http.post(
+//         Uri.parse(apiUrl),
+//         headers: {
+//           'Content-Type': 'application/vnd.api+json',
+//           'Accept': 'application/vnd.api+json',
+//         },
+//         body: jsonEncode(requestBody),
+//       );
+//
+//       // Check if the request was successful (status code 200)
+//       if (response.statusCode == 200) {
+//         // Parse the JSON response
+//         Map<String, dynamic> responseBody = jsonDecode(response.body);
+// print('price for the event$responseBody');
+//         // Return the parsed response containing total_amount and sound_system_price
+//         return responseBody;
+//       } else {
+//         // If the API returned an error, print the status code and response body
+//         print('Error: ${response.statusCode} - ${response.body}');
+//         return null;
+//       }
+//     } catch (error) {
+//       // Handle any errors that occur during the API request
+//       print('Error: $error');
+//       return null;
+//     }
+//   }
+
+    double calculateTotalAmount(double pricePerHour, int hours, int minutes) {
       // Convert total time to hours
       double totalTimeInHours = hours + (minutes / 60.0);
 
       // Convert pricePerHour to double
-      double pricePerHourDouble = double.parse(pricePerHour);
+      // double pricePerHourDouble = double.parse(pricePerHour);
 
       // Calculate the total amount
-      double totalAmount = totalTimeInHours * pricePerHourDouble;
+      double totalAmount = totalTimeInHours * pricePerHour;
       // print(totalAmount);
 
       return totalAmount;
@@ -154,12 +230,16 @@ double? soundSystemPrice=20.0;
     String? token = await _getToken();
     String? id = await _getid();
     String? kind = await _getKind();
-     print(widget.artist_id);
+     // print(widget.artist_id);
 
     // Initialize API URLs for different kinds
     String apiUrl;
-    // if (kind == 'solo_artist') {
+    if (widget.isteam == 'true') {
+      apiUrl = '${Config().apiDomain}/featured/team/$artist_id';
+
+    }else{
       apiUrl = '${Config().apiDomain}/featured/artist_info/$artist_id';
+    }
 
     try {
       var response = await http.get(
@@ -174,18 +254,20 @@ double? soundSystemPrice=20.0;
         // Parse the response JSON
         List<dynamic> userDataList = json.decode(response.body);
 
-        print(userDataList);
+        // print(userDataList);
 
         // Assuming the response is a list, iterate over each user's data
         for (var userData in userDataList) {
           // Update text controllers with fetched data for each user
           setState(() {
-            name = userData['name'] ?? ''; // Assign String to name
+            team_name = userData['team_name'] ;
+            name = userData['name'] ; // Assign String to name
             price = userData['price_per_hour'] ?? ''; // Assign String to price
             image = '${userData['profile_photo']}' ;
             fcm_token=userData['fcm_token'] ?? '';
+            hasSoundSystem=userData['sound_system'] == 1 ? true: false ;
           });
-
+// print('team name is $team_name');
         }
       } else {
         print('Failed to fetch user information. Status code: ${response.body}');
@@ -411,7 +493,7 @@ double? soundSystemPrice=20.0;
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    name ?? '', // Use fetched name
+                                    name ??  team_name ?? '', // Use fetched name
                                     style: SafeGoogleFont(
                                       'Be Vietnam Pro',
                                       fontSize: 19 * ffem,
@@ -700,7 +782,6 @@ double? soundSystemPrice=20.0;
                                           selectedFromTime = pickedTime.format(context);
                                           String formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate!);
                                           selectedFromTimeBack = '$formattedDate ${pickedTime.hour}:${pickedTime.minute}:00';
-                                          print(selectedFromTimeBack);
                                           fromTimeController.text = selectedFromTime ?? ''; // Update the text field
                                         });
                                       }
@@ -740,10 +821,9 @@ double? soundSystemPrice=20.0;
                                           // Format the selected date and time
                                           String formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate!);
                                           selectedToTimeBack = '$formattedDate ${pickedTime.hour}:${pickedTime.minute}:00';
-                                          print(selectedToTimeBack);
-                                          toTimeController.text = selectedToTime ?? ''; // Update the text field
-                                          calculateDuration(); // Calculate duration whenever "To" time is selected
+                                          toTimeController.text = selectedToTime ?? ''; // Update the text field// Calculate duration whenever "To" time is selected
                                         });
+                                        calculateDuration();
                                       }
                                     },
                                     decoration: InputDecoration(contentPadding: EdgeInsets.symmetric(vertical: 17.0, horizontal: 12.0),
@@ -978,7 +1058,7 @@ double? soundSystemPrice=20.0;
                                           style: TextStyle(fontSize: 17.0, fontWeight: FontWeight.w600),
                                               ),
                                         Text(
-                                            '₹${artistPrice}',
+                                            '₹${totalAmount}',
                                             style: TextStyle(fontSize: 17.0, fontWeight: FontWeight.w600),
                                             ),
                                       ],
@@ -1013,7 +1093,7 @@ double? soundSystemPrice=20.0;
                                              onPressed: () {
                                               setState(() {
                                               hasSoundSystem = !hasSoundSystem;
-                                              soundSystemPrice = hasSoundSystem ? 500.0 : 0.0;
+                                              soundSystemPrice = hasSoundSystem ? soundSystemPrice: 0.0;
                                                 });
                                                 },
                                              child: Text(
@@ -1037,10 +1117,10 @@ double? soundSystemPrice=20.0;
                                         'Total Amount Payable:',
                                          style: TextStyle(fontSize: 17.0, fontWeight: FontWeight.w600),
                                          ),
-                                        Text(
-                                          '₹${(artistPrice! + soundSystemPrice!).toStringAsFixed(2)}',
-                                           style: TextStyle(fontSize: 17.0, fontWeight: FontWeight.w600),
-                                            ),
+                                           Text(
+                                             '₹${netAmount?.toStringAsFixed(2) ?? '0.00'}',
+                                             style: TextStyle(fontSize: 17.0, fontWeight: FontWeight.w600),
+                                           ),
                                           ],
                                          ),
                                     Row(
@@ -1062,76 +1142,70 @@ double? soundSystemPrice=20.0;
                       ),
                       Padding(
                         padding: const EdgeInsets.only(left: 25, right: 25),
-                        child: ElevatedButton(
-                          onPressed: () async{
+                        child:ElevatedButton(
+                          onPressed: () async {
+                            // Check if all required fields are filled
+                            if (selectedCategory == null ||
+                                selectedAudienceSize == null ||
+                                selectedDate == null ||
+                                fromTimeController.text.isEmpty ||
+                                toTimeController.text.isEmpty ||
+                                durationController.text.isEmpty ||
+                                locationController.text.isEmpty) {
+                              // Show an error message to the user
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Please fill in all the required fields')),
+                              );
+                              return; // Stop further execution
+                            }
 
-                            // Calculate the total amount
-                            double totalAmount = calculateTotalAmount(price!, hours!, minutes!);
-                            // Create order and wait for the response
-                            String? orderId = await createOrder(totalAmount);
+                            // Proceed with creating order if all fields are filled
+                            String? orderId = await createOrder(netAmount!);
 
-                           if (orderId != null) {
-                             Razorpay _razorpay = Razorpay();
+                            if (orderId != null) {
+                              Razorpay _razorpay = Razorpay();
 
-                             var options = {
-                               'key': 'rzp_test_Hb4hFCm46361XC',
-                               'amount': 5000,
-                               'name': 'Home Stage ',
-                               'order_id': orderId,
-                               // Generate order_id using Orders API
-                               'description': 'artist book',
-                               'timeout': 120,
-                               // in seconds
-                               // 'prefill': {
-                               //   'contact': '8538948208',
-                               //   'email': 'manav.kumar@example.com'
-                               // }
-                             };
+                              var options = {
+                                'key': 'rzp_test_Hb4hFCm46361XC',
+                                'amount': 5000,
+                                'name': 'Home Stage',
+                                'order_id': orderId,
+                                'description': 'artist book',
+                                'timeout': 120, // in seconds
+                              };
 
-                             try {
-                               _razorpay.open(options);
-                             } catch (e) {
-                               debugPrint('Error: $e');
-                             }
+                              try {
+                                _razorpay.open(options);
+                              } catch (e) {
+                                debugPrint('Error: $e');
+                              }
 
-                             _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS,
-                                     (response) => _handlePaymentSuccess(context, response));
-                             _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR,
-                                 _handlePaymentError);
-                             _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET,
-                                 _handleExternalWallet);
-
-                             // _razorpay.clear(); // Removes all listeners
-                           }else {
-                             print('Order creation failed');
-                           }
-                            // Handle button pres
+                              _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, (response) => _handlePaymentSuccess(context, response));
+                              _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
+                              _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
+                            } else {
+                              print('Order creation failed');
+                            }
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Color(0xffe5195e),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12 * fem),
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 16 * fem,
-                              vertical: 12 * fem,
-                            ),
-                            // minimumSize: Size(double.infinity, 14 * fem),
+                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                           ),
                           child: Center(
                             child: Text(
                               'Proceed To Payment',
-                              style: SafeGoogleFont(
-                                'Be Vietnam Pro',
-                                fontSize: 16 * ffem,
+                              style: TextStyle(
+                                fontSize: 16,
                                 fontWeight: FontWeight.w700,
-                                height: 1.5 * ffem / fem,
-                                letterSpacing: 0.2399999946 * fem,
-                                color: Color(0xffffffff),
+                                color: Colors.white,
                               ),
                             ),
                           ),
                         ),
+
                       ),
                     ],
                   ),
@@ -1255,48 +1329,73 @@ double? soundSystemPrice=20.0;
 
 
 
-Future<void> _handlePaymentSuccess(BuildContext context, PaymentSuccessResponse response) async {
-
+  Future<void> _handlePaymentSuccess(BuildContext context, PaymentSuccessResponse response) async {
+    try {
       // Extract the payment details
       String razorpayPaymentId = response.paymentId!;
-
       String razorpayOrderId = response.orderId!;
-
       String razorpaySignature = response.signature!;
 
-      Future<String?> _getArtist_id() async {
-        return await storage.read(key: 'id'); // Assuming you stored the token with key 'token'
+      // Retrieve the artist ID from secure storage
+      // Future<String?> _getArtistId() async {
+      //   return await storage.read(key: 'artist_id');
+      // }
+      //
+      // String artistId = (await _getArtistId()) ?? '';  // Fallback to an empty string if artistId is null
+      //
+      // if (artistId.isEmpty) {
+      //   throw Exception('Failed to retrieve artist ID');
+      // }
+
+      // Save booking information and handle potential error
+      String? bookingId;
+      try {
+        bookingId = (await _saveBookingInformation()).toString();
+        if (bookingId == null || bookingId.isEmpty) {
+          throw Exception('Failed to save booking information');
+        }
+      } catch (e) {
+        // Handle booking save error
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error saving booking: $e')));
+        return;
       }
 
-      String artist_id = await _getArtist_id().toString();
-
-      String id= await _saveBookingInformation().toString();
-
       // Send the payment details to the server
+      try {
+        await _sendPaymentDetailsToServer(razorpayPaymentId, razorpayOrderId, razorpaySignature, bookingId);
+      } catch (e) {
+        // Handle payment sending error
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error sending payment details: $e')));
+        return;
+      }
 
-        _sendPaymentDetailsToServer(
-            razorpayPaymentId, razorpayOrderId, razorpaySignature, id);
-
-
-
+      // Navigate to the booked page on success
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => Booked(BookingId: id ,artistId :widget.artist_id ),
+          builder: (context) => Booked(BookingId: bookingId!, artistId: widget.artist_id, isteam: widget.isteam ),
         ),
       );
 
-      sendNotification(context , fcm_token);
+      // Send notification
+      sendNotification(context, fcm_token);
 
+    } catch (e) {
+      // Handle any other unexpected errors
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Payment handling error: $e')));
     }
+  }
+
 
     Future<Object> _saveBookingInformation() async {
       final storage = FlutterSecureStorage();
 
 
-      Future<String?> _getArtist_id() async {
-        return await storage.read(key: 'id'); // Assuming you stored the token with key 'token'
-      }
+      // Future<String?> _getArtist_id() async {
+      //   return await storage.read(key: 'artist_id'); // Assuming you stored the token with key 'token'
+      // }
+
+
 
       Future<String?> _getToken() async {
         return await storage.read(key: 'token');
@@ -1308,23 +1407,25 @@ Future<void> _handlePaymentSuccess(BuildContext context, PaymentSuccessResponse 
       String? token = await _getToken();
       String? user_id = await _getUserId();
 
-      String? artist_id = await _getArtist_id();
+      // String? artist_id = await _getArtist_id();
       String? apiUrl='${Config().apiDomain}/booking';
 
       Map<String, dynamic> bookingData = {
-        'artist_id':widget.artist_id,
+        'artist_id': widget.isteam == 'true' ? null : widget.artist_id, // Only set artist_id if isteam is false
+        'team_id': widget.isteam == 'true' ? widget.artist_id : null, // Only set team_id if isteam is true
         'user_id': user_id,
         'booking_date': selectedDate != null ? selectedDate.toString() : null,
         'booked_from':  selectedFromTimeBack ?? '',
         'booked_to':  selectedToTimeBack ?? '',
         'duration': durationController.text,
-        'audience_size': '200',
+        'audience_size': selectedAudienceSize,
         'location': locationController.text,
         'longitude': longitude,
         'latitude': latitude,
         'special_request': specialRequestController.text,
         'category':selectedCategory,
         'status':0,
+        // 'audience_size':selectedAudienceSize,
       };
 
 

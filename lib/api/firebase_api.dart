@@ -60,7 +60,7 @@ final androidChannel = const AndroidNotificationChannel(
       navigatorKey.currentState?.push(
         MaterialPageRoute(
           builder: (context) => BottomNav(
-            data: data,
+            // data: data,
             initialPageIndex: 2, // Replace with appropriate index if different for UserBookings
             newBookingTitle: notificationTitle,
             newBookingDateTime: notificationBody,

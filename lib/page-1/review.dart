@@ -1,730 +1,341 @@
 import 'package:flutter/material.dart';
-import '../utils.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'package:video_player/video_player.dart';
 
-class Scene extends StatelessWidget {
+class ReviewPage extends StatefulWidget {
+  @override
+  _ReviewPageState createState() => _ReviewPageState();
+}
+
+
+class _ReviewPageState extends State<ReviewPage> {
+  double rating = 0.0;
+  String selectedPerformance = '';
+  TextEditingController reviewController = TextEditingController();
+  File? _selectedImage;
+  File? _selectedVideo;
+  VideoPlayerController? _videoPlayerController;
+
+  final ImagePicker _picker = ImagePicker();
+
+
+
+
+  void submitReview() {
+    if (selectedPerformance.isNotEmpty && reviewController.text.isNotEmpty) {
+      print('Performance: $selectedPerformance');
+      print('Rating: $rating');
+      print('Review: ${reviewController.text}');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Review submitted successfully')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please complete the review')),
+      );
+    }
+  }
+
+  Future<void> _pickImage() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImage = File(pickedFile.path);
+        _selectedVideo = null;
+        _videoPlayerController?.dispose();
+        _videoPlayerController = null;
+      });
+    }
+  }
+
+  Future<void> _pickVideo() async {
+    final pickedFile = await _picker.pickVideo(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _selectedVideo = File(pickedFile.path);
+        _selectedImage = null;
+        _videoPlayerController = VideoPlayerController.file(File(pickedFile.path))
+          ..initialize().then((_) {
+            setState(() {});
+            _videoPlayerController!.play();
+          });
+      });
+    }
+  }
+
+  Widget _buildPerformanceOption(String text, double fem, double boxWidth, double boxHeight) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          selectedPerformance = text;
+        });
+      },
+      child: Container(
+        width: 92*fem,
+        height: 42*fem,
+        margin: EdgeInsets.symmetric(horizontal: 6 * fem, vertical: 6 * fem),
+        padding: EdgeInsets.symmetric(horizontal: 1 * fem, vertical: 1 * fem),
+        decoration: BoxDecoration(
+          color: selectedPerformance == text ? Color(0xffe5195e) : Color(0xfff2e8ea),
+          borderRadius: BorderRadius.circular(12 * fem),
+        ),
+        child: Center(
+          child: Text(
+            text,
+            style: TextStyle(
+              color: selectedPerformance == text ? Colors.white : Color(0xff1c0c11),
+              fontSize: 14 * fem,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+  int starRating = 0;
+
   @override
   Widget build(BuildContext context) {
     double baseWidth = 390;
     double fem = MediaQuery.of(context).size.width / baseWidth;
     double ffem = fem * 0.97;
+
+    // Adjusting the width and height of the performance option boxes
+    double boxWidth = (MediaQuery.of(context).size.width - 48 * fem) / 3; // To fit three items in a row
+    double boxHeight = 50 * fem;
+
     return Scaffold(
+      appBar: AppBar(
+        title: Text('Review',style: TextStyle(color: Colors.black,fontWeight: FontWeight.w500,
+        fontSize: 22),),
+        leading: IconButton(color: Colors.black,
+        icon: Icon(Icons.arrow_back_ios_new_rounded),
+        onPressed: () {
+          // Use Navigator.pop() to close the current screen (Scene2) and go back to the previous screen (Scene1)
+          Navigator.pop(context);
+        },
+      ),
+      ),
       body: SafeArea(
-      child: Container(
-        width: double.infinity,
-        child: Container(
-          // galileodesignWjR (15:2315)
-          width: double.infinity,
-          height: 844*fem,
-          decoration: BoxDecoration (
-            color: Color(0xffffffff),
-          ),
+        child: SingleChildScrollView(
           child: Container(
-            // depth0frame0e4w (15:2316)
-            padding: EdgeInsets.fromLTRB(0*fem, 0*fem, 0*fem, 107*fem),
             width: double.infinity,
-            height: double.infinity,
-            decoration: BoxDecoration (
-              color: Color(0xffffffff),
-            ),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  // depth1frame0wpj (15:2317)
-                  padding: EdgeInsets.fromLTRB(64*fem, 16*fem, 16*fem, 8*fem),
-                  width: double.infinity,
-                  height: 72*fem,
-                  decoration: BoxDecoration (
-                    color: Color(0xffffffff),
-                  ),
-                  child: Container(
-                    // autogroupshm15AF (JkS8VRYtA2xX38VVvhshM1)
-                    padding: EdgeInsets.fromLTRB(67.55*fem, 12*fem, 0*fem, 12*fem),
-                    width: double.infinity,
-                    height: double.infinity,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Container(
-                          // depth4frame0Ckf (15:2321)
-                          margin: EdgeInsets.fromLTRB(0*fem, 0.75*fem, 91.55*fem, 0.75*fem),
-                          height: double.infinity,
-                          child: Text(
-                            'Write a review',
-                            style: SafeGoogleFont (
-                              'Be Vietnam Pro',
-                              fontSize: 18*ffem,
-                              fontWeight: FontWeight.w700,
-                              height: 1.25*ffem/fem,
-                              letterSpacing: -0.2700000107*fem,
-                              color: Color(0xff1c0c11),
-                            ),
-                          ),
-                        ),
-                        
-                      ],
+                SizedBox(height: 20),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(20*fem,0,0,0),
+                  child: Text(
+                    'How was the artist\'s performance?',
+                    style: TextStyle(
+                      fontSize: 19 * ffem,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xff1c0c11),
                     ),
                   ),
                 ),
-                Container(
-                  
-                  padding: EdgeInsets.fromLTRB(16*fem, 16*fem, 31*fem, 12*fem),
-                  width: double.infinity,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                SizedBox(height: 16),
+          
+                // Using Wrap to display three in the first row and two below them
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 12 * fem),
+                  child: Wrap(
+                    alignment: WrapAlignment.start,
+                    spacing: 1 * fem, // Horizontal spacing between the boxes
+                    runSpacing: 1 * fem, // Vertical spacing between the rows
                     children: [
-                      Container(
-                        // depth1frame1MGB (15:2330)
-                        margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 0*fem, 20*fem),
-                        width: double.infinity,
-                        height: 153*fem,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              // depth2frame0gJT (15:2331)
-                              margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 32*fem, 0*fem),
-                              width: 98*fem,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    // 1Lj (15:2334)
-                                    '4.5',
-                                    style: SafeGoogleFont (
-                                      'Epilogue',
-                                      fontSize: 36*ffem,
-                                      fontWeight: FontWeight.w700,
-                                      height: 1.25*ffem/fem,
-                                      letterSpacing: -1.1879999638*fem,
-                                      color: Color(0xff1c0c11),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    height: 8*fem,
-                                  ),
-                                  Container(
-                                    // depth3frame1XK5 (15:2335)
-                                    width: double.infinity,
-                                    child: Row(
-                                      crossAxisAlignment: CrossAxisAlignment.center,
-                                      children: [
-                                        Container(
-                                          // depth4frame04po (15:2336)
-                                          width: 18*fem,
-                                          height: 18*fem,
-                                          child: Image.asset(
-                                            'assets/page-1/images/depth-4-frame-0-x15.png',
-                                            width: 18*fem,
-                                            height: 18*fem,
-                                          ),
-                                        ),
-                                        SizedBox(
-                                          width: 2*fem,
-                                        ),
-                                        Container(
-                                          // depth4frame1nko (15:2340)
-                                          width: 18*fem,
-                                          height: 18*fem,
-                                          child: Image.asset(
-                                            'assets/page-1/images/depth-4-frame-1-orw.png',
-                                            width: 18*fem,
-                                            height: 18*fem,
-                                          ),
-                                        ),
-                                        SizedBox(
-                                          width: 2*fem,
-                                        ),
-                                        Container(
-                                          // depth4frame27YB (15:2344)
-                                          width: 18*fem,
-                                          height: 18*fem,
-                                          child: Image.asset(
-                                            'assets/page-1/images/depth-4-frame-2-G9D.png',
-                                            width: 18*fem,
-                                            height: 18*fem,
-                                          ),
-                                        ),
-                                        SizedBox(
-                                          width: 2*fem,
-                                        ),
-                                        Container(
-                                          // depth4frame3Eco (15:2348)
-                                          width: 18*fem,
-                                          height: 18*fem,
-                                          child: Image.asset(
-                                            'assets/page-1/images/depth-4-frame-3.png',
-                                            width: 18*fem,
-                                            height: 18*fem,
-                                          ),
-                                        ),
-                                        SizedBox(
-                                          width: 2*fem,
-                                        ),
-                                        Container(
-                                          // depth4frame4MhR (15:2352)
-                                          width: 18*fem,
-                                          height: 18*fem,
-                                          child: Image.asset(
-                                            'assets/page-1/images/depth-4-frame-4-pY7.png',
-                                            width: 18*fem,
-                                            height: 18*fem,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    height: 8*fem,
-                                  ),
-                                  Text(
-                                    // reviewsHb5 (15:2358)
-                                    '1000 reviews',
-                                    style: SafeGoogleFont (
-                                      'Epilogue',
-                                      fontSize: 16*ffem,
-                                      fontWeight: FontWeight.w400,
-                                      height: 1.5*ffem/fem,
-                                      color: Color(0xff1c0c11),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Container(
-                              // depth2frame1ctF (15:2359)
-                              width: 213*fem,
-                              height: double.infinity,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    // autogroupvqd1N6j (JkS6KpVWE3D6JZ1VnBVqD1)
-                                    margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 0*fem, 12*fem),
-                                    height: 21*fem,
-                                    child: Row(
-                                      crossAxisAlignment: CrossAxisAlignment.center,
-                                      children: [
-                                        Container(
-                                          // VBM (15:2361)
-                                          margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 12*fem, 0*fem),
-                                          child: Text(
-                                            '5',
-                                            style: SafeGoogleFont (
-                                              'Epilogue',
-                                              fontSize: 14*ffem,
-                                              fontWeight: FontWeight.w400,
-                                              height: 1.5*ffem/fem,
-                                              color: Color(0xff1c0c11),
-                                            ),
-                                          ),
-                                        ),
-                                        Container(
-                                          // depth3frame1Qp7 (15:2362)
-                                          margin: EdgeInsets.fromLTRB(0*fem, 7*fem, 0*fem, 6*fem),
-                                          width: 168*fem,
-                                          height: double.infinity,
-                                          decoration: BoxDecoration (
-                                            color: Color(0xffe8d1d6),
-                                            borderRadius: BorderRadius.circular(4*fem),
-                                          ),
-                                          child: Container(
-                                            // depth4frame0jLb (15:2363)
-                                            width: 117.59*fem,
-                                            height: double.infinity,
-                                            decoration: BoxDecoration (
-                                              color: Color(0xffe5195e),
-                                              borderRadius: BorderRadius.circular(4*fem),
-                                            ),
-                                          ),
-                                        ),
-                                        Text(
-                                          // UZ5 (15:2365)
-                                          '70%',
-                                          style: SafeGoogleFont (
-                                            'Epilogue',
-                                            fontSize: 14*ffem,
-                                            fontWeight: FontWeight.w400,
-                                            height: 1.5*ffem/fem,
-                                            color: Color(0xff964f66),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Container(
-                                    // autogroupzvhz24o (JkS6ZK72CNsgRS9MLKzVHZ)
-                                    width: double.infinity,
-                                    height: 21*fem,
-                                    child: Row(
-                                      crossAxisAlignment: CrossAxisAlignment.center,
-                                      children: [
-                                        Container(
-                                          // mHH (15:2367)
-                                          margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 12*fem, 0*fem),
-                                          child: Text(
-                                            '4',
-                                            style: SafeGoogleFont (
-                                              'Epilogue',
-                                              fontSize: 14*ffem,
-                                              fontWeight: FontWeight.w400,
-                                              height: 1.5*ffem/fem,
-                                              color: Color(0xff1c0c11),
-                                            ),
-                                          ),
-                                        ),
-                                        Container(
-                                          // depth3frame4UhV (15:2368)
-                                          margin: EdgeInsets.fromLTRB(0*fem, 7*fem, 0*fem, 6*fem),
-                                          width: 168*fem,
-                                          height: double.infinity,
-                                          decoration: BoxDecoration (
-                                            color: Color(0xffe8d1d6),
-                                            borderRadius: BorderRadius.circular(4*fem),
-                                          ),
-                                          child: Container(
-                                            // depth4frame0oUs (15:2369)
-                                            width: 33.59*fem,
-                                            height: double.infinity,
-                                            decoration: BoxDecoration (
-                                              color: Color(0xffe5195e),
-                                              borderRadius: BorderRadius.circular(4*fem),
-                                            ),
-                                          ),
-                                        ),
-                                        Text(
-                                          // 9Hq (15:2371)
-                                          '20%',
-                                          style: SafeGoogleFont (
-                                            'Epilogue',
-                                            fontSize: 14*ffem,
-                                            fontWeight: FontWeight.w400,
-                                            height: 1.5*ffem/fem,
-                                            color: Color(0xff964f66),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Container(
-                                    // autogrouptu31tmD (JkS7ExddGoicqx6emKtU31)
-                                    padding: EdgeInsets.fromLTRB(0*fem, 12*fem, 0*fem, 0*fem),
-                                    width: double.infinity,
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Container(
-                                          // autogroup2p83E4P (JkS6jJpNFShbcyaW7d2P83)
-                                          height: 21*fem,
-                                          child: Row(
-                                            crossAxisAlignment: CrossAxisAlignment.center,
-                                            children: [
-                                              Container(
-                                                // Aij (15:2373)
-                                                margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 11*fem, 0*fem),
-                                                child: Text(
-                                                  '3',
-                                                  style: SafeGoogleFont (
-                                                    'Epilogue',
-                                                    fontSize: 14*ffem,
-                                                    fontWeight: FontWeight.w400,
-                                                    height: 1.5*ffem/fem,
-                                                    color: Color(0xff1c0c11),
-                                                  ),
-                                                ),
-                                              ),
-                                              Container(
-                                                // depth3frame7J4F (15:2374)
-                                                margin: EdgeInsets.fromLTRB(0*fem, 7*fem, 0*fem, 6*fem),
-                                                width: 168*fem,
-                                                height: double.infinity,
-                                                decoration: BoxDecoration (
-                                                  color: Color(0xffe8d1d6),
-                                                  borderRadius: BorderRadius.circular(4*fem),
-                                                ),
-                                                child: Container(
-                                                  // depth4frame0poH (15:2375)
-                                                  width: 8.39*fem,
-                                                  height: double.infinity,
-                                                  decoration: BoxDecoration (
-                                                    color: Color(0xffe5195e),
-                                                    borderRadius: BorderRadius.circular(4*fem),
-                                                  ),
-                                                ),
-                                              ),
-                                              Text(
-                                                // yRH (15:2377)
-                                                '5%',
-                                                style: SafeGoogleFont (
-                                                  'Epilogue',
-                                                  fontSize: 14*ffem,
-                                                  fontWeight: FontWeight.w400,
-                                                  height: 1.5*ffem/fem,
-                                                  color: Color(0xff964f66),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        SizedBox(
-                                          height: 12*fem,
-                                        ),
-                                        Container(
-                                          // autogroupp5wfupj (JkS6u438T8gU3HBB8HP5Wf)
-                                          height: 21*fem,
-                                          child: Row(
-                                            crossAxisAlignment: CrossAxisAlignment.center,
-                                            children: [
-                                              Container(
-                                                // TLT (15:2379)
-                                                margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 12*fem, 0*fem),
-                                                child: Text(
-                                                  '2',
-                                                  style: SafeGoogleFont (
-                                                    'Epilogue',
-                                                    fontSize: 14*ffem,
-                                                    fontWeight: FontWeight.w400,
-                                                    height: 1.5*ffem/fem,
-                                                    color: Color(0xff1c0c11),
-                                                  ),
-                                                ),
-                                              ),
-                                              Container(
-                                                // depth3frame10nNj (15:2380)
-                                                margin: EdgeInsets.fromLTRB(0*fem, 7*fem, 0*fem, 6*fem),
-                                                width: 168*fem,
-                                                height: double.infinity,
-                                                decoration: BoxDecoration (
-                                                  color: Color(0xffe8d1d6),
-                                                  borderRadius: BorderRadius.circular(4*fem),
-                                                ),
-                                                child: Container(
-                                                  // depth4frame0iXH (15:2381)
-                                                  width: 5.03*fem,
-                                                  height: double.infinity,
-                                                  decoration: BoxDecoration (
-                                                    color: Color(0xffe5195e),
-                                                    borderRadius: BorderRadius.circular(4*fem),
-                                                  ),
-                                                ),
-                                              ),
-                                              Text(
-                                                // sQB (15:2383)
-                                                '3%',
-                                                style: SafeGoogleFont (
-                                                  'Epilogue',
-                                                  fontSize: 14*ffem,
-                                                  fontWeight: FontWeight.w400,
-                                                  height: 1.5*ffem/fem,
-                                                  color: Color(0xff964f66),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        SizedBox(
-                                          height: 12*fem,
-                                        ),
-                                        Container(
-                                          // autogroupjb3uCxF (JkS74t65wHH23zig4VJB3u)
-                                          height: 21*fem,
-                                          child: Row(
-                                            crossAxisAlignment: CrossAxisAlignment.center,
-                                            children: [
-                                              Container(
-                                                // LoZ (15:2385)
-                                                margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 14*fem, 0*fem),
-                                                child: Text(
-                                                  '1',
-                                                  style: SafeGoogleFont (
-                                                    'Epilogue',
-                                                    fontSize: 14*ffem,
-                                                    fontWeight: FontWeight.w400,
-                                                    height: 1.5*ffem/fem,
-                                                    color: Color(0xff1c0c11),
-                                                  ),
-                                                ),
-                                              ),
-                                              Container(
-                                                // depth3frame13GhD (15:2386)
-                                                margin: EdgeInsets.fromLTRB(0*fem, 7*fem, 0*fem, 6*fem),
-                                                width: 168*fem,
-                                                height: double.infinity,
-                                                decoration: BoxDecoration (
-                                                  color: Color(0xffe8d1d6),
-                                                  borderRadius: BorderRadius.circular(4*fem),
-                                                ),
-                                                child: Container(
-                                                  // depth4frame0yrX (15:2387)
-                                                  width: 3.36*fem,
-                                                  height: double.infinity,
-                                                  decoration: BoxDecoration (
-                                                    color: Color(0xffe5195e),
-                                                    borderRadius: BorderRadius.circular(4*fem),
-                                                  ),
-                                                ),
-                                              ),
-                                              Text(
-                                                // KvP (15:2389)
-                                                '2%',
-                                                style: SafeGoogleFont (
-                                                  'Epilogue',
-                                                  fontSize: 14*ffem,
-                                                  fontWeight: FontWeight.w400,
-                                                  height: 1.5*ffem/fem,
-                                                  color: Color(0xff964f66),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
+                      _buildPerformanceOption('Incredible', fem, boxWidth, boxHeight),
+                      _buildPerformanceOption('Great', fem, boxWidth, boxHeight),
+                      _buildPerformanceOption('Good', fem, boxWidth, boxHeight),
+                      _buildPerformanceOption('Fair', fem, boxWidth, boxHeight),
+                      _buildPerformanceOption('Bad', fem, boxWidth, boxHeight),
+                    ],
+                  ),
+                ),
+          
+                SizedBox(height: 16),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(20 * fem,0,0,0),
+                  child: Text(
+                    'Rating:',
+                    style: TextStyle(
+                      fontSize: 19 * ffem,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xff1c0c11),
+                    ),
+                  ),
+                ),
+                // Slider with the same background color as the submit button
+                StarRating(
+                  rating: starRating,
+                  onRatingChanged: (newRating) {
+                    setState(() {
+                      starRating = newRating;
+                    });
+                  },
+                ),
+
+                Padding(
+                  padding: EdgeInsets.fromLTRB( 16 * fem,20*fem,16*fem,0),
+                  child: TextField(
+                    controller: reviewController,
+                    maxLines: 5,
+                    decoration: InputDecoration(
+                      hintText: 'Tell us more',
+                      filled: true,
+                      fillColor: Color(0xfff2e8ea),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12 * fem),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12 * fem),
+                        borderSide: BorderSide(
+                          color: Color(0xffe5195e), // Same color as submit button
+                          width: 2.0,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+          
+                SizedBox(height: 24),
+          
+                // Upload photo or video section
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16 * fem),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      TextButton(
+                        onPressed: _pickImage,
+                        child: Text(
+                          'Upload Photo',
+                          style: TextStyle(
+                            color: Color(0xffe5195e),
+                            fontSize: 16 * ffem,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                       Text(
-                        // howwastheartistsperformance4sy (15:2392)
-                        'How was the artist\'s performance?',
-                        style: SafeGoogleFont (
-                          'Epilogue',
-                          fontSize: 16*ffem,
-                          fontWeight: FontWeight.w400,
-                          height: 1.5*ffem/fem,
-                          color: Color(0xff1c0c11),
+                        '|',
+                        style: TextStyle(
+                          color: Color(0xffe5195e),
+                          fontSize: 18 * ffem,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: _pickVideo,
+                        child: Text(
+                          'Upload Video',
+                          style: TextStyle(
+                            color: Color(0xffe5195e),
+                            fontSize: 16 * ffem,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
-                Container(
-                  // depth1frame3o4s (15:2393)
-                  padding: EdgeInsets.fromLTRB(12*fem, 12*fem, 0*fem, 12*fem),
-                  width: double.infinity,
-                  height: 56*fem,
-                  child: SingleChildScrollView(scrollDirection: Axis.horizontal,
-
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Container(
-                          // depth2frame0Wjy (15:2394)
-                          width: 102.08*fem,
-                          height: double.infinity,
-                          decoration: BoxDecoration (
-                            color: Color(0xfff2e8ea),
-                            borderRadius: BorderRadius.circular(16*fem),
-                          ),
-                          child: Center(
-                            child: Text(
-                              'Incredible',
-                              style: SafeGoogleFont (
-                                'Epilogue',
-                                fontSize: 14*ffem,
-                                fontWeight: FontWeight.w500,
-                                height: 1.5*ffem/fem,
-                                color: Color(0xff1c0c11),
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          width: 12*fem,
-                        ),
-                        Container(
-                          // depth2frame1Q4f (15:2398)
-                          width: 71.34*fem,
-                          height: double.infinity,
-                          decoration: BoxDecoration (
-                            color: Color(0xfff2e8ea),
-                            borderRadius: BorderRadius.circular(16*fem),
-                          ),
-                          child: Center(
-                            child: Text(
-                              'Great',
-                              style: SafeGoogleFont (
-                                'Epilogue',
-                                fontSize: 14*ffem,
-                                fontWeight: FontWeight.w500,
-                                height: 1.5*ffem/fem,
-                                color: Color(0xff1c0c11),
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          width: 12*fem,
-                        ),
-                        Container(
-                          // depth2frame2Hu9 (15:2402)
-                          width: 69.03*fem,
-                          height: double.infinity,
-                          decoration: BoxDecoration (
-                            color: Color(0xfff2e8ea),
-                            borderRadius: BorderRadius.circular(16*fem),
-                          ),
-                          child: Center(
-                            child: Text(
-                              'Good',
-                              style: SafeGoogleFont (
-                                'Epilogue',
-                                fontSize: 14*ffem,
-                                fontWeight: FontWeight.w500,
-                                height: 1.5*ffem/fem,
-                                color: Color(0xff1c0c11),
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          width: 12*fem,
-                        ),
-                        Container(
-                          // depth2frame3adM (15:2406)
-                          width: 56.94*fem,
-                          height: double.infinity,
-                          decoration: BoxDecoration (
-                            color: Color(0xfff2e8ea),
-                            borderRadius: BorderRadius.circular(16*fem),
-                          ),
-                          child: Center(
-                            child: Text(
-                              'Fair',
-                              style: SafeGoogleFont (
-                                'Epilogue',
-                                fontSize: 14*ffem,
-                                fontWeight: FontWeight.w500,
-                                height: 1.5*ffem/fem,
-                                color: Color(0xff1c0c11),
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          width: 12*fem,
-                        ),
-                        Container(
-                          // depth2frame4GFH (15:2410)
-                          width: 58.25*fem,
-                          height: double.infinity,
-                          decoration: BoxDecoration (
-                            color: Color(0xfff2e8ea),
-                            borderRadius: BorderRadius.circular(16*fem),
-                          ),
-                          child: Center(
-                            child: Text(
-                              'Bad',
-                              style: SafeGoogleFont (
-                                'Epilogue',
-                                fontSize: 14*ffem,
-                                fontWeight: FontWeight.w500,
-                                height: 1.5*ffem/fem,
-                                color: Color(0xff1c0c11),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+                SizedBox(height: 16),
+          
+                // Display uploaded photo or video
+                if (_selectedImage != null)
+                  Container(
+                    height: 200 * fem,
+                    width: double.infinity,
+                    margin: EdgeInsets.symmetric(horizontal: 16 * fem),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.black),
+                      borderRadius: BorderRadius.circular(12 * fem),
+                    ),
+                    child: Image.file(
+                      _selectedImage!,
+                      fit: BoxFit.cover,
+                    ),
+                  )
+                else if (_selectedVideo != null && _videoPlayerController != null && _videoPlayerController!.value.isInitialized)
+                  Container(
+                    height: 200 * fem,
+                    width: double.infinity,
+                    margin: EdgeInsets.symmetric(horizontal: 16 * fem),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.black),
+                      borderRadius: BorderRadius.circular(12 * fem),
+                    ),
+                    child: VideoPlayer(_videoPlayerController!),
+                  ),
+                SizedBox(height: 20),
+          
+                Center(
+                  child: ElevatedButton(
+                    onPressed: submitReview,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color(0xffe5195e),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12 * fem),
+                      ),
+                      padding: EdgeInsets.symmetric(
+                        vertical: 12 * fem,
+                        horizontal: 84 * fem,
+                      ),
+                    ),
+                    child: Text(
+                      'Submit Review',
+                      style: TextStyle(
+                        fontSize: 16 * fem,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
-                Container(
-                  // autogroupfwxry9h (JkS89MHzmSh13dgNSaFWXR)
-                  padding: EdgeInsets.fromLTRB(16*fem, 12*fem, 16*fem, 12*fem),
-                  width: double.infinity,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Container(
-                        // depth3frame03vF (15:2416)
-                        margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 0*fem, 24*fem),
-                        width: double.infinity,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              // reviewxXR (15:2418)
-                              margin: EdgeInsets.fromLTRB(0*fem, 0*fem, 0*fem, 8*fem),
-                              child: Text(
-                                'Review',
-                                style: SafeGoogleFont (
-                                  'Epilogue',
-                                  fontSize: 16*ffem,
-                                  fontWeight: FontWeight.w500,
-                                  height: 1.5*ffem/fem,
-                                  color: Color(0xff1c0c11),
-                                ),
-                              ),
-                            ),
-                            Container(
-                              // depth5frame0sPV (15:2420)
-                              padding: EdgeInsets.fromLTRB(16*fem, 16*fem, 16*fem, 16*fem),
-                              width: double.infinity,
-                              height: 144*fem,
-                              decoration: BoxDecoration (
-                                color: Color(0xfff2e8ea),
-                                borderRadius: BorderRadius.circular(12*fem),
-                              ),
-                              child: Text(
-                                'Tell us more',
-                                style: SafeGoogleFont (
-                                  'Epilogue',
-                                  fontSize: 16*ffem,
-                                  fontWeight: FontWeight.w400,
-                                  height: 1.5*ffem/fem,
-                                  color: Color(0xff964f66),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 20, right: 20),
-                        child: ElevatedButton(
-                          onPressed: () {
-                            print('hi');
-                            // Handle button press
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xffe5195e),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12 * fem),
-                            ),
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 16 * fem,
-                              vertical: 12 * fem,
-                            ),
-                            minimumSize: Size(double.infinity, 14 * fem),
-                          ),
-                          child: Center(
-                            child: Text(
-                              'Submit Review',
-                              style: SafeGoogleFont(
-                                'Be Vietnam Pro',
-                                fontSize: 16 * ffem,
-                                fontWeight: FontWeight.w700,
-                                height: 1.5 * ffem / fem,
-                                letterSpacing: 0.2399999946 * fem,
-                                color: Color(0xffffffff),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
+                SizedBox(height: 20),
               ],
             ),
           ),
         ),
-            ),
-    ),);
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _videoPlayerController?.dispose();
+    super.dispose();
+  }
+}
+// Star rating widget
+class StarRating extends StatelessWidget {
+  final int rating;
+  final ValueChanged<int> onRatingChanged;
+  final int starCount;
+
+  StarRating({
+    this.starCount = 5,
+    required this.rating,
+    required this.onRatingChanged,
+  });
+
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(starCount, (index) {
+        return IconButton(
+          icon: Icon(
+            index < rating ? Icons.star : Icons.star_border, // Filled or empty star
+            color: index < rating ? Colors.yellow : Colors.grey.shade300, // Yellow for filled stars, light grey for empty
+            size: 32,
+          ),
+          onPressed: () => onRatingChanged(index + 1), // When tapped, set the rating
+        );
+      }),
+    );
   }
 }

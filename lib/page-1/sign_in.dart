@@ -256,7 +256,7 @@ class _SceneState extends State<Scene> {
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
-                                            builder: (context) => BottomNav(data: {},), // Assuming SignupUser is the page for 'hire'
+                                            builder: (context) => BottomNav(), // Assuming SignupUser is the page for 'hire'
                                           ),
                                         );
                                         break;
