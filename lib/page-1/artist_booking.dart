@@ -766,7 +766,7 @@ print('minute is $minutes');
                             Row(
                               children:[
                                 Container(
-                                  width: 178.5*fem,
+                                  width: 165*fem,
                                   height: 56 * fem,
                                   child: TextField(
                                     controller: fromTimeController,
@@ -801,10 +801,10 @@ print('minute is $minutes');
                                   ),
                                 ),
                                 SizedBox(
-                                  width: 10,
+                                  width: 25,
                                 ),
                                 Container(
-                                  width: 178.5,
+                                  width: 165*fem,
                                   height: 56 * fem,
                                   child: TextField(
                                     controller: toTimeController,
@@ -1128,7 +1128,7 @@ print('minute is $minutes');
                                       children: [
                                         Text(
                                           '(Includes all the taxes)',
-                                          style: TextStyle(fontSize: 16.0, fontStyle: FontStyle.italic),
+                                          style: TextStyle(fontSize: 16.0, ),
                                         ),
                                            ], ),
                                         ],

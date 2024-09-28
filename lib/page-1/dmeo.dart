@@ -75,21 +75,12 @@ class _Home_userState extends State<Home_user> {
   // }
 
   Future<void> fetchFeaturedArtists() async {
-// <<<<<<< HEAD
-//     for (int index = 0; index < categories.length; index++) {
-//       String? source = categories[index]['source'] as String?;
-//       if (source != null) {
-//         print('Source at index $index: $source');
-//       } else {
-//         print('Source at index $index is null');
-//       }
-// =======
+
     Future<String?> _getLatitude() async {
       return await storage.read(key: 'latitude'); // Assuming you stored the token with key 'token'
     }
     Future<String?> _getLongitude() async {
-      return await storage.read(key: 'longitude'); // Assuming you stored the token with key 'token'
-// >>>>>>> 7351e5c0eb3d956ca9c6894a0710f105a9f2df77
+      return await storage.read(key: 'longitude');
     }
 
     String? latitude = await _getLatitude();
@@ -97,12 +88,8 @@ class _Home_userState extends State<Home_user> {
 
 
     try {
-// <<<<<<< HEAD
-//       String apiUrl = 'http://127.0.0.1:8000/api/home/featured';
-// =======
       String apiUrl = '${Config().apiDomain}/home/featured?lat=$latitude&lng=$longitude';
-      // Make the HTTP GET request
-// >>>>>>> 7351e5c0eb3d956ca9c6894a0710f105a9f2df77
+
       var response = await http.get(
         Uri.parse(apiUrl),
         headers: <String, String>{
@@ -410,7 +397,7 @@ class _Home_userState extends State<Home_user> {
       appBar: AppBar(
         automaticallyImplyLeading: false,
         title: Padding(
-          padding: const EdgeInsets.fromLTRB(0, 0, 8, 0),
+          padding: EdgeInsets.fromLTRB(0, 0, 8*fem, 0),
           child: Center(
             child: Text(
               'Home',
@@ -440,14 +427,6 @@ class _Home_userState extends State<Home_user> {
               var categories = snapshot.data!['categories'];
               var recommended = snapshot.data!['recommended'];
               var seasonal = snapshot.data!['seasonal'];
-              // Once the data is fetched, build your UI
-              // var data = snapshot.data;
-              // if (data == null || data.isEmpty) {
-              //   return Center(
-              //     child: Text('No data found'), // Display no data found message
-              //   );
-              // }
-              // print(data);
               return Container(
                 color: Color(0xFF121217),
                 child: SafeArea(
@@ -530,6 +509,7 @@ class _Home_userState extends State<Home_user> {
 //                                   stops: <double>[0, 1, 1, 1],
 // >>>>>>> 7843d0fd9f9f56e19be3ee78285dd0192d2cb138
                                 ),
+// <<<<<<< HEAD
                                 child: Align(
                                   alignment: Alignment.bottomLeft,
                                   child: Container(
@@ -543,6 +523,25 @@ class _Home_userState extends State<Home_user> {
                                         height: 1.3,
                                         color: Color(0xFFFFFFFF),
                                       ),
+// =======
+//                                 image: DecorationImage(
+//                                   fit: BoxFit.cover,
+//                                   image: NetworkImage(category['image']),
+//                                 ),
+//                               ),
+//                               child: Align(
+//                                 alignment: Alignment.bottomLeft,
+//                                 child: Container(
+//                                   margin: EdgeInsets.all(16*fem),
+//                                   child: Text(
+//                                     category['name'],
+//                                     style: GoogleFonts.getFont(
+//                                       'Be Vietnam Pro',
+//                                       fontWeight: FontWeight.w600,
+//                                       fontSize: 16*fem,
+//                                       height: 1.3,
+//                                       color: Color(0xFFFFFFFF),
+// >>>>>>> 9e3f3a1ad3317a5838219c59acad554d7748e289
                                     ),
                                   ),
                                 ),
@@ -598,7 +597,7 @@ class _Home_userState extends State<Home_user> {
                                         return SizedBox(); // Return an empty SizedBox if the artist is null
                                       }
                                       return Container(
-                                        margin: EdgeInsets.symmetric(horizontal: 6),
+                                        margin: EdgeInsets.symmetric(horizontal: 6*fem),
                                         child: GestureDetector(
                                           onTap: () async {
                                             String team_id = artist['id']; // Use artist ID if needed
@@ -633,7 +632,7 @@ class _Home_userState extends State<Home_user> {
                                                 child: Container(
                                                   decoration: BoxDecoration(
                                                     color: Colors.black.withOpacity(0.1), // Adjust transparency for individual items
-                                                    borderRadius: BorderRadius.circular(10),
+                                                    borderRadius: BorderRadius.circular(10*fem),
                                                   ),
                                                 ),
                                               ),
@@ -681,7 +680,7 @@ class _Home_userState extends State<Home_user> {
                           ),
                         ),
                         Container(
-                          height: 350,
+                          height: 350*fem,
                           // Set a specific height for the Container
                           child: ListView.builder(
                             scrollDirection: Axis.horizontal,
@@ -736,11 +735,11 @@ class _Home_userState extends State<Home_user> {
                                         color: Colors.white,
                                       ),
                                     ),
-                                    SizedBox(height: 3),
+                                    SizedBox(height: 3*fem),
                                     Row(
                                       children: [
                                         Text(
-                                          ' ${featuredArtists[index]['skill']}',
+                                          '${featuredArtists[index]['skill']}',
                                           style: TextStyle(
                                             fontSize: 16 * ffem,
                                             fontWeight: FontWeight.w500,
@@ -748,9 +747,10 @@ class _Home_userState extends State<Home_user> {
                                           ),
                                         ),
                                         Spacer(),
+
                                         Padding(
-                                          padding: const EdgeInsets.fromLTRB(
-                                              0, 0, 5, 0),
+                                          padding:  EdgeInsets.fromLTRB(
+                                              0, 0, 5*fem, 0),
                                           child: Text(
                                             ' ${featuredArtists[index]['rating']}/5',
                                             style: TextStyle(
@@ -845,22 +845,6 @@ class _Home_userState extends State<Home_user> {
                             },
                           ),
                         ),
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
                         Container(
                           padding: EdgeInsets.fromLTRB(15 * fem, 40 * fem,
@@ -1086,7 +1070,7 @@ class _Home_userState extends State<Home_user> {
                               ),
                               // HomeStage text at the bottom
                               Positioned(
-                                bottom: 60, // Position the text 30 pixels from the bottom
+                                bottom: 60*fem, // Position the text 30 pixels from the bottom
                                 left: 0,
                                 right: 0,
                                 child: Center(
@@ -1095,7 +1079,7 @@ class _Home_userState extends State<Home_user> {
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.w400,
-                                      fontSize: 40,
+                                      fontSize: 40*fem,
                                     ),
                                   ),
                                 ),

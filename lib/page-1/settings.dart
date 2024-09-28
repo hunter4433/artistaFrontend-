@@ -9,6 +9,7 @@ import 'package:test1/page-1/phone_varification.dart';
 import 'package:test1/page-1/review.dart';
 
 import 'package:test1/page-1/sign_in.dart';
+import 'package:test1/page-1/skjs.dart';
 
 import '../config.dart';
 import '../utils.dart';
@@ -332,7 +333,7 @@ class setting extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => ReviewPage()),
+                      MaterialPageRoute(builder: (context) => AnimatedSearchBox()),
                     );
                   },
                   child: Container(

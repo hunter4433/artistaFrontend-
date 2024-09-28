@@ -81,11 +81,37 @@ final androidChannel = const AndroidNotificationChannel(
 
 
 
-  Future initLocalNotification() async {
-    // const iOS = iOSInitializationSettings();
-    const android = AndroidInitializationSettings('@drawable/android_logo');
-    const settings = InitializationSettings(android : android );
+//   Future initLocalNotification() async {
+//     // const iOS = iOSInitializationSettings();
+//     const android = AndroidInitializationSettings('@drawable/android_logo');
+//     const settings = InitializationSettings(android : android );
+//
+//     await _localNotifications.initialize(
+//       settings,
+//       onDidReceiveNotificationResponse: (NotificationResponse response) {
+//         if (response.payload != null) {
+//           final message = RemoteMessage.fromMap(jsonDecode(response.payload!));
+//           handleMessage(message);
+//         }
+//       },
+//     );
+//     final platform = _localNotifications.resolvePlatformSpecificImplementation<
+//         AndroidFlutterLocalNotificationsPlugin>();
+//     await  platform?.createNotificationChannel(androidChannel);
+// }
 
+
+  Future initLocalNotification() async {
+    // Add iOS-specific settings
+    const iOS = DarwinInitializationSettings();  // Use `iOSInitializationSettings` for Flutter versions < 3.0.0
+
+    // Existing Android settings
+    const android = AndroidInitializationSettings('@drawable/android_logo');
+
+    // Combine both Android and iOS settings
+    const settings = InitializationSettings(android: android, iOS: iOS);
+
+    // Initialize the local notifications plugin
     await _localNotifications.initialize(
       settings,
       onDidReceiveNotificationResponse: (NotificationResponse response) {
@@ -95,11 +121,11 @@ final androidChannel = const AndroidNotificationChannel(
         }
       },
     );
+
     final platform = _localNotifications.resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>();
-    await  platform?.createNotificationChannel(androidChannel);
-}
-
+    await platform?.createNotificationChannel(androidChannel);
+  }
 
   Future initPushNotification() async {
     final _localNotifications = FlutterLocalNotificationsPlugin();

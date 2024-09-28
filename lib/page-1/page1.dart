@@ -48,9 +48,14 @@ class _Scene1State extends State<Scene1> {
 
   @override
   Widget build(BuildContext context) {
-    double baseWidth = 390;
-    double fem = MediaQuery.of(context).size.width / baseWidth;
+    // Screen dimensions
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
+    double fem = screenWidth / 390;
     double ffem = fem * 0.97;
+
+    // Check if in landscape mode
+    bool isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
 
     return Scaffold(
       body: Stack(
@@ -78,128 +83,163 @@ class _Scene1State extends State<Scene1> {
 
           // Content over the overlay
           SafeArea(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  margin: EdgeInsets.fromLTRB(0, 0 * fem, 0, 50 * fem),
-                  child: Text(
-                    'Start Your Journey With Us.',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.beVietnamPro(
-                      fontSize: 30 * ffem,
-                      fontWeight: FontWeight.w400,
-                      height: 1.25 * ffem / fem,
-                      letterSpacing: -0.7 * fem,
-                      color: Colors.white,
+            child: Center(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.symmetric(horizontal: 25 * fem),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      margin: EdgeInsets.only(bottom: 30 * fem),
+                      child: Text(
+                        'Start Your Journey With Us',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.beVietnamPro(
+                          fontSize: isLandscape ? 24 * ffem : 28 * ffem, // Adjust font size in landscape mode
+                          fontWeight: FontWeight.w400,
+                          height: 1.25 * ffem / fem,
+                          letterSpacing: -0.7 * fem,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
-                  ),
+
+                    // Buttons Column
+                    Column(
+                      children: [
+                        // Hire Artist Button
+                        Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(11 * fem),
+                            gradient: LinearGradient(
+                              colors: [Color(0xffe5195e), Color(0xffc2185b)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                          ),
+                          child: ElevatedButton(
+                            onPressed: () {
+                              saveSelectedValue('hire');
+                              navigateToNextPage(PhoneNumberInputScreen());
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              shadowColor: Colors.transparent,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(11 * fem),
+                              ),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 16 * fem,
+                                vertical: 12 * fem,
+                              ),
+                              minimumSize: Size(double.infinity, 14 * fem),
+                            ),
+                            child: Text(
+                              'Hire Artist',
+                              style: GoogleFonts.beVietnamPro(
+                                fontSize: 18 * ffem,
+                                fontWeight: FontWeight.w500,
+                                height: 1.5 * ffem / fem,
+                                letterSpacing: 0.74 * fem,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        SizedBox(height: 18 * fem),
+
+                        // I'm a Solo Artist Button
+                        Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(11 * fem),
+                            gradient: LinearGradient(
+                              colors: [Color(0xffe5195e), Color(0xffc2185b)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                          ),
+                          child: ElevatedButton(
+                            onPressed: () {
+                              saveSelectedValue('solo_artist');
+                              navigateToNextPage(PhoneNumberInputScreen());
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              shadowColor: Colors.transparent,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(11 * fem),
+                              ),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 16 * fem,
+                                vertical: 12 * fem,
+                              ),
+                              minimumSize: Size(double.infinity, 14 * fem),
+                            ),
+                            child: Text(
+                              'I\'m a Solo Artist',
+                              style: GoogleFonts.beVietnamPro(
+                                fontSize: 18 * ffem,
+                                fontWeight: FontWeight.w500,
+                                height: 1.5 * ffem / fem,
+                                letterSpacing: 0.74 * fem,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        SizedBox(height: 14 * fem),
+
+                        // We're a Team of Artists Button
+                        Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(11 * fem),
+                            gradient: LinearGradient(
+                              colors: [Color(0xffe5195e), Color(0xffc2185b)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                          ),
+                          child: ElevatedButton(
+                            onPressed: () {
+                              saveSelectedValue('team');
+                              navigateToNextPage(PhoneNumberInputScreen());
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              shadowColor: Colors.transparent,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(11 * fem),
+                              ),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 16 * fem,
+                                vertical: 12 * fem,
+                              ),
+                              minimumSize: Size(double.infinity, 14 * fem),
+                            ),
+                            child: Text(
+                              'We\'re a Group of Artists',
+                              style: GoogleFonts.beVietnamPro(
+                                fontSize: 18 * ffem,
+                                fontWeight: FontWeight.w500,
+                                height: 1.5 * ffem / fem,
+                                letterSpacing: 0.74 * fem,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        SizedBox(height: isLandscape ? 20 * fem : 92 * fem), // Adjust based on orientation
+                      ],
+                    ),
+                  ],
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 25),
-                  child: Column(
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          saveSelectedValue('hire');
-                          navigateToNextPage(PhoneNumberInputScreen());
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xffe5195e),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(7 * fem),
-                          ),
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 16 * fem,
-                            vertical: 12 * fem,
-                          ),
-                          minimumSize: Size(double.infinity, 14 * fem),
-                        ),
-                        child: Text(
-                          'Hire Artist',
-                          style: GoogleFonts.beVietnamPro(
-                            fontSize: 18 * ffem,
-                            fontWeight: FontWeight.w500,
-                            height: 1.5 * ffem / fem,
-                            letterSpacing: 0.74 * fem,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 38 * fem),
-                      Container(
-                        child: Text(
-                          'Register as an Artist',
-                          style: GoogleFonts.beVietnamPro(
-                            fontSize: 22 * ffem,
-                            fontWeight: FontWeight.w400,
-                            height: 1.5 * ffem / fem,
-                            letterSpacing: 0.74 * fem,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 14 * fem),
-                      ElevatedButton(
-                        onPressed: () {
-                          saveSelectedValue('solo_artist');
-                          navigateToNextPage(PhoneNumberInputScreen());
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xffe5195e),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(7 * fem),
-                          ),
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 16 * fem,
-                            vertical: 12 * fem,
-                          ),
-                          minimumSize: Size(double.infinity, 14 * fem),
-                        ),
-                        child: Text(
-                          'I\'m a Solo Artist',
-                          style: GoogleFonts.beVietnamPro(
-                            fontSize: 18 * ffem,
-                            fontWeight: FontWeight.w500,
-                            height: 1.5 * ffem / fem,
-                            letterSpacing: 0.74 * fem,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 14 * fem),
-                      ElevatedButton(
-                        onPressed: () {
-                          saveSelectedValue('team');
-                          navigateToNextPage(PhoneNumberInputScreen());
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xffe5195e),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(7 * fem),
-                          ),
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 16 * fem,
-                            vertical: 12 * fem,
-                          ),
-                          minimumSize: Size(double.infinity, 14 * fem),
-                        ),
-                        child: Text(
-                          'We\'re a Team of Artists',
-                          style: GoogleFonts.beVietnamPro(
-                            fontSize: 18 * ffem,
-                            fontWeight: FontWeight.w500,
-                            height: 1.5 * ffem / fem,
-                            letterSpacing: 0.74 * fem,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 102 * fem),
-                    ],
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ],
