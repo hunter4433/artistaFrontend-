@@ -387,7 +387,7 @@ class setting extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => EditTeamMembersPage()),
+                      MaterialPageRoute(builder: (context) => ReviewPage()),
                     );
                   },
                   child: Container(

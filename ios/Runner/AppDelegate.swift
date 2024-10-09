@@ -1,7 +1,7 @@
 import UIKit
-import Firebase
+//import Firebase
 import Flutter
-import GoogleMaps
+//import GoogleMaps
 
 @UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate {
@@ -9,8 +9,8 @@ import GoogleMaps
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    GMSServices.provideAPIKey("AIzaSyChvogVcovcqFYy-t365hv-SLzUtqHGp1I")
-    FirebaseApp.configure()
+//    GMSServices.provideAPIKey("AIzaSyChvogVcovcqFYy-t365hv-SLzUtqHGp1I")
+//    FirebaseApp.configure()
     
     // Register for remote notifications
     application.registerForRemoteNotifications()
@@ -21,6 +21,6 @@ import GoogleMaps
 
   // Keep this method if you need to handle remote notification registration
   override func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-    Messaging.messaging().apnsToken = deviceToken
+//    Messaging.messaging().apnsToken = deviceToken
   }
 }

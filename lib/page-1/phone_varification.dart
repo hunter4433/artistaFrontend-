@@ -101,61 +101,61 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
                   ),
                 ),
               ),
-<<<<<<< HEAD
-            ),
-            Container(
-              margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                children: [
-                  Checkbox(
-                    value: isChecked,
-                    onChanged: (value) {
-                      setState(() {
-                        isChecked = value ?? false;
-                      });
-                    },
-                    activeColor: Color(0xFF2B8AE8),
-                    checkColor: Colors.white,
-                  ),
-                  Expanded(
-                    child: RichText(
-                      text: TextSpan(
-                        text: 'You agree to our ',
-                        style: GoogleFonts.beVietnamPro(
-                          fontWeight: FontWeight.w300,
-                          fontSize: 16.5,
-                          height: 1.5,
-                          color: Colors.white,
-                        ),
-                        children: [
-                          TextSpan(
-                            text: 'privacy policy',
-                            style: GoogleFonts.beVietnamPro(
-                              color: Colors.blue,
-                              fontStyle: FontStyle.italic,
-                            ),
-                            recognizer: TapGestureRecognizer()..onTap = () => PrivacyPolicyPage(),
-
-                          ),
-                          TextSpan(
-                            text: ' and ',
-                            style: GoogleFonts.beVietnamPro(
-                              fontWeight: FontWeight.w300,
-                              fontSize: 16.5,
-                              height: 1.5,
-                              color: Colors.white,
-                            ),
-                          ),
-                          TextSpan(
-                            text: 'terms and conditions',
-                            style: GoogleFonts.beVietnamPro(
-                              color: Colors.blue,
-                              fontStyle: FontStyle.italic,
-                            ),
-                            recognizer: TapGestureRecognizer()..onTap = () => PrivacyPolicyPage(),
-                          ),
-                        ],
-=======
+// // <<<<<<< HEAD
+//             ),
+//             Container(
+//               margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+//               child: Row(
+//                 children: [
+//                   Checkbox(
+//                     value: isChecked,
+//                     onChanged: (value) {
+//                       setState(() {
+//                         isChecked = value ?? false;
+//                       });
+//                     },
+//                     activeColor: Color(0xFF2B8AE8),
+//                     checkColor: Colors.white,
+//                   ),
+//                   Expanded(
+//                     child: RichText(
+//                       text: TextSpan(
+//                         text: 'You agree to our ',
+//                         style: GoogleFonts.beVietnamPro(
+//                           fontWeight: FontWeight.w300,
+//                           fontSize: 16.5,
+//                           height: 1.5,
+//                           color: Colors.white,
+//                         ),
+//                         children: [
+//                           TextSpan(
+//                             text: 'privacy policy',
+//                             style: GoogleFonts.beVietnamPro(
+//                               color: Colors.blue,
+//                               fontStyle: FontStyle.italic,
+//                             ),
+//                             recognizer: TapGestureRecognizer()..onTap = () => PrivacyPolicyPage(),
+//
+//                           ),
+//                           TextSpan(
+//                             text: ' and ',
+//                             style: GoogleFonts.beVietnamPro(
+//                               fontWeight: FontWeight.w300,
+//                               fontSize: 16.5,
+//                               height: 1.5,
+//                               color: Colors.white,
+//                             ),
+//                           ),
+//                           TextSpan(
+//                             text: 'terms and conditions',
+//                             style: GoogleFonts.beVietnamPro(
+//                               color: Colors.blue,
+//                               fontStyle: FontStyle.italic,
+//                             ),
+//                             recognizer: TapGestureRecognizer()..onTap = () => PrivacyPolicyPage(),
+//                           ),
+//                         ],
+// // =======
               Container(height: 55,
                 margin: EdgeInsets.fromLTRB(16, 0, 16, 20),
                 decoration: BoxDecoration(
@@ -188,7 +188,7 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
                       borderSide: BorderSide(
                         color: Color(0xFFE0E0E0), // Border color when focused
                         width: 1.5,
->>>>>>> 9e3f3a1ad3317a5838219c59acad554d7748e289
+// >>>>>>> 9e3f3a1ad3317a5838219c59acad554d7748e289
                       ),
                     ),
                   ),
@@ -236,7 +236,9 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
                                 fontStyle: FontStyle.italic,
                               ),
                               recognizer: TapGestureRecognizer()
-                                ..onTap = _navigateToPrivacyPolicy,
+                                  ..onTap = () {
+                                _navigateToPrivacyPolicy(context);
+                              },
                             ),
                             TextSpan(
                               text: ' and ',
@@ -254,7 +256,9 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
                                 fontStyle: FontStyle.italic,
                               ),
                               recognizer: TapGestureRecognizer()
-                                ..onTap = _navigateToTermsConditions,
+                                ..onTap = () {
+                                  _navigateToTermsConditions(context);
+                                },
                             ),
                           ],
                         ),
@@ -324,10 +328,30 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
     );
   }
 
+  void _navigateToPrivacyPolicy(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => PrivacyPolicyPage()),
+    );
+  }
 
+  void _navigateToTermsConditions(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => TermsConditionsPage()),
+    );
+  }
 }
 
+
+
+
+// class _navigateToTermsConditions {
+// }
+
 // Create separate pages for Privacy Policy and Terms & Conditions
+
+
 
 class PrivacyPolicyPage extends StatelessWidget {
   @override

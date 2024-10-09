@@ -55,11 +55,17 @@ class _ArtistProfileState extends State<ArtistProfile> {
   String? video4;
   List<String> imagePathsFromBackend = [];
   List<String> VideoPathsFromBackend = [];// List to store image URLs
-
+  double? avg;
+  double? four;
+  double? five;
+  double? three;
+  double? two;
+  double? one;
+  int? count;
   late Future<List<dynamic>> _teamMembersFuture;
   late Future<String> _availabilityStatusFuture;
 
-
+  bool _isLoading = true;
 
 
   Future<String?> _getKind() async {
@@ -71,6 +77,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
     super.initState();
     // Call the single initialization function
     initializeData();
+    rating();
 
   }
 
@@ -164,6 +171,46 @@ class _ArtistProfileState extends State<ArtistProfile> {
       }
     } catch (e) {
       print('Error fetching artist information: $e');
+    }
+  }
+
+  Future<void> rating() async {
+    String apiUrl = '${Config().apiDomain}/artist/${widget.artist_id}/average-rating';
+    print(apiUrl);
+    print('artist_id is ${widget.artist_id}');
+
+    try {
+      var response = await http.get(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/vnd.api+json',
+          'Accept': 'application/vnd.api+json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        Map<String, dynamic> responseData = json.decode(response.body);
+     setState(() {
+          _isLoading = false;
+
+         avg = responseData['average_rating'];
+         count= responseData['total_ratings'];
+         four= responseData['four_star_ratings']/count;
+         five= responseData['five_star_ratings']/count;
+          three= responseData['three_star_ratings']/count;
+          two= responseData['two_star_ratings']/count;
+          one= responseData['one_star_ratings']/count;
+
+      });
+
+
+      } else {
+        print('Failed to fetch data. Status code: ${response.statusCode}');
+        // return 'Error fetching availability status';
+      }
+    } catch (e) {
+      print('Error fetching data: $e');
+      // return 'Error fetching availability status';
     }
   }
 
@@ -926,15 +973,19 @@ class _ArtistProfileState extends State<ArtistProfile> {
 
 
 // Add the ReviewsSection widget here
-                      ReviewsSection(
-                        averageRating: 4.5, // Replace with dynamic data
-                        totalReviews: 150, // Replace with dynamic data
+                      _isLoading
+                          ? Center(
+                        child: CircularProgressIndicator(), // Show loader while fetching data
+                      )
+                      :ReviewsSection(
+                        averageRating: avg!, // Replace with dynamic data
+                        totalReviews: count!, // Replace with dynamic data
                         ratingDistribution: {
-                          5: 0.7,  // 70% of reviews are 5 stars
-                          4: 0.2,  // 20% of reviews are 4 stars
-                          3: 0.05, // 5% of reviews are 3 stars
-                          2: 0.03, // 3% of reviews are 2 stars
-                          1: 0.02, // 2% of reviews are 1 star
+                          5: five!,  // 70% of reviews are 5 stars
+                          4: four!,  // 20% of reviews are 4 stars
+                          3: three!, // 5% of reviews are 3 stars
+                          2: two!, // 3% of reviews are 2 stars
+                          1: one!, // 2% of reviews are 1 star
                         },
                       ),
 
@@ -1221,26 +1272,91 @@ class ReviewsSection extends StatelessWidget {
     );
   }}
 
-  class AllReviewsPage extends StatelessWidget {
-  // Simulating reviews fetched from backend
-  final List<Map<String, dynamic>> reviews = [
-    {
-      'profilePicture': 'https://via.placeholder.com/150', // Placeholder image URL
-      'name': 'John Doe',
-      'rating': 4,
-      'heading': 'Great performance!',
-      'review': 'The artist was amazing, truly talented and professionalghghghghghghghghghjgh'
-          'ghgghghjghvghgjghghgfgkkkhj.'
-    },
-    {
-      'profilePicture': 'https://via.placeholder.com/150',
-      'name': 'Jane Smith',
-      'rating': 5,
-      'heading': 'Incredible!',
-      'review': 'Best performance I’ve ever seen! Highly recommend.'
-    },
+  class AllReviewsPage extends StatefulWidget {
+    // Simulating reviews fetched from backend
+    @override
+    _AllReviewsPageState createState() => _AllReviewsPageState();
+
+  }
+
+class _AllReviewsPageState extends State<AllReviewsPage>{
+
+
+
+    List<Map<String, dynamic>> reviews = [
+    // {
+    //   'profilePicture': 'https://via.placeholder.com/150', // Placeholder image URL
+    //   'name': 'John Doe',
+    //   'rating': 4,
+    //   'heading': 'Great performance!',
+    //   'review': 'The artist was amazing, truly talented and professionalghghghghghghghghghjgh'
+    //       'ghgghghjghvghgjghghgfgkkkhj.'
+    // },
+    // {
+    //   'profilePicture': 'https://via.placeholder.com/150',
+    //   'name': 'Jane Smith',
+    //   'rating': 5,
+    //   'heading': 'Incredible!',
+    //   'review': 'Best performance I’ve ever seen! Highly recommend.'
+    // },
     // Add more reviews...
   ];
+  @override
+  void initState() {
+    super.initState();
+    // Call the single initialization function
+
+    rating();
+
+  }
+
+
+Future<void> rating() async {
+      String apiUrl = '${Config().apiDomain}/review/';
+      print(apiUrl);
+
+
+      try {
+        var response = await http.get(
+          Uri.parse(apiUrl),
+          headers: <String, String>{
+            'Content-Type': 'application/vnd.api+json',
+            'Accept': 'application/vnd.api+json',
+          },
+        );
+
+        if (response.statusCode == 200) {
+           // List<Map<String, dynamic>> reviews = json.decode(response.body);
+           List<dynamic> rawReviews = json.decode(response.body);
+           setState(() {
+             // Decode the response as a List<dynamic>
+
+
+             // Cast each item in the list to Map<String, dynamic>
+              reviews = rawReviews.cast<Map<String, dynamic>>();
+
+             // Now you can work with `reviews` as a List of maps
+           });
+           
+           // String user_id=reviews['user_id'].toString() ;
+
+            print(reviews);
+
+
+          print(reviews);
+
+
+        } else {
+          print('Failed to fetch data. Status code: ${response.statusCode}');
+          // return 'Error fetching availability status';
+        }
+      } catch (e) {
+        print('Error fetching data: $e');
+        // return 'Error fetching availability status';
+      }
+    }
+
+
 
   // Star rating widget
   Widget buildStarRating(int rating) {
@@ -1270,9 +1386,9 @@ class ReviewsSection extends StatelessWidget {
             radius: 26 * fem,
             backgroundColor: Colors.grey[200], // Grey background
             child: ClipOval(
-              child: review['profilePicture'] != null && review['profilePicture'].isNotEmpty
+              child: review['photo'] != null && review['photo'].isNotEmpty
                   ? Image.network(
-                review['profilePicture'],
+                review['photo'],
                 width: 52 * fem, // Size should match the radius
                 height: 52 * fem,
                 fit: BoxFit.cover,
@@ -1305,7 +1421,7 @@ class ReviewsSection extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      review['name'],
+                      review['rating'].toString(),
                       style: TextStyle(
                         fontSize: 17 * ffem,
                         fontWeight: FontWeight.bold,
@@ -1318,7 +1434,7 @@ class ReviewsSection extends StatelessWidget {
 
                 // Heading
                 Text(
-                  review['heading'],
+                  review['rating'].toString(),
                   style: TextStyle(
                     fontSize: 15 * ffem,
                     fontWeight: FontWeight.w500,
@@ -1329,7 +1445,7 @@ class ReviewsSection extends StatelessWidget {
 
                 // Review text
                 Text(
-                  review['review'],
+                  review['review_text'],
                   style: TextStyle(
                     fontSize: 15 * ffem,
                     color: Colors.grey[600],
@@ -1349,11 +1465,18 @@ class ReviewsSection extends StatelessWidget {
     double fem = MediaQuery.of(context).size.width / 390;
     double ffem = fem * 0.97;
 
-    return Scaffold(backgroundColor: Colors.white,
+
+
+    return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text('All Reviews',style: TextStyle(color: Colors.black),),
+        title: Text(
+          'All Reviews',
+          style: TextStyle(color: Colors.black),
+        ),
         backgroundColor: Colors.white,
-        leading: IconButton(color: Colors.black,
+        leading: IconButton(
+          color: Colors.black,
           icon: Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () {
             // Use Navigator.pop() to close the current screen (Scene2) and go back to the previous screen (Scene1)
@@ -1361,12 +1484,64 @@ class ReviewsSection extends StatelessWidget {
           },
         ),
       ),
-      body: ListView.builder(
+      body: reviews.isEmpty
+          ? Center(child: CircularProgressIndicator()) // Show a loader if reviews are not yet fetched
+          : ListView.builder(
         itemCount: reviews.length, // Number of reviews from the backend
         itemBuilder: (context, index) {
           return buildReviewItem(reviews[index], fem, ffem);
         },
       ),
     );
+
+
+    // // Function to build each review item
+    // Widget buildReviewItem(Map<String, dynamic> review, double fem, double ffem) {
+    //   return Card(
+    //     margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+    //     child: Padding(
+    //       padding: EdgeInsets.all(16.0),
+    //       child: Column(
+    //         crossAxisAlignment: CrossAxisAlignment.start,
+    //         children: [
+    //           Row(
+    //             children: [
+    //               CircleAvatar(
+    //                 backgroundImage: NetworkImage(review['profilePicture']),
+    //               ),
+    //               SizedBox(width: 10),
+    //               Text(
+    //                 review['name'],
+    //                 style: TextStyle(
+    //                   fontSize: 16 * ffem,
+    //                   fontWeight: FontWeight.bold,
+    //                 ),
+    //               ),
+    //             ],
+    //           ),
+    //           SizedBox(height: 10),
+    //           Row(
+    //             children: [
+    //               Icon(Icons.star, color: Colors.yellow, size: 16 * fem),
+    //               SizedBox(width: 4),
+    //               Text('${review['rating']} stars'),
+    //             ],
+    //           ),
+    //           SizedBox(height: 10),
+    //           Text(
+    //             review['heading'],
+    //             style: TextStyle(
+    //               fontSize: 14 * ffem,
+    //               fontWeight: FontWeight.bold,
+    //             ),
+    //           ),
+    //           SizedBox(height: 8),
+    //           Text(review['review']),
+    //         ],
+    //       ),
+    //     ),
+    //   );
   }
+
+
 }

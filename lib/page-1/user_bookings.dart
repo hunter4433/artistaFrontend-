@@ -365,24 +365,24 @@ class _UserBookingsState extends State<UserBookings> {
         itemCount: bookings.length,
         itemBuilder: (context, index) {
           final booking = bookings[index];
-<<<<<<< HEAD
+// <<<<<<< HEAD
           final idToUse = booking['artist_id'] ?? booking['team_id'];
           print('team_id is ${booking['team_id']}');
           widget.isteam = booking['team_id'] != '0' ? 'true' : 'false';
 print('team nam,e ${widget.isteam}');
-=======
-          int idtouse= booking['artist_id'] ?? booking['team_id'] ;
->>>>>>> 9e3f3a1ad3317a5838219c59acad554d7748e289
+// =======
+//           int idtouse= booking['artist_id'] ?? booking['team_id'] ;
+// >>>>>>> 9e3f3a1ad3317a5838219c59acad554d7748e289
           return _buildRequestCard(
             booking['category'],
             booking['booking_date'],
             booking['booked_from'],
             booking['id'],
-<<<<<<< HEAD
+// <<<<<<< HEAD
             idToUse,
-=======
-            idtouse,
->>>>>>> 9e3f3a1ad3317a5838219c59acad554d7748e289
+// =======
+//             idtouse,
+// >>>>>>> 9e3f3a1ad3317a5838219c59acad554d7748e289
             index,
           );
         },

@@ -1,7 +1,13 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:test1/page-1/page_0.3_artist_home.dart';
 import 'dart:io';
 import 'package:video_player/video_player.dart';
+import 'package:http/http.dart' as http;
+
+import '../config.dart';
 
 class ReviewPage extends StatefulWidget {
   @override
@@ -16,24 +22,95 @@ class _ReviewPageState extends State<ReviewPage> {
   File? _selectedImage;
   File? _selectedVideo;
   VideoPlayerController? _videoPlayerController;
+  bool _isLoading = false;
+
 
   final ImagePicker _picker = ImagePicker();
 
+  Future<String?> _getid() async {
+    return await storage.read(key: 'user_id'); // Assuming you stored the token with key 'token'
+  }
 
 
+  // Method to upload image
+  Future<void> _uploadImage(int Id) async {
+    if (_selectedImage == null) return;
 
-  void submitReview() {
-    if (selectedPerformance.isNotEmpty && reviewController.text.isNotEmpty) {
-      print('Performance: $selectedPerformance');
-      print('Rating: $rating');
-      print('Review: ${reviewController.text}');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Review submitted successfully')),
-      );
+    setState(() {
+      _isLoading = true;
+    });
+
+    final String backendUrl = '${Config().apiDomain}/upload-image/$Id'; // Replace with your actual API endpoint
+
+    try {
+      var request = http.MultipartRequest('POST', Uri.parse(backendUrl));
+
+      // Attach the image file
+      request.files.add(await http.MultipartFile.fromPath(
+        'photo',
+        _selectedImage!.path,
+      ));
+
+      // Send the request to backend
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200) {
+        var jsonResponse = json.decode(response.body);
+        String imageUrl = jsonResponse['profile_photo'];
+        print('Image uploaded successfully: $imageUrl');
+      } else {
+        print('Failed to upload image: ${response.body}');
+      }
+    } catch (e) {
+      print('Error uploading image: $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+
+  void submitReview() async {
+    final String backendUrl = '${Config().apiDomain}/review'; // Replace with your API URL
+    print(backendUrl);
+    String? id= await _getid();
+
+    print('rating is $starRating');
+
+
+// Combine selectedPerformance and reviewController.text
+    String reviewText = '$selectedPerformance ${reviewController.text}';
+    print('reviewtext is $reviewText');
+
+    final response = await http.post(
+      Uri.parse(backendUrl),
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode({
+        'rating': starRating.toString(),
+        'review_text': reviewText,
+        // 'photo': _selectedImage ?? '',
+        // 'video': _selectedVideo ?? '',
+        'user_id': id,
+        'artist_id': 1,
+        // 'team_id': teamId,
+      }),
+    );
+
+    if (response.statusCode == 201) {
+      print('Review submitted successfully');
+      // return true;
+      Map<String, dynamic> Data = json.decode(response.body);
+      int id=Data['id'];
+      _uploadImage(id);
+
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please complete the review')),
-      );
+      print('Failed to submit review: ${response.body}');
+      // return false;
     }
   }
 
@@ -168,6 +245,7 @@ class _ReviewPageState extends State<ReviewPage> {
                   ),
                 ),
                 // Slider with the same background color as the submit button
+                // Star Rating Widget
                 StarRating(
                   rating: starRating,
                   onRatingChanged: (newRating) {

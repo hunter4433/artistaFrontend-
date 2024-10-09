@@ -273,26 +273,26 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
                           });
                         },
                       ),
-<<<<<<< HEAD
-                      style: TextStyle(color: Colors.white),
-                      onFieldSubmitted: (value) async {
-                        List<Map<String, dynamic>> filteredData =
-                        await searchArtists(value);
-                        // Dispose the video when navigating to another page
-                        _controller.pause();
-                        // Navigate to your search results screen
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  SearchedArtist(filteredArtistData: filteredData, )),
-                        ).then((value) {
-                          // Reinitialize the video when returning to this page
-                          _controller.play();
-                        });
-                      },
-=======
->>>>>>> 9e3f3a1ad3317a5838219c59acad554d7748e289
+// <<<<<<< HEAD
+//                       style: TextStyle(color: Colors.white),
+//                       onFieldSubmitted: (value) async {
+//                         List<Map<String, dynamic>> filteredData =
+//                         await searchArtists(value);
+//                         // Dispose the video when navigating to another page
+//                         _controller.pause();
+//                         // Navigate to your search results screen
+//                         Navigator.push(
+//                           context,
+//                           MaterialPageRoute(
+//                               builder: (context) =>
+//                                   SearchedArtist(filteredArtistData: filteredData, )),
+//                         ).then((value) {
+//                           // Reinitialize the video when returning to this page
+//                           _controller.play();
+//                         });
+//                       },
+// =======
+// >>>>>>> 9e3f3a1ad3317a5838219c59acad554d7748e289
                     ),
                     SizedBox(height: 20 * fem),
                     // Skill buttons

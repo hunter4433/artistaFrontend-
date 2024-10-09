@@ -1166,7 +1166,7 @@ print('minute is $minutes');
                               Razorpay _razorpay = Razorpay();
 
                               var options = {
-                                'key': 'rzp_test_Hb4hFCm46361XC',
+                                'key': 'rzp_live_KJYr4DUx18zaJj',
                                 'amount': 5000,
                                 'name': 'Home Stage',
                                 'order_id': orderId,
