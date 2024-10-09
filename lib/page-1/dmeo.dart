@@ -13,22 +13,24 @@ import '../config.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 
+bool hasCalledApi = false;
+Map<String, List<dynamic>>? _cachedData;
 
 class Home_user extends StatefulWidget {
   @override
   _Home_userState createState() => _Home_userState();
 }
 
-class _Home_userState extends State<Home_user> {
+class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixin, WidgetsBindingObserver{
   final storage = FlutterSecureStorage();
   late VideoPlayerController _controller;
-
+  Future<Map<String, List<dynamic>>>? _fetchAssetsFuture;
   // Dummy data for testing. Replace it with actual data from your backend.
   final List<Map<String, dynamic>> categories = [
 
   ];
 
-  final List<Map<String, dynamic>> featuredArtists = [
+   List<Map<String, dynamic>> featuredArtists = [
     // Add more data as needed
   ];
 
@@ -56,23 +58,36 @@ class _Home_userState extends State<Home_user> {
   @override
   void initState() {
     super.initState();
-    fetchFeaturedArtists();
+    WidgetsBinding.instance.addObserver(this);
+    if (!hasCalledApi) {
+      _fetchAssetsFuture = fetchAssets();
+      fetchFeaturedArtists();
+      fetchFeaturedTeams();
+      hasCalledApi = true;
+    }
 
     // fetchFeaturedTeams();
     // fetchAssets();
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    print("App lifecycle state changed: $state");
+    if (state == AppLifecycleState.detached) {
+      print("App is being closed. Resetting API call flag.");
+      // Reset the flag when the app is closed completely
+      hasCalledApi = false;
+    }
+  }
+  @override
+  bool get wantKeepAlive => true; // This keeps the state alive
 
-  // Future<Map<String, dynamic>> fetchCombinedData() async {
-  //   // Call both fetchAssets and fetchFeaturedArtists in parallel
-  //   final responses = await Future.wait([fetchAssets(), fetchFeaturedArtists()]);
-  //
-  //   // Combine the results into a single map
-  //   return {
-  //     'assets': responses[0], // The result of fetchAssets
-  //     // 'featuredArtists': responses[1], // The result of fetchFeaturedArtists
-  //   };
-  // }
+  @override
+  void dispose() {
+    // Unregister the observer
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
 
   Future<void> fetchFeaturedArtists() async {
 
@@ -119,7 +134,20 @@ class _Home_userState extends State<Home_user> {
 
         });
 
-        fetchFeaturedTeams();
+        print('fetched artist are :$data ');
+        // Store featured artists data in cachedData
+        if (_cachedData != null) {
+          _cachedData!['featuredArtists'] = featuredArtists;
+        } else {
+          _cachedData = {
+            'featuredArtists': featuredArtists,
+          };
+        }
+
+        // Simulate an API call
+        print("API called at: ${DateTime.now()}");
+
+        // fetchFeaturedTeams();
 
         // print('fetauredartist rae as follows:$featuredArtists');
       } else {
@@ -164,6 +192,8 @@ class _Home_userState extends State<Home_user> {
               String subheading = parts.isNotEmpty ? parts[0].trim() : '';
               String name = parts.length > 1 ? parts[1].trim() : '';
               String type = parts.length > 2 ? parts[2].trim() : 'image';
+              String id = parts.length > 3 ? parts[3].trim() : '';
+              String isteam = parts.length > 4 ? parts[4].trim() : '';
 
               recommended.add({
                 // 'id': item['item_id'],
@@ -171,6 +201,8 @@ class _Home_userState extends State<Home_user> {
                 'name': name,
                 'type': type,
                 'image': '${item['item_data']}',
+                'id':id,
+                'isteam':isteam,
               });
             }
           } else if (section['section_name'] == 'Categories') {
@@ -268,8 +300,15 @@ class _Home_userState extends State<Home_user> {
 
         });
 
+        if (_cachedData != null) {
+          _cachedData!['featuredArtists'] = featuredArtists;
+        } else {
+          _cachedData = {
+            'featuredArtists': featuredArtists,
+          };
+        }
 
-        // print('team artista are $featuredArtists');
+        print('team artista are $featuredArtists');
       } else {
         print('Failed to load datasssssss: ${response.body}');
       }
@@ -291,19 +330,22 @@ class _Home_userState extends State<Home_user> {
 
       'name':'Experience Unforgettable Entertainment for Your Grand Wedding',
       'type': 'video',
-      'url': 'assets/page-1/images/newmarraige.mov'
+      'url': 'assets/page-1/images/newmarraige.mov',
+      'nav':'Comedian'
     },
     {
       'name': 'Exclusive Haldi Entertainment to Complement Your Traditional Celebration',
       'type': 'video',
-      'url': 'assets/page-1/images/homestage2.mov'
+      'url': 'assets/page-1/images/homestage2.mov',
+      'nav':'Dancer'
 
     },
     {
 
       'name': 'Enhance Your Mehndi Event with Exquisite Talent and Elegant Performances',
       'type': 'video',
-      'url': 'assets/page-1/images/mehandi.mov'
+      'url': 'assets/page-1/images/mehandi.mov',
+      'nav':'Dancer'
 
     },
   ];
@@ -369,12 +411,12 @@ class _Home_userState extends State<Home_user> {
             return artist;
           })),
         ];
-        print(mergedData);
+        // print(mergedData);
         return mergedData;
       } else {
         print('Failed to load artists');
-        print(response1.body);
-        print(response2.body);
+        // print(response1.body);
+        // print(response2.body);
         return [];
       }
     } catch (e) {
@@ -411,8 +453,8 @@ class _Home_userState extends State<Home_user> {
         ),
         backgroundColor: Color(0xFF121217),
       ),
-      body: FutureBuilder(
-          future: fetchAssets(), // Replace with your actual API call
+      body: FutureBuilder<Map<String, List<dynamic>>>(
+          future: _cachedData != null ? Future.value(_cachedData) : _fetchAssetsFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(
@@ -420,13 +462,35 @@ class _Home_userState extends State<Home_user> {
               );
             } else if (snapshot.hasError) {
               return Center(
-                child: Text(
-                    'Error: ${snapshot.error}'), // Display an error message
+                child: Text('Error: ${snapshot.error}'), // Display an error message
               );
             } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-              var categories = snapshot.data!['categories'];
-              var recommended = snapshot.data!['recommended'];
-              var seasonal = snapshot.data!['seasonal'];
+              // Cache the data once it is fetched successfully
+              if (_cachedData == null) {
+                _cachedData = snapshot.data;
+              }
+
+              var categories = _cachedData!['categories'];
+              var recommended = _cachedData!['recommended'];
+              var seasonal = _cachedData!['seasonal'];
+              var featuredArtist=_cachedData!['featuredArtists'];
+              print('cached featured artist afe $featuredArtist');
+              // Ensure that featured artists are included in the cached data
+              // if (_cachedData!['featuredArtists'] == null && featuredArtists.isNotEmpty) {
+              // print( featuredArtists = (_cachedData!['featuredArtists'] as List<dynamic>)
+              //     .cast<Map<String, dynamic>>());
+
+              // }
+
+              // print(_cachedData!['featuredArtists']);
+              // Once the data is fetched, build your UI
+              // var data = snapshot.data;
+              // if (data == null || data.isEmpty) {
+              //   return Center(
+              //     child: Text('No data found'), // Display no data found message
+              //   );
+              // }
+              // print(data);
               return Container(
                 color: Color(0xFF121217),
                 child: SafeArea(
@@ -600,13 +664,22 @@ class _Home_userState extends State<Home_user> {
                                         margin: EdgeInsets.symmetric(horizontal: 6*fem),
                                         child: GestureDetector(
                                           onTap: () async {
-                                            String team_id = artist['id']; // Use artist ID if needed
+                                            List<Map<String, dynamic>> filteredData =
+                                            await searchArtists(artist['nav']);
+                                            // Navigate to a new page on tap, passing the category data if needed
                                             Navigator.push(
                                               context,
                                               MaterialPageRoute(
-                                                builder: (context) => TeamProfile(),
+                                                builder: (context) => SearchedArtist(filteredArtistData: filteredData),
                                               ),
                                             );
+                                            // String team_id = artist['id']; // Use artist ID if needed
+                                            // Navigator.push(
+                                            //   context,
+                                            //   MaterialPageRoute(
+                                            //     builder: (context) => ArtistProfile(artist_id: team_id),
+                                            //   ),
+                                            // );
                                           },
                                           child: Stack(
                                             children: [
@@ -684,7 +757,7 @@ class _Home_userState extends State<Home_user> {
                           // Set a specific height for the Container
                           child: ListView.builder(
                             scrollDirection: Axis.horizontal,
-                            itemCount: featuredArtists.length,
+                            itemCount: featuredArtist?.length,
                             itemBuilder: (context, index) {
                               return Container(
                                 margin: EdgeInsets.only(right: 0 * fem),
@@ -697,9 +770,9 @@ class _Home_userState extends State<Home_user> {
                                     GestureDetector(
                                       onTap: () async {
                                         // Get the id of the selected artist
-                                        String id = featuredArtists[index]['id']
+                                        String? id = featuredArtist?[index]['id']
                                             .toString(); // Convert id to String
-                                       String isteam= featuredArtists[index]['team'] ?? '';
+                                       String isteam= featuredArtist?[index]['team'] ?? '';
                                        print('isteam $isteam');
                                         // Navigate to the ArtistProfile screen
                                         Navigator.push(
@@ -720,14 +793,14 @@ class _Home_userState extends State<Home_user> {
                                           borderRadius: BorderRadius.circular(
                                               12 * fem),
                                           child: Image.network(
-                                            featuredArtists[index]['image'],
+                                            featuredArtist?[index]['image'] ?? '',
                                             fit: BoxFit.cover,
                                           ),
                                         ),
                                       ),
                                     ),
                                     Text(
-                                      featuredArtists[index]['name'],
+                                      featuredArtist?[index]['name'],
                                       style: TextStyle(
                                         fontSize: 17 * ffem,
                                         fontWeight: FontWeight.w600,
@@ -739,7 +812,7 @@ class _Home_userState extends State<Home_user> {
                                     Row(
                                       children: [
                                         Text(
-                                          '${featuredArtists[index]['skill']}',
+                                          '${featuredArtist?[index]['skill']}',
                                           style: TextStyle(
                                             fontSize: 16 * ffem,
                                             fontWeight: FontWeight.w500,
@@ -752,7 +825,7 @@ class _Home_userState extends State<Home_user> {
                                           padding:  EdgeInsets.fromLTRB(
                                               0, 0, 5*fem, 0),
                                           child: Text(
-                                            ' ${featuredArtists[index]['rating']}/5',
+                                            ' ${featuredArtist?[index]['rating']}/5',
                                             style: TextStyle(
                                               fontSize: 16 * ffem,
                                               fontWeight: FontWeight.w500,
@@ -791,60 +864,74 @@ class _Home_userState extends State<Home_user> {
                             scrollDirection: Axis.horizontal,
                             itemCount: recommended?.length,
                             itemBuilder: (context, index) {
-                              return Container(
-                                width: 300 * fem,
-                                padding: EdgeInsets.fromLTRB(
-                                    12 * fem, 16 * fem, 0 * fem, 16 * fem),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      margin: EdgeInsets.only(bottom: 12 * fem),
-                                      width: 305 * fem,
-                                      height: 313 * fem,
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(
-                                            8 * fem),
-                                        child: recommended?[index]['type'] ==
-                                            'image'
-                                            ? Image.network(
-                                          recommended?[index]['image'],
-                                          fit: BoxFit.cover,
-                                        )
-                                            : CustomVideoPlayer(
-                                            source: recommended?[index]['image'],
-                                            isAsset: false ),
-                                      ),
+                              return GestureDetector(
+                                onTap: () {
+                                  // Handle the tap event here
+                                String id = recommended?[index]['id'];
+                                String isteam = recommended?[index]['isteam'];
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          ArtistProfile(
+                                              artist_id: id.toString(), isteam : isteam ),
                                     ),
-                                    Text(
-                                      recommended?[index]['subheading'],
-                                      style: TextStyle(
-                                        fontSize: 14 * ffem,
-                                        fontWeight: FontWeight.w500,
-                                        height: 1.5 * ffem / fem,
-                                        color: Color(0xFF9E9EB8),
-                                      ),
-                                    ),
-                                    SizedBox(height: 5),
-                                    Container(
-                                      width: 260 * fem,
-                                      // Set the desired width here
-                                      child: Text(
-                                        recommended?[index]['name'],
-                                        style: TextStyle(
-                                          fontSize: 18 * ffem,
-                                          fontWeight: FontWeight.w400,
-                                          height: 1.3625 * ffem / fem,
-                                          color: Colors.white,
+                                  );
+                                  // You can perform any action, like navigating to a details page
+                                },
+                                child: Container(
+                                  width: 300 * fem,
+                                  padding: EdgeInsets.fromLTRB(12 * fem, 16 * fem, 0 * fem, 16 * fem),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        margin: EdgeInsets.only(bottom: 12 * fem),
+                                        width: 305 * fem,
+                                        height: 313 * fem,
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(8 * fem),
+                                          child: recommended?[index]['type'] == 'image'
+                                              ? Image.network(
+                                            recommended?[index]['image'],
+                                            fit: BoxFit.cover,
+                                          )
+                                              : CustomVideoPlayer(
+                                              source: recommended?[index]['image'],
+                                              isAsset: false),
                                         ),
                                       ),
-                                    ),
-                                  ],
+                                      Text(
+                                        recommended?[index]['subheading'],
+                                        style: TextStyle(
+                                          fontSize: 14 * ffem,
+                                          fontWeight: FontWeight.w500,
+                                          height: 1.5 * ffem / fem,
+                                          color: Color(0xFF9E9EB8),
+                                        ),
+                                      ),
+                                      SizedBox(height: 5),
+                                      Container(
+                                        width: 260 * fem,
+                                        // Set the desired width here
+                                        child: Text(
+                                          recommended?[index]['name'],
+                                          style: TextStyle(
+                                            fontSize: 18 * ffem,
+                                            fontWeight: FontWeight.w400,
+                                            height: 1.3625 * ffem / fem,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               );
                             },
                           ),
                         ),
+
 
                         Container(
                           padding: EdgeInsets.fromLTRB(15 * fem, 40 * fem,
@@ -1123,6 +1210,7 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> with WidgetsBindi
   late VideoPlayerController _controller;
   bool _isInitialized = false;
   bool _isPlaying = false;
+  bool _isDisposed = false; // Add a flag to track if the widget is disposed
 
   @override
   void initState() {
@@ -1134,6 +1222,7 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> with WidgetsBindi
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _isDisposed = true; // Set the disposed flag
     _controller.dispose();
     super.dispose();
   }
@@ -1145,9 +1234,11 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> with WidgetsBindi
           : VideoPlayerController.networkUrl(Uri.parse(widget.source));
 
       await _controller.initialize();
-      setState(() {
-        _isInitialized = true;
-      });
+      if (mounted) {
+        setState(() {
+          _isInitialized = true;
+        });
+      }
       _controller.setLooping(true);
     } catch (e) {
       print("Error initializing video: $e");
@@ -1155,6 +1246,7 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> with WidgetsBindi
   }
 
   void _playPauseVideo(bool visible) {
+    if (_isDisposed || !_isInitialized) return; // Don't proceed if disposed or not initialized
     if (visible && !_isPlaying) {
       _controller.play();
       setState(() {
@@ -1173,9 +1265,10 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> with WidgetsBindi
     return VisibilityDetector(
       key: Key(widget.source),
       onVisibilityChanged: (visibilityInfo) {
-        // Play video only when more than 50% of it is visible
         var visiblePercentage = visibilityInfo.visibleFraction * 100;
-        _playPauseVideo(visiblePercentage > 50);
+        if (!_isDisposed) { // Add a check to avoid accessing the controller after it's disposed
+          _playPauseVideo(visiblePercentage > 50);
+        }
       },
       child: _isInitialized
           ? AspectRatio(

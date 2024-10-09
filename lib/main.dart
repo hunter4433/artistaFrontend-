@@ -13,26 +13,35 @@ final FlutterSecureStorage secureStorage = FlutterSecureStorage();
 bool authorised = false; // Declare the authorised variable and set its default value to false
 String selectedValue = ''; // Declare selectedValue to store the value from secure storage
 
+
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // Ensure Flutter bindings are initialized
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  await FirebaseApi().initNotification();
+  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    await FirebaseApi().initNotification();
+  } catch (e) {
+    // Handle Firebase initialization error
+    print("Error initializing Firebase: $e");
+  }
 
-  // Read the authorised value from secure storage
-  String? authStatus = await secureStorage.read(key: 'authorised');
-  if (authStatus != null && authStatus == 'true') {
-    authorised = true;
+  // Read authorised status from secure storage
+  String? authStatus;
+  try {
+    authStatus = await secureStorage.read(key: 'authorised');
+  } catch (e) {
+    print("Error reading from secure storage: $e");
+  }
 
-    // Read the selected_value from secure storage
+  authorised = authStatus != null && authStatus == 'true';
+  if (authorised) {
     selectedValue = await secureStorage.read(key: 'selected_value') ?? '';
-  } else {
-    authorised = false;
   }
 
   runApp(const MyApp());
 }
+
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);

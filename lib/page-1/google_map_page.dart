@@ -18,12 +18,26 @@ class _GoogleMapPageState extends State<GoogleMapPage> {
   LatLng? currentPosition;
   String? currentAddress;
   StreamSubscription<loc.LocationData>? locationSubscription;
+  bool isLoading = true; // New flag to track loading state
+  String? errorMessage; // To store error messages if any
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance
-        .addPostFrameCallback((_) async => await fetchLocationUpdates());
+    // Initiate location fetching process after the widget tree is built
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        await fetchLocationUpdates();
+        setState(() {
+          isLoading = false; // Stop the loader once location is fetched
+        });
+      } catch (error) {
+        setState(() {
+          errorMessage = error.toString(); // Handle error in UI
+          isLoading = false;
+        });
+      }
+    });
   }
 
   @override
@@ -33,51 +47,58 @@ class _GoogleMapPageState extends State<GoogleMapPage> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: const Text('Google Map Page'),
-    ),
-    body: currentPosition == null
-        ? const Center(child: CircularProgressIndicator())
-        : Column(
-      children: [
-        Expanded(
-          child: GoogleMap(
-            initialCameraPosition: const CameraPosition(
-              target: GooglePlex,
-              zoom: 13,
-            ),
-            onTap: _onMapTapped,
-            markers: {
-              if (currentPosition != null)
-                Marker(
-                  markerId: const MarkerId('currentLocation'),
-                  icon: BitmapDescriptor.defaultMarker,
-                  position: currentPosition!,
-                  onTap: () {
-                    _showMarkerSelectionDialog(context, currentPosition!);
-                  },
-                ),
-            },
-          ),
-        ),
-        if (currentAddress != null)
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              'Current Address: $currentAddress',
-              style: const TextStyle(fontSize: 16),
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Google Map Page'),
+      ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator()) // Loader while initializing
+          : errorMessage != null
+          ? Center(child: Text('Error: $errorMessage')) // Show error if any
+          : currentPosition == null
+          ? const Center(child: Text('Location not found.'))
+          : Column(
+        children: [
+          Expanded(
+            child: GoogleMap(
+              initialCameraPosition: CameraPosition(
+                target: currentPosition ?? GooglePlex,
+                zoom: 13,
+              ),
+              onTap: _onMapTapped,
+              markers: {
+                if (currentPosition != null)
+                  Marker(
+                    markerId: const MarkerId('currentLocation'),
+                    icon: BitmapDescriptor.defaultMarker,
+                    position: currentPosition!,
+                    onTap: () {
+                      _showMarkerSelectionDialog(
+                          context, currentPosition!);
+                    },
+                  ),
+              },
             ),
           ),
-      ],
-    ),
-    floatingActionButton: FloatingActionButton(
-      onPressed: () {
-        Navigator.pop(context);
-      },
-      child: const Icon(Icons.exit_to_app),
-    ),
-  );
+          if (currentAddress != null)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                'Current Address: $currentAddress',
+                style: const TextStyle(fontSize: 16),
+              ),
+            ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.pop(context);
+        },
+        child: const Icon(Icons.exit_to_app),
+      ),
+    );
+  }
 
   Future<void> fetchLocationUpdates() async {
     bool serviceEnabled;
@@ -87,7 +108,7 @@ class _GoogleMapPageState extends State<GoogleMapPage> {
     if (!serviceEnabled) {
       serviceEnabled = await locationController.requestService();
       if (!serviceEnabled) {
-        return;
+        throw 'Location services are disabled.';
       }
     }
 
@@ -95,21 +116,22 @@ class _GoogleMapPageState extends State<GoogleMapPage> {
     if (permissionGranted == loc.PermissionStatus.denied) {
       permissionGranted = await locationController.requestPermission();
       if (permissionGranted != loc.PermissionStatus.granted) {
-        return;
+        throw 'Location permissions are denied';
       }
     }
 
-    locationSubscription = locationController.onLocationChanged.listen((currentLocation) {
-      if (currentLocation.latitude != null &&
-          currentLocation.longitude != null) {
-        final newPosition = LatLng(
-          currentLocation.latitude!,
-          currentLocation.longitude!,
-        );
-        _updatePosition(newPosition);
-        _getAddressFromLatLng(newPosition);
-      }
-    });
+    locationSubscription =
+        locationController.onLocationChanged.listen((currentLocation) {
+          if (currentLocation.latitude != null &&
+              currentLocation.longitude != null) {
+            final newPosition = LatLng(
+              currentLocation.latitude!,
+              currentLocation.longitude!,
+            );
+            _updatePosition(newPosition);
+            _getAddressFromLatLng(newPosition);
+          }
+        });
   }
 
   void _updatePosition(LatLng newPosition) {
@@ -145,12 +167,12 @@ class _GoogleMapPageState extends State<GoogleMapPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Select Location'),
-        content: Text('Do you want to select this location?'),
+        title: const Text('Select Location'),
+        content: const Text('Do you want to select this location?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel'),
+            child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
@@ -160,7 +182,7 @@ class _GoogleMapPageState extends State<GoogleMapPage> {
                 'address': currentAddress ?? 'Address not found'
               }); // Return the position and address
             },
-            child: Text('Select'),
+            child: const Text('Select'),
           ),
         ],
       ),

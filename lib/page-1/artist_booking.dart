@@ -34,7 +34,7 @@ class _BookingArtistState extends State<booking_artist> {
   String? selectedToTimeBack;
   String? name;
   String? team_name;
-  double? price;
+  String? price;
   String? amount;
   double? netAmount;
   String? image;
@@ -210,15 +210,15 @@ print('minute is $minutes');
 //     }
 //   }
 
-    double calculateTotalAmount(double pricePerHour, int hours, int minutes) {
+    double calculateTotalAmount(String pricePerHour, int hours, int minutes) {
       // Convert total time to hours
       double totalTimeInHours = hours + (minutes / 60.0);
 
       // Convert pricePerHour to double
-      // double pricePerHourDouble = double.parse(pricePerHour);
+      double pricePerHourDouble = double.parse(pricePerHour);
 
       // Calculate the total amount
-      double totalAmount = totalTimeInHours * pricePerHour;
+      double totalAmount = totalTimeInHours * pricePerHourDouble;
       // print(totalAmount);
 
       return totalAmount;
@@ -232,6 +232,7 @@ print('minute is $minutes');
     String? kind = await _getKind();
      // print(widget.artist_id);
 
+    String? pp;
     // Initialize API URLs for different kinds
     String apiUrl;
     if (widget.isteam == 'true') {
@@ -253,7 +254,7 @@ print('minute is $minutes');
       if (response.statusCode == 200) {
         // Parse the response JSON
         List<dynamic> userDataList = json.decode(response.body);
-
+print(userDataList );
         // print(userDataList);
 
         // Assuming the response is a list, iterate over each user's data
@@ -266,8 +267,9 @@ print('minute is $minutes');
             image = '${userData['profile_photo']}' ;
             fcm_token=userData['fcm_token'] ?? '';
             hasSoundSystem=userData['sound_system'] == 1 ? true: false ;
+
           });
-// print('team name is $team_name');
+// print('soundsystem is $hasSoundSystem');
         }
       } else {
         print('Failed to fetch user information. Status code: ${response.body}');
@@ -1166,8 +1168,8 @@ print('minute is $minutes');
                               Razorpay _razorpay = Razorpay();
 
                               var options = {
-                                'key': 'rzp_test_Hb4hFCm46361XC',
-                                'amount': 5000,
+                                'key': 'rzp_live_KJYr4DUx18zaJj',
+                                // 'amount': ,
                                 'name': 'Home Stage',
                                 'order_id': orderId,
                                 'description': 'artist book',
@@ -1246,28 +1248,51 @@ print('minute is $minutes');
               },
               child: Text('Enter Manually',style: TextStyle(color: Colors.black),),
             ),
-            ElevatedButton(
-              onPressed: () async {
-                Navigator.of(context).pop();
-                final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => GoogleMapPage()),
-                );
-                if (result != null && result.containsKey('coordinates')) {
+        ElevatedButton(
+        onPressed: () async {
+        // Close any modal that is open, such as a dialog
+        Navigator.of(context).pop();
 
-                  LatLng  coordinates = result['coordinates'];
-                  latitude= coordinates.latitude;
-                  longitude= coordinates.longitude;
-                  String address = result['address'];
-                  setState(() {
-                    locationController.text = address;
-                  });
-                  print('Selected Coordinates: ${coordinates.latitude}, ${coordinates.longitude}');
+        // Show a loading indicator while transitioning to the map page
+        showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => Center(
+        child: CircularProgressIndicator(), // Display a loading spinner
+        ),
+        );
 
-                }
-              },
-              child: Text('Select On Map',style: TextStyle(color: Colors.black),),
-            ),
+        // Navigate to GoogleMapPage and await the result
+        final result = await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const GoogleMapPage()),
+        );
+
+        // Remove the loading spinner after the map is closed
+        Navigator.of(context).pop();
+
+        if (result != null && result.containsKey('coordinates')) {
+        LatLng coordinates = result['coordinates'];
+        latitude = coordinates.latitude;
+        longitude = coordinates.longitude;
+        String address = result['address'];
+
+        // Update the UI with the selected address
+        setState(() {
+        locationController.text = address;
+        });
+
+        print('Selected Coordinates: ${coordinates.latitude}, ${coordinates.longitude}');
+        } else {
+        // Optionally handle the case when the user cancels without selecting a location
+        print('No location selected');
+        }
+        },
+        child: const Text(
+        'Select On Map',
+        style: TextStyle(color: Colors.black),
+        ),
+        ),
           ],
         );
       },

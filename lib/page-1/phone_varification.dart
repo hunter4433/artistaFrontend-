@@ -156,53 +156,53 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
 //                           ),
 //                         ],
 // // =======
-// //               Container(height: 55,
-// //                 margin: EdgeInsets.fromLTRB(16, 0, 16, 20),
-// //                 decoration: BoxDecoration(
-// //                   borderRadius: BorderRadius.circular(11),
-// //                   color: Color(0xFF292938),
-// //                 ),
-// //
-// //                 child: TextField(
-// //                   controller: _phoneController,
-// //                   style: TextStyle(color: Colors.white),
-// //                   decoration: InputDecoration(
-// //                     // Remove the default border to show the customized one
-// //                     border: InputBorder.none,
-// //                     hintText: 'Mobile number',
-// //                     hintStyle: GoogleFonts.inter(
-// //                       fontWeight: FontWeight.w400,
-// //                       fontSize: 16,
-// //                       height: 1.5,
-// //                       color: Color(0xFF637587),
-// //                     ),
-// //                     enabledBorder: OutlineInputBorder(
-// //                       borderRadius: BorderRadius.circular(10),
-// //                       borderSide: BorderSide(
-// //                         color: Color(0xFF637587), // Border color when not focused
-// //                         width: 1.5,
-// //                       ),
-// //                     ),
-// //                     focusedBorder: OutlineInputBorder(
-// //                       borderRadius: BorderRadius.circular(10),
-// //                       borderSide: BorderSide(
-// //                         color: Color(0xFFE0E0E0), // Border color when focused
-// //                         width: 1.5,
+              Container(height: 55,
+                margin: EdgeInsets.fromLTRB(16, 0, 16, 20),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(11),
+                  color: Color(0xFF292938),
+                ),
+
+                child: TextField(
+                  controller: _phoneController,
+                  style: TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    // Remove the default border to show the customized one
+                    border: InputBorder.none,
+                    hintText: 'Mobile number',
+                    hintStyle: GoogleFonts.inter(
+                      fontWeight: FontWeight.w400,
+                      fontSize: 16,
+                      height: 1.5,
+                      color: Color(0xFF637587),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(
+                        color: Color(0xFF637587), // Border color when not focused
+                        width: 1.5,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(
+                        color: Color(0xFFE0E0E0), // Border color when focused
+                        width: 1.5,
 // // >>>>>>> 9e3f3a1ad3317a5838219c59acad554d7748e289
-//                       ),
-//                     ),
-//                   ),
-//                   keyboardType: TextInputType.phone,
-//                   onChanged: (value) {
-//                     if (!value.startsWith('+91 ')) {
-//                       _phoneController.text = '+91 ';
-//                       _phoneController.selection = TextSelection.fromPosition(
-//                         TextPosition(offset: _phoneController.text.length),
-//                       );
-//                     }
-//                   },
-//                 ),
-//               ),
+                      ),
+                    ),
+                  ),
+                  keyboardType: TextInputType.phone,
+                  onChanged: (value) {
+                    if (!value.startsWith('+91 ')) {
+                      _phoneController.text = '+91 ';
+                      _phoneController.selection = TextSelection.fromPosition(
+                        TextPosition(offset: _phoneController.text.length),
+                      );
+                    }
+                  },
+                ),
+              ),
 
               Container(
                 margin: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -236,7 +236,7 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
                                 fontStyle: FontStyle.italic,
                               ),
                               recognizer: TapGestureRecognizer()
-                                ..onTap = _navigateToPrivacyPolicy as GestureTapCallback?,
+                                ..onTap = () => _navigateToPrivacyPolicy(context),
                             ),
                             TextSpan(
                               text: ' and ',
@@ -254,7 +254,8 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
                                 fontStyle: FontStyle.italic,
                               ),
                               recognizer: TapGestureRecognizer()
-                                ..onTap = _navigateToTermsConditions as GestureTapCallback?,
+                                ..onTap = () => _navigateToTermsConditions(context),
+                                // ..onTap = _navigateToTermsConditions ,
                             ),
                           ],
                         ),
@@ -323,13 +324,26 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
       ),
     );
   }
+  void _navigateToPrivacyPolicy(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => PrivacyPolicyScreen()),
+    );
+  }
+  void _navigateToTermsConditions(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => TermsConditionsScreen()),
+    );
+  }
+
 
 
 }
 
 // Create separate pages for Privacy Policy and Terms & Conditions
 
-class _navigateToPrivacyPolicy extends StatelessWidget {
+class PrivacyPolicyScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -339,7 +353,7 @@ class _navigateToPrivacyPolicy extends StatelessWidget {
   }
 }
 
-class  _navigateToTermsConditions extends StatelessWidget {
+class TermsConditionsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
