@@ -29,7 +29,7 @@ class _BookedState extends State<Booked> {
   // Fetched text from backend
 
   String? name;
-  double? price;
+  String? price;
   String? image;
   String? phone_number;
    String? dateText ;
@@ -96,15 +96,15 @@ String? totalprice;
   //   }
   // }
 
-  Future<String> calculateTotalAmount (double pricePerHour, int hours, int minutes)  async {
+  Future<String> calculateTotalAmount (String pricePerHour, int hours, int minutes)  async {
     // Convert total time to hours
     double totalTimeInHours = hours + (minutes / 60.0);
 
     // Convert pricePerHour to double
-    // double pricePerHourDouble = double.parse(pricePerHour );
+    double pricePerHourDouble = double.parse(pricePerHour );
 
     // Calculate the total amount
-    double totalAmount = (totalTimeInHours * pricePerHour) ;
+    double totalAmount = (totalTimeInHours * pricePerHourDouble) ;
     // print(totalAmount);
     String amount= totalAmount.toString();
 
@@ -235,7 +235,7 @@ String? totalprice;
         print('Failed to fetch user information. Status code: ${response.body}');
       }
     } catch (e) {
-      print('Error fetching user information: $e');
+      print('Error fetching user informationss: $e');
     }
   }
 
@@ -285,248 +285,165 @@ print(formData);
 
   @override
   Widget build(BuildContext context) {
-    // final message =ModalRoute.of(context)!.settings.arguments;
-
     double baseWidth = 390;
     double fem = MediaQuery.of(context).size.width / baseWidth;
     double ffem = fem * 0.97;
+
     return Scaffold(
-        backgroundColor: Colors.white,
-        body: SafeArea(
+      backgroundColor: Colors.white,
+      body: SafeArea(
         child: FutureBuilder<void>(
-        future: fetchArtistBooking(widget.BookingId), // Fetch the booking details
-         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(
-          child: CircularProgressIndicator(), // Show loading bar while fetching data
-          );
-         } else if (snapshot.hasError) {
-         return Center(
-         child: Text('Error fetching data!'), // Show error message if there's an issue
-          );
-        } else {
-            return Container(color: Colors.grey,
-              width: double.infinity,
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: EdgeInsets.fromLTRB(1 * fem, 1 * fem, 1 * fem,
-                          2 * fem),
-                      width: double.infinity,
-                      height: 62 * fem,
-                      decoration: BoxDecoration(
-                          color: Color(0xFFFFFFFF)
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          IconButton(
-                            icon: Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black),
-                            onPressed: () {
-                              // Navigate and replace the current page
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => BottomNav(
-                                     isteam: widget.isteam,        // Pass any relevant data
-                                    initialPageIndex: 2,   // Index 2 corresponds to UserBookings
-                                  ),
-                                ),
-                              );
-
-                            },
-                          ),
-
-                          Expanded(
-                            child: Center(
-                              child: Text(
-                                'Booking Details',
-                                style: SafeGoogleFont(
-                                  'Be Vietnam Pro',
-                                  fontSize: 21 * ffem,
-                                  fontWeight: FontWeight.w500,
-                                  height: 1.25 * ffem / fem,
-                                  letterSpacing: -0.2700000107 * fem,
-                                  color: Colors.black,
-                                ),
-                              ),
-                            ),
-                          ),
-                          // This SizedBox ensures that the title is centered
-                          // by taking the same width as the back button
-                          SizedBox(width: 48),
-                        ],
-                      ),
-                    ),
-
-                    InkWell(
-                      child: Container(
-                        margin: EdgeInsets.fromLTRB(
-                            0 * fem, 0.15 * fem, 0 * fem, 0.15 * fem),
-                        padding: EdgeInsets.fromLTRB(
-                            1 * fem, 8 * fem, 1 * fem, 10 * fem),
-                        width: 540 * fem,
-                        height: 160 * fem,
-                        color: Color(0xFFFFFFFF),
-                        child: Row(
-                          children: [
-                            Container(
-                              margin: EdgeInsets.fromLTRB(
-                                  16 * fem, 0 * fem, 15 * fem, 0 * fem),
-                              width: 110 * fem,
-                              height: 140 * fem,
-                              child: FutureBuilder<void>(
-                                future: fetchArtistBooking(widget.BookingId),
-                                // Call fetchArtistBooking instead of fetchImage
-                                builder: (context, snapshot) {
-                                  if (snapshot.connectionState ==
-                                      ConnectionState.waiting) {
-                                    return Container(color: Colors
-                                        .grey); // Placeholder until image is loaded
-                                  } else if (snapshot.hasError) {
-                                    return Container(color: Colors
-                                        .red); // Placeholder for error
-                                  } else {
-                                    return ClipRRect(
-                                      borderRadius: BorderRadius.circular(
-                                          10 * fem),
-                                      // Set your desired border radius
-                                      child: Image.network(
-                                        image ?? '',
-                                        // Display the fetched image
-                                        fit: BoxFit
-                                            .cover, // Ensure the image covers the container
+            future: fetchArtistBooking(widget.artistId), // Fetch the booking details once
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(
+                  child: CircularProgressIndicator(), // Show loading bar while fetching data
+                );
+              } else if (snapshot.hasError) {
+                return Center(
+                  child: Text('Error fetching data!'), // Show error message if there's an issue
+                );
+              } else {
+                // Data fetched successfully
+                return Container(
+                  color: Colors.grey,
+                  width: double.infinity,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Top bar section
+                        Container(
+                          padding: EdgeInsets.fromLTRB(1 * fem, 1 * fem, 1 * fem, 2 * fem),
+                          width: double.infinity,
+                          height: 62 * fem,
+                          decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              IconButton(
+                                icon: Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => BottomNav(
+                                        isteam: widget.isteam,
+                                        initialPageIndex: 2,
                                       ),
-                                    );
-                                  }
+                                    ),
+                                  );
                                 },
                               ),
-                            ),
-                            Container(
-                              padding: EdgeInsets.fromLTRB(
-                                  10 * fem, 10 * fem, 5 * fem, 8 * fem),
-                              width: 247 * fem,
-                              height: double.infinity,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
+                              Expanded(
+                                child: Center(
+                                  child: Text(
+                                    'Booking Details',
+                                    style: SafeGoogleFont(
+                                      'Be Vietnam Pro',
+                                      fontSize: 21 * ffem,
+                                      fontWeight: FontWeight.w500,
+                                      height: 1.25 * ffem / fem,
+                                      letterSpacing: -0.27 * fem,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: 48), // Space to center the title
+                            ],
+                          ),
+                        ),
 
-                                      // Add some space between the hardcoded and fetched name
-                                      FutureBuilder<void>(
-                                        future: fetchArtistBooking(
-                                            widget.BookingId),
-                                        // Function to fetch text from backend
-                                        builder: (context, snapshot) {
-                                          if (snapshot.connectionState ==
-                                              ConnectionState.waiting) {
-                                            return Container(); // Placeholder until text is loaded
-                                          } else if (snapshot.hasError) {
-                                            return Text(
-                                              'Error loading text',
-                                              // Placeholder for error
-                                              style: SafeGoogleFont(
-                                                'Be Vietnam Pro',
-                                                fontSize: 16 * ffem,
-                                                fontWeight: FontWeight.w400,
-                                                height: 1.5 * ffem / fem,
-                                                color: Colors.black,
-                                              ),
-                                            );
-                                          } else {
-                                            return Text(
-                                              name ?? '',
-                                              // Display the fetched text
-                                              style: SafeGoogleFont(
-                                                'Be Vietnam Pro',
-                                                fontSize: 18 * ffem,
-                                                fontWeight: FontWeight.w400,
-                                                height: 1.5 * ffem / fem,
-                                                color: Colors.black,
-                                              ),
-                                            );
-                                          }
-                                        },
+                        // Booking details section
+                        InkWell(
+                          child: Container(
+                            margin: EdgeInsets.fromLTRB(0 * fem, 0.15 * fem, 0 * fem, 0.15 * fem),
+                            padding: EdgeInsets.fromLTRB(1 * fem, 8 * fem, 1 * fem, 10 * fem),
+                            width: 540 * fem,
+                            height: 160 * fem,
+                            color: Color(0xFFFFFFFF),
+                            child: Row(
+                              children: [
+                                // Artist image section
+                                Container(
+                                  margin: EdgeInsets.fromLTRB(16 * fem, 0 * fem, 15 * fem, 0 * fem),
+                                  width: 110 * fem,
+                                  height: 140 * fem,
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(10 * fem),
+                                    child: Image.network(
+                                      image ?? '', // Display the fetched image
+                                      fit: BoxFit.cover, // Ensure the image covers the container
+                                    ),
+                                  ),
+                                ),
+
+                                // Artist details section
+                                Container(
+                                  padding: EdgeInsets.fromLTRB(10 * fem, 10 * fem, 5 * fem, 8 * fem),
+                                  width: 247 * fem,
+                                  height: double.infinity,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      // Artist name
+                                      Text(
+                                        name ?? '',
+                                        style: SafeGoogleFont(
+                                          'Be Vietnam Pro',
+                                          fontSize: 18 * ffem,
+                                          fontWeight: FontWeight.w400,
+                                          height: 1.5 * ffem / fem,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                      SizedBox(height: 7 * fem),
+
+                                      // Price and rating details
+                                      Text(
+                                        'Price / Hour: ${price ?? ''}',
+                                        style: SafeGoogleFont(
+                                          'Be Vietnam Pro',
+                                          fontSize: 16 * ffem,
+                                          fontWeight: FontWeight.w400,
+                                          height: 1.5 * ffem / fem,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                      SizedBox(height: 7 * fem),
+
+                                      Text(
+                                        'Rating: ${rating ?? 'null/5'}',
+                                        style: SafeGoogleFont(
+                                          'Be Vietnam Pro',
+                                          fontSize: 16 * ffem,
+                                          fontWeight: FontWeight.w400,
+                                          height: 1.5 * ffem / fem,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                      SizedBox(height: 7 * fem),
+
+                                      // Artist skill details
+                                      Text(
+                                        'Skill: ${skill ?? ''}',
+                                        style: SafeGoogleFont(
+                                          'Be Vietnam Pro',
+                                          fontSize: 16 * ffem,
+                                          fontWeight: FontWeight.w400,
+                                          height: 1.5 * ffem / fem,
+                                          color: Colors.black,
+                                        ),
                                       ),
                                     ],
                                   ),
-                                  SizedBox(height: 7 * fem),
-                                  // Add some space between name and other details
-                                  FutureBuilder<void>(
-                                    future: fetchArtistBooking(
-                                        widget.BookingId),
-                                    // Function to fetch price and rating from backend
-                                    builder: (context, snapshot) {
-                                      if (snapshot.connectionState ==
-                                          ConnectionState.waiting) {
-                                        return Container(); // Placeholder until text is loaded
-                                      } else if (snapshot.hasError) {
-                                        return Text(
-                                          'Error loading text',
-                                          // Placeholder for error
-                                          style: SafeGoogleFont(
-                                            'Be Vietnam Pro',
-                                            fontSize: 16 * ffem,
-                                            fontWeight: FontWeight.w400,
-                                            height: 1.5 * ffem / fem,
-                                            color: Colors.black,
-                                          ),
-                                        );
-                                      } else {
-                                        return Column(
-                                          crossAxisAlignment: CrossAxisAlignment
-                                              .start,
-                                          children: [
-                                            Text(
-                                              'Price / Hour: ${price ?? ''}',
-                                              // Display the fetched price
-                                              style: SafeGoogleFont(
-                                                'Be Vietnam Pro',
-                                                fontSize: 16 * ffem,
-                                                fontWeight: FontWeight.w400,
-                                                height: 1.5 * ffem / fem,
-                                                color: Colors.black,
-                                              ),
-                                            ),
-                                            SizedBox(height: 7 * fem),
-                                            Text(
-                                              'Rating:${rating ?? '  null/5'}',
-                                              // Display the fetched rating
-                                              style: SafeGoogleFont(
-                                                'Be Vietnam Pro',
-                                                fontSize: 16 * ffem,
-                                                fontWeight: FontWeight.w400,
-                                                height: 1.5 * ffem / fem,
-                                                color: Colors.black,
-                                              ),
-                                            ),
-                                            SizedBox(height: 7 * fem),
-                                            Text(
-                                              'Skill:${skill ?? '  null/5'}',
-                                              // Display the fetched rating
-                                              style: SafeGoogleFont(
-                                                'Be Vietnam Pro',
-                                                fontSize: 16 * ffem,
-                                                fontWeight: FontWeight.w400,
-                                                height: 1.5 * ffem / fem,
-                                                color: Colors.black,
-                                              ),
-                                            ),
-                                          ],
-                                        );
-                                      }
-                                    },
-                                  ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
-                      ),
-                    ),
+
 
 
                     Container(

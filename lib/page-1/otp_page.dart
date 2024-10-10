@@ -270,23 +270,22 @@ class _VerificationCodeInputScreenState
 
 
   void _navigateToHome(String? userType) {
-    // Navigate to the correct screen based on user type
+    if (!mounted) {
+      print('not mounted widget');
+      return; // Ensure the widget is still mounted before proceeding
+    }
     if (userType == 'hire') {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => ServiceCheckerPage()),
       );
-    } else if (userType == 'solo_artist') {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => BottomNavart(data: {},)),
-      );
-    } else if (userType == 'team') {
+    } else if (userType == 'solo_artist' || userType == 'team') {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => BottomNavart(data: {},)),
       );
     }
+
 
     // Show a snackbar indicating successful login
     ScaffoldMessenger.of(context).showSnackBar(

@@ -42,13 +42,24 @@ class _ServiceCheckerPageState extends State<ServiceCheckerPage> {
   }
 
   Future<void> useCurrentLocation() async {
+    // Show loading spinner while fetching location
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Center(child: CircularProgressIndicator()),
+    );
+
     try {
       _currentPosition = await _locationService.getCurrentLocation();
-      _serviceAvailable =
-      await _locationService.isServiceAvailable(_currentPosition);
-      print(_serviceAvailable);
-      sendLocationToBackend();
-      setState(() {}); // Update the UI with new state
+      _serviceAvailable = await _locationService.isServiceAvailable(_currentPosition);
+
+      // Update the UI after the location and service check are completed
+      setState(() {});
+
+      // Dismiss the loading spinner
+      Navigator.of(context).pop();
+
+      // Navigate if the service is available
       if (_serviceAvailable) {
         Navigator.pushReplacement(
           context,
@@ -60,41 +71,45 @@ class _ServiceCheckerPageState extends State<ServiceCheckerPage> {
         ));
       }
     } catch (error) {
+      Navigator.of(context).pop(); // Dismiss the loading spinner
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('Error: $error'),
       ));
     }
   }
-  Future<bool> convertAddressToLatLng(String textEditingController) async {
+
+  Future<bool> convertAddressToLatLng(String address) async {
+    // Show loading spinner while converting address to LatLng
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Center(child: CircularProgressIndicator()),
+    );
+
     try {
       LocationService locationService = LocationService();
-      Position position = await locationService.getLocationFromAddress(textEditingController);
+      Position position = await locationService.getLocationFromAddress(address);
 
       print('Latitude: ${position.latitude}, Longitude: ${position.longitude}');
       _serviceAvailable = await locationService.isServiceAvailable(position);
-      print(_serviceAvailable);
+
+      Navigator.of(context).pop(); // Dismiss the loading spinner
 
       if (_serviceAvailable) {
-// // <<<<<<< HEAD
-//         Navigator.pushReplacement(
-//           context,
-//           MaterialPageRoute(builder: (context) => BottomNav()),
-//         );
-// // =======
-         return true; // Return true if service is available
-// >>>>>>> 9e3f3a1ad3317a5838219c59acad554d7748e289
+        return true;
       } else {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('Service not available in your region.'),
         ));
-        return false; // Return false if service is not available
+        return false;
       }
     } catch (e) {
+      Navigator.of(context).pop(); // Dismiss the loading spinner
       print('Error converting address to coordinates: $e');
-      // Handle error accordingly
-      return false; // Return false if there's an error
+      return false;
     }
   }
+
 
   // Future<void> convertAddressToLatLng(String textEditingController) async {
   //   try {
@@ -221,36 +236,32 @@ class _ServiceCheckerPageState extends State<ServiceCheckerPage> {
 
                 ElevatedButton(
                   onPressed: () async {
-                    setState(() {
-                      isLoading = true; // Show loading spinner
-                    });
-
-                    // Simulate a delay for navigation
-                    bool serviceAvailable = await convertAddressToLatLng(cityController.text);
-
-
-                    // After the task is done, hide the loading spinner and navigate
-                    // setState(() {
-                    //   isLoading = false;
-                    // });
-                    Navigator.pop(context, {
-                      'city': selectedCity,
-                    });
-
-            if (serviceAvailable) {
-              Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => BottomNav()),
-                      );
-            } else {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text('Service not available in your region.'),
-                      ));
+                    if (mounted) {
+                      setState(() {
+                        isLoading = true; // Show loading spinner
+                      });
                     }
 
-                    // Navigator.pop(context, {
-                    //   'city': selectedCity,
-                    // });
+                    bool serviceAvailable = await convertAddressToLatLng(cityController.text);
+
+                    if (mounted) {
+                      Navigator.pop(context, {'city': selectedCity}); // Close the dialog
+                    }
+
+                    if (serviceAvailable) {
+                      if (mounted) {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => BottomNav()),
+                        );
+                      }
+                    } else {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text('Service not available in your region.'),
+                        ));
+                      }
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white, // Button background color

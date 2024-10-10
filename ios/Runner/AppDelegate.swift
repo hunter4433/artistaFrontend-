@@ -1,7 +1,7 @@
 import UIKit
-//import Firebase
+import Firebase
 import Flutter
-//import GoogleMaps
+import GoogleMaps
 
 @UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate {
@@ -9,18 +9,38 @@ import Flutter
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-//    GMSServices.provideAPIKey("AIzaSyChvogVcovcqFYy-t365hv-SLzUtqHGp1I")
-//    FirebaseApp.configure()
-    
-    // Register for remote notifications
-    application.registerForRemoteNotifications()
+    // Provide the Google Maps API key
+    GMSServices.provideAPIKey("AIzaSyChvogVcovcqFYy-t365hv-SLzUtqHGp1I")
+
+    // Configure Firebase
+    FirebaseApp.configure()
+
+    // Register Flutter plugins
     GeneratedPluginRegistrant.register(with: self)
 
+    // Return the result of the super implementation
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
-  // Keep this method if you need to handle remote notification registration
-  override func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-//    Messaging.messaging().apnsToken = deviceToken
+  // Handle remote notification registration
+  override func application(
+    _ application: UIApplication,
+    didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
+  ) {
+    // Set the APNs token for Firebase Messaging
+    Messaging.messaging().apnsToken = deviceToken
+  }
+
+  // Optional: Handle incoming notifications
+  override func application(
+    _ application: UIApplication,
+    didReceiveRemoteNotification userInfo: [AnyHashable: Any],
+    fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
+  ) {
+    // Handle the notification data
+    print("Received notification: \(userInfo)")
+
+    // Call the completion handler with the appropriate result
+    completionHandler(.newData)
   }
 }

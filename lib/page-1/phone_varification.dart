@@ -188,7 +188,11 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
                       borderSide: BorderSide(
                         color: Color(0xFFE0E0E0), // Border color when focused
                         width: 1.5,
-// >>>>>>> 9e3f3a1ad3317a5838219c59acad554d7748e289
+// <<<<<<< HEAD
+// // >>>>>>> 9e3f3a1ad3317a5838219c59acad554d7748e289
+// =======
+// // // >>>>>>> 9e3f3a1ad3317a5838219c59acad554d7748e289
+// >>>>>>> 3aa9a5af385f0477afcbf9c7282fe90ba960e750
                       ),
                     ),
                   ),
@@ -236,9 +240,9 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
                                 fontStyle: FontStyle.italic,
                               ),
                               recognizer: TapGestureRecognizer()
-                                  ..onTap = () {
-                                _navigateToPrivacyPolicy(context);
-                              },
+
+                                ..onTap = () => _navigateToPrivacyPolicy(context),
+// >>>>>>> 3aa9a5af385f0477afcbf9c7282fe90ba960e750
                             ),
                             TextSpan(
                               text: ' and ',
@@ -256,9 +260,10 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
                                 fontStyle: FontStyle.italic,
                               ),
                               recognizer: TapGestureRecognizer()
-                                ..onTap = () {
-                                  _navigateToTermsConditions(context);
-                                },
+
+                                ..onTap = () => _navigateToTermsConditions(context),
+                                // ..onTap = _navigateToTermsConditions ,
+
                             ),
                           ],
                         ),
@@ -327,20 +332,21 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
       ),
     );
   }
-
   void _navigateToPrivacyPolicy(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => PrivacyPolicyPage()),
+      MaterialPageRoute(builder: (context) => PrivacyPolicyScreen()),
     );
   }
-
   void _navigateToTermsConditions(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => TermsConditionsPage()),
+      MaterialPageRoute(builder: (context) => TermsConditionsScreen()),
     );
   }
+
+
+
 }
 
 
@@ -352,8 +358,8 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
 // Create separate pages for Privacy Policy and Terms & Conditions
 
 
+class PrivacyPolicyScreen extends StatelessWidget {
 
-class PrivacyPolicyPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -363,7 +369,7 @@ class PrivacyPolicyPage extends StatelessWidget {
   }
 }
 
-class TermsConditionsPage extends StatelessWidget {
+class TermsConditionsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

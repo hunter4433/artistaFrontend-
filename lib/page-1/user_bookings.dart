@@ -278,7 +278,7 @@ class _UserBookingsState extends State<UserBookings> {
                             onPressed: () async {
                               bool wait = await fetchArtistBooking(artist_id);
                               if (wait) {
-                                _makePhoneCall(phone_number!);
+                                _makePhoneCall(phone_number ?? '') ;
                               }
                             },
                             style: ElevatedButton.styleFrom(
@@ -368,8 +368,8 @@ class _UserBookingsState extends State<UserBookings> {
 // <<<<<<< HEAD
           final idToUse = booking['artist_id'] ?? booking['team_id'];
           print('team_id is ${booking['team_id']}');
-          widget.isteam = booking['team_id'] != '0' ? 'true' : 'false';
-print('team nam,e ${widget.isteam}');
+          widget.isteam = (booking['team_id'] != '0' && booking['team_id'] != null) ? 'true' : 'false';
+          print('team name is ${widget.isteam}');
 // =======
 //           int idtouse= booking['artist_id'] ?? booking['team_id'] ;
 // >>>>>>> 9e3f3a1ad3317a5838219c59acad554d7748e289
