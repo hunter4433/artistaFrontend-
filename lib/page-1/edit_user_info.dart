@@ -50,6 +50,7 @@ class _UserInformationState extends State<UserInformation> {
     // Example URL, replace with your actual API endpoint
     String apiUrl = '${Config().apiDomain}/info/$id';
 
+
     try {
       var response = await http.get(
         Uri.parse(apiUrl),
@@ -104,6 +105,10 @@ class _UserInformationState extends State<UserInformation> {
                   duration: Duration(seconds: 2), // Adjust the duration as needed
                 ),
               );
+
+              setState(() {
+
+              });
             },
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
@@ -192,7 +197,7 @@ class _UserInformationState extends State<UserInformation> {
     print(token);
     print(id);
     // Example URL, replace with your actual API endpoint
-    String apiUrl = '${Config().apiDomain}/info/49';
+    String apiUrl = '${Config().apiDomain}/info/$id';
 
     // Prepare data to send to the backend
     Map<String, dynamic> userData = {

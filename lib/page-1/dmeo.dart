@@ -527,15 +527,16 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
 
                             return GestureDetector(
                               onTap: () async {
-                                List<Map<String, dynamic>> filteredData =
-                                    await searchArtists(category['name']);
-                                // Navigate to a new page on tap, passing the category data if needed
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => SearchedArtist(filteredArtistData: filteredData),
-                                  ),
-                                );
+                                if (category != null && category['name'] != null) {
+                                  List<Map<String, dynamic>> filteredData = await searchArtists(category['name']);
+                                  // Navigate to a new page on tap, passing the category data if needed
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => SearchedArtist(filteredArtistData: filteredData),
+                                    ),
+                                  );
+                                }
                               },
                               child: Container(
                                 height: 83.0,
@@ -552,11 +553,16 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
                                     ],
                                     stops: <double>[0, 1, 1, 1],
                                   ),
-                                  image: DecorationImage(
+                                  image: category != null && category['image'] != null
+                                      ? DecorationImage(
                                     fit: BoxFit.cover,
                                     image: NetworkImage(category['image']),
+                                  )
+                                      : DecorationImage(
+                                    fit: BoxFit.cover,
+                                    image: AssetImage('assets/page-1/images/depth-4-frame-0-Kvf.png'), // Add a placeholder image
                                   ),
-// =======
+
 //                             return Container(
 //                               height: 83.0*fem,
 //                               decoration: BoxDecoration(

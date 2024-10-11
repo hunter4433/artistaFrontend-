@@ -190,16 +190,23 @@ class _ArtistProfileState extends State<ArtistProfile> {
 
       if (response.statusCode == 200) {
         Map<String, dynamic> responseData = json.decode(response.body);
+
+
+        // Ensure count is not zero before dividing, to prevent division by zero.
+        double safeDivide(int numerator, int denominator) {
+          return denominator != 0 ? (numerator / denominator).toDouble() : 0.0;
+        }
+
      setState(() {
           _isLoading = false;
 
-         avg = responseData['average_rating'];
+          avg = (responseData['average_rating']).toDouble();
          count= responseData['total_ratings'];
-         four= responseData['four_star_ratings']/count;
-         five= responseData['five_star_ratings']/count;
-          three= responseData['three_star_ratings']/count;
-          two= responseData['two_star_ratings']/count;
-          one= responseData['one_star_ratings']/count;
+          four = safeDivide(responseData['four_star_ratings'], count!);
+          five = safeDivide(responseData['five_star_ratings'], count!);
+          three = safeDivide(responseData['three_star_ratings'], count!);
+          two = safeDivide(responseData['two_star_ratings'], count!);
+          one = safeDivide(responseData['one_star_ratings'], count!);
 
       });
 
@@ -439,7 +446,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
                                   Row(
                                     children: [
                                       Text(
-                                        'Rating: 4.57/5', // Static text
+                                        'Rating: $avg/5', // Static text
                                         style: TextStyle(
                                           fontSize: 17 * ffem,
                                           fontWeight: FontWeight.w400,
@@ -978,15 +985,16 @@ class _ArtistProfileState extends State<ArtistProfile> {
                         child: CircularProgressIndicator(), // Show loader while fetching data
                       )
                       :ReviewsSection(
-                        averageRating: avg!, // Replace with dynamic data
+                        averageRating: avg!.toDouble(), // Replace with dynamic data
                         totalReviews: count!, // Replace with dynamic data
                         ratingDistribution: {
-                          5: five!,  // 70% of reviews are 5 stars
-                          4: four!,  // 20% of reviews are 4 stars
-                          3: three!, // 5% of reviews are 3 stars
-                          2: two!, // 3% of reviews are 2 stars
-                          1: one!, // 2% of reviews are 1 star
+                          5: five!.toDouble(),  // Convert num to double
+                          4: four!.toDouble(),  // Convert num to double
+                          3: three!.toDouble(), // Convert num to double
+                          2: two!.toDouble(),   // Convert num to double
+                          1: one!.toDouble(),   // Convert num to double
                         },
+                        artist_id: widget.artist_id,
                       ),
 
                 Padding(
@@ -1160,7 +1168,8 @@ class FullScreenVideoView extends StatelessWidget {
 
 
 class ReviewsSection extends StatelessWidget {
-  final double averageRating;
+  late String artist_id;
+  final num averageRating;
   final int totalReviews;
   final Map<int, double> ratingDistribution; // Star rating and its percentage
 
@@ -1168,6 +1177,7 @@ class ReviewsSection extends StatelessWidget {
     required this.averageRating,
     required this.totalReviews,
     required this.ratingDistribution,
+    required this.artist_id
   });
 
   @override
@@ -1219,7 +1229,7 @@ class ReviewsSection extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => AllReviewsPage(),
+                  builder: (context) => AllReviewsPage(artist_id : artist_id),
                 ),
               );
             },
@@ -1273,6 +1283,9 @@ class ReviewsSection extends StatelessWidget {
   }}
 
   class AllReviewsPage extends StatefulWidget {
+
+     late String  artist_id;
+    AllReviewsPage( { required this.artist_id} );
     // Simulating reviews fetched from backend
     @override
     _AllReviewsPageState createState() => _AllReviewsPageState();
@@ -1310,11 +1323,66 @@ class _AllReviewsPageState extends State<AllReviewsPage>{
 
   }
 
+    Future<void> sendUserIdsAndFetchNames(List<Map<String, dynamic>> reviews) async {
+      // Collect user IDs from reviews
+      List<int?> userIds = reviews
+          .map((review) => review['user_id'] as int?)
+          .where((id) => id != null) // Filter out null user_ids
+          .toList();
 
-Future<void> rating() async {
-      String apiUrl = '${Config().apiDomain}/review/';
+      // API URL for sending user IDs and fetching names
+      final String apiUrl = '${Config().apiDomain}/review/usernames';
+
+      // Create the request body
+      Map<String, dynamic> body = {
+        'user_ids': userIds,
+      };
+
+      try {
+        // Make the POST request with a timeout to fetch user names
+        final response = await http
+            .post(
+          Uri.parse(apiUrl),
+          headers: {
+            'Content-Type': 'application/vnd.api+json',
+            'Accept': 'application/vnd.api+json',
+          },
+          body: jsonEncode(body),
+        )
+            .timeout(const Duration(seconds: 10)); // 10 seconds timeout
+
+        // Check for success
+        if (response.statusCode == 200) {
+          var responseData = jsonDecode(response.body);
+
+          // Get the list of user names
+          List<dynamic> userNames = responseData['names'] ?? [];
+
+          // Add names to reviews, ensuring fallback for null names
+          for (int i = 0; i < reviews.length; i++) {
+            reviews[i]['user_name'] = (i < userNames.length && userNames[i] != null)
+                ? userNames[i].toString()
+                : 'Unknown User'; // Fallback if name is null
+          }
+
+          print('Names fetched successfully: $userNames');
+        } else {
+          print('Failed to fetch user names. Status code: ${response.body}');
+        }
+      } catch (e) {
+        print('Error fetching names: $e');
+      }
+    }
+
+    bool isLoading = true; // Add a loading flag
+
+    Future<void> rating() async {
+      setState(() {
+        isLoading = true; // Set loading to true when the function starts
+      });
+
+      String apiUrl = '${Config().apiDomain}/review/${widget.artist_id}';
       print(apiUrl);
-
 
       try {
         var response = await http.get(
@@ -1326,33 +1394,33 @@ Future<void> rating() async {
         );
 
         if (response.statusCode == 200) {
-           // List<Map<String, dynamic>> reviews = json.decode(response.body);
-           List<dynamic> rawReviews = json.decode(response.body);
-           setState(() {
-             // Decode the response as a List<dynamic>
+          // Decode the raw JSON response
+          List<dynamic> rawReviews = json.decode(response.body);
 
+          // Convert the dynamic list to a List<Map<String, dynamic>>
+          reviews = List<Map<String, dynamic>>.from(rawReviews);
 
-             // Cast each item in the list to Map<String, dynamic>
-              reviews = rawReviews.cast<Map<String, dynamic>>();
+          try {
+            await sendUserIdsAndFetchNames(reviews);
+          } catch (e) {
+            print('Error while sending user IDs and fetching names: $e');
+          }
 
-             // Now you can work with `reviews` as a List of maps
-           });
-           
-           // String user_id=reviews['user_id'].toString() ;
-
-            print(reviews);
-
-
-          print(reviews);
-
-
+          setState(() {
+            reviews = rawReviews.cast<Map<String, dynamic>>();
+            isLoading = false; // Stop loading after successful data fetching
+          });
         } else {
-          print('Failed to fetch data. Status code: ${response.statusCode}');
-          // return 'Error fetching availability status';
+          print('Failed to fetch data. Status code: ${response.body}');
+          setState(() {
+            isLoading = false; // Stop loading even in failure case
+          });
         }
       } catch (e) {
         print('Error fetching data: $e');
-        // return 'Error fetching availability status';
+        setState(() {
+          isLoading = false; // Stop loading even in case of exception
+        });
       }
     }
 
@@ -1373,92 +1441,167 @@ Future<void> rating() async {
     );
   }
 
-  // Single review item widget
-  Widget buildReviewItem(Map<String, dynamic> review, double fem, double ffem) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 15 * fem, horizontal: 16 * fem),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Circular profile picture
-          // Circular profile picture or default grey icon
-          CircleAvatar(
-            radius: 26 * fem,
-            backgroundColor: Colors.grey[200], // Grey background
-            child: ClipOval(
-              child: review['photo'] != null && review['photo'].isNotEmpty
-                  ? Image.network(
-                review['photo'],
-                width: 52 * fem, // Size should match the radius
-                height: 52 * fem,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  // Fallback to default icon if image fails to load
-                  return Icon(
-                    Icons.account_circle,
-                    size: 52 * fem,
-                    color: Colors.grey[400],
-                  );
-                },
-              )
-                  : Icon(
-                Icons.account_circle,
-                size: 52 * fem, // Matching size
-                color: Colors.grey[400],
-              ),
-            ),
-          ),
+    // Single review item widget
+    Widget buildReviewItem(Map<String, dynamic> review, double fem, double ffem, BuildContext context) {
+      String reviewText = review['review_text'] ?? '';
+      List<String> words = reviewText.split(' '); // Split by spaces
 
-          SizedBox(width: 12 * fem),
+      String heading = words.isNotEmpty ? words[0] : '';
+      String description = words.length > 1 ? words.sublist(1).join(' ') : ''; // Join the rest of the words
 
-          // Review content
-          Expanded(
-            child: Column(
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 15 * fem, horizontal: 16 * fem),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Name and rating
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      review['rating'].toString(),
-                      style: TextStyle(
-                        fontSize: 17 * ffem,
-                        fontWeight: FontWeight.bold,
-                      ),
+                // Circular profile picture or default grey icon
+                CircleAvatar(
+                  radius: 26 * fem,
+                  backgroundColor: Colors.grey[200], // Grey background
+                  child: ClipOval(
+                    child: review['profile'] != null && review['profile'].isNotEmpty
+                        ? Image.network(
+                      review['profile'],
+                      width: 52 * fem, // Size should match the radius
+                      height: 52 * fem,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        // Fallback to default icon if image fails to load
+                        return Icon(
+                          Icons.account_circle,
+                          size: 52 * fem,
+                          color: Colors.grey[400],
+                        );
+                      },
+                    )
+                        : Icon(
+                      Icons.account_circle,
+                      size: 52 * fem, // Matching size
+                      color: Colors.grey[400],
                     ),
-                    buildStarRating(review['rating']),
-                  ],
-                ),
-                SizedBox(height: 4 * fem),
-
-                // Heading
-                Text(
-                  review['rating'].toString(),
-                  style: TextStyle(
-                    fontSize: 15 * ffem,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black,
                   ),
                 ),
-                SizedBox(height: 4 * fem),
+                SizedBox(width: 12 * fem),
 
-                // Review text
-                Text(
-                  review['review_text'],
-                  style: TextStyle(
-                    fontSize: 15 * ffem,
-                    color: Colors.grey[600],
+                // Review content
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Name and rating
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // User's name from fetched data
+                          Text(
+                            review['user_name'] ?? 'Anonymous',
+                            style: TextStyle(
+                              fontSize: 17 * ffem,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          buildStarRating(review['rating']),
+                        ],
+                      ),
+                      SizedBox(height: 4 * fem),
+
+                      // Heading
+                      Text(
+                        heading,
+                        style: TextStyle(
+                          fontSize: 15 * ffem,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black,
+                        ),
+                      ),
+                      SizedBox(height: 4 * fem),
+
+                      // Review text
+                      Text(
+                        description,
+                        style: TextStyle(
+                          fontSize: 15 * ffem,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-          ),
 
-        ],
+            SizedBox(height: 10 * fem),
+
+            // Review photo and video section (center-aligned)
+            Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center, // Center-aligns the content horizontally
+                children: [
+                  // Review photo section (display only if available)
+                  if (review['photo'] != null && review['photo'].isNotEmpty)
+                    GestureDetector(
+                      onTap: () {
+                        showMediaFullScreen(context, review['photo'], true);
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: Image.network(
+                          review['photo'],
+                          width: 100, // Adjust as needed
+                          height: 100, // Adjust as needed
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            // Handle error while loading review photo
+                            return SizedBox(
+                              height: 100,
+                              width: 100,
+                              child: Center(child: Text('Image not available')),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+
+                  // Review video section (display only if available)
+                  if (review['photo'] != null && review['photo'].isNotEmpty)
+                    GestureDetector(
+                      onTap: () {
+                        showMediaFullScreen(context, review['photo'], false);
+                      },
+                      child: Container(
+                        width: 100, // Adjust size as needed
+                        height: 100, // Adjust size as needed
+                        decoration: BoxDecoration(
+                          color: Colors.black,
+                          image: DecorationImage(
+                            image: NetworkImage(review['photo']), // Thumbnail for video
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        child: Icon(Icons.play_circle_filled, color: Colors.white, size: 40), // Play icon over video thumbnail
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+// Function to show the media (photo/video) in fullscreen
+  void showMediaFullScreen(BuildContext context, String mediaUrl, bool isPhoto) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FullScreenMediaPage(mediaUrl: mediaUrl, isPhoto: isPhoto),
       ),
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -1484,64 +1627,53 @@ Future<void> rating() async {
           },
         ),
       ),
-      body: reviews.isEmpty
+      body: isLoading
           ? Center(child: CircularProgressIndicator()) // Show a loader if reviews are not yet fetched
           : ListView.builder(
         itemCount: reviews.length, // Number of reviews from the backend
         itemBuilder: (context, index) {
-          return buildReviewItem(reviews[index], fem, ffem);
+          return buildReviewItem(reviews[index], fem, ffem,context);
         },
       ),
     );
 
 
-    // // Function to build each review item
-    // Widget buildReviewItem(Map<String, dynamic> review, double fem, double ffem) {
-    //   return Card(
-    //     margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-    //     child: Padding(
-    //       padding: EdgeInsets.all(16.0),
-    //       child: Column(
-    //         crossAxisAlignment: CrossAxisAlignment.start,
-    //         children: [
-    //           Row(
-    //             children: [
-    //               CircleAvatar(
-    //                 backgroundImage: NetworkImage(review['profilePicture']),
-    //               ),
-    //               SizedBox(width: 10),
-    //               Text(
-    //                 review['name'],
-    //                 style: TextStyle(
-    //                   fontSize: 16 * ffem,
-    //                   fontWeight: FontWeight.bold,
-    //                 ),
-    //               ),
-    //             ],
-    //           ),
-    //           SizedBox(height: 10),
-    //           Row(
-    //             children: [
-    //               Icon(Icons.star, color: Colors.yellow, size: 16 * fem),
-    //               SizedBox(width: 4),
-    //               Text('${review['rating']} stars'),
-    //             ],
-    //           ),
-    //           SizedBox(height: 10),
-    //           Text(
-    //             review['heading'],
-    //             style: TextStyle(
-    //               fontSize: 14 * ffem,
-    //               fontWeight: FontWeight.bold,
-    //             ),
-    //           ),
-    //           SizedBox(height: 8),
-    //           Text(review['review']),
-    //         ],
-    //       ),
-    //     ),
-    //   );
+
   }
 
 
+}
+
+// Full screen media page (either photo or video)
+class FullScreenMediaPage extends StatelessWidget {
+  final String mediaUrl;
+  final bool isPhoto;
+
+  const FullScreenMediaPage({Key? key, required this.mediaUrl, required this.isPhoto}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: IconThemeData(color: Colors.white),
+      ),
+      body: Center(
+        child: isPhoto
+            ? Image.network(
+          mediaUrl,
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) {
+            return Text('Image not available', style: TextStyle(color: Colors.white));
+          },
+        )
+            : AspectRatio(
+          aspectRatio: 16 / 9,
+          child: VideoPlayerWidget(url: mediaUrl), // Assuming you have a VideoPlayerWidget
+        ),
+      ),
+    );
+  }
 }

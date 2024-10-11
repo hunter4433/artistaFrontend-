@@ -222,7 +222,7 @@ String? totalprice;
             // setState(() {
             // teamName=
             name = userData['name'] ?? userData['team_name'] ?? '';
-            price = userData['price_per_hour'] ;
+            price = (userData['price_per_hour']).toString() ;
             image = '${userData['profile_photo']}' ;
             phone_number=userData['phone_number'] ?? '';
             fcm_token=userData['fcm_token']??'';
