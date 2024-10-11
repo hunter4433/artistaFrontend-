@@ -29,7 +29,7 @@ class _BookedState extends State<Booked> {
   // Fetched text from backend
 
   String? name;
-  String? price;
+  double? price;
   String? image;
   String? phone_number;
    String? dateText ;
@@ -96,15 +96,15 @@ String? totalprice;
   //   }
   // }
 
-  Future<String> calculateTotalAmount (String pricePerHour, int hours, int minutes)  async {
+  Future<String> calculateTotalAmount (double pricePerHour, int hours, int minutes)  async {
     // Convert total time to hours
     double totalTimeInHours = hours + (minutes / 60.0);
 
     // Convert pricePerHour to double
-    double pricePerHourDouble = double.parse(pricePerHour );
+    // double pricePerHourDouble = double.parse(pricePerHour );
 
     // Calculate the total amount
-    double totalAmount = (totalTimeInHours * pricePerHourDouble) ;
+    double totalAmount = (totalTimeInHours * pricePerHour) ;
     // print(totalAmount);
     String amount= totalAmount.toString();
 

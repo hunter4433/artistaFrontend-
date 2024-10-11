@@ -554,7 +554,7 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
                                   ),
                                   image: DecorationImage(
                                     fit: BoxFit.cover,
-                                    image: NetworkImage(category['image']),
+                                    image: NetworkImage(category['image'] ?? ''),
                                   ),
 // =======
 //                             return Container(

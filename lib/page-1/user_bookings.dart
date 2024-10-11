@@ -9,12 +9,10 @@ import '../utils.dart';
 import 'booked_artist.dart';
 
 
-
+bool hasCalledApi = false;
+Map<String, List<dynamic>>? _cachedData;  // Cache for storing fetched data
 
 class UserBookings extends StatefulWidget {
-  // final String? newBookingTitle;
-  // final String? newBookingDateTime;
-  //
   String? isteam;
 
   UserBookings({this.isteam});
@@ -23,29 +21,18 @@ class UserBookings extends StatefulWidget {
   _UserBookingsState createState() => _UserBookingsState();
 }
 
-class _UserBookingsState extends State<UserBookings> {
-
-  List<Map<String, dynamic>> bookings = [];
+class _UserBookingsState extends State<UserBookings> with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
+  // List<Map<String, dynamic>> bookings = [];
   bool isLoading = true;
-  String? bookingsString;
-  String? fcmToken;
   String? phone_number;
-  bool isCacheLoaded = false; // Cache flag
+  bool isCacheLoaded = false;  // Cache flag
 
-
-
-
-
+  // Fetch artist bookings and cache the data
   Future<bool> fetchArtistBooking(int artistId) async {
-    // String? token = await _getToken();
-
-
-
     String apiUrl;
-    if (widget.isteam =='true') {
-      apiUrl= '${Config().apiDomain}/featured/team/$artistId';
-
-    }else{
+    if (widget.isteam == 'true') {
+      apiUrl = '${Config().apiDomain}/featured/team/$artistId';
+    } else {
       apiUrl = '${Config().apiDomain}/featured/artist_info/$artistId';
     }
 
@@ -57,19 +44,16 @@ class _UserBookingsState extends State<UserBookings> {
           'Accept': 'application/vnd.api+json',
         },
       );
+
       if (response.statusCode == 200) {
         List<dynamic> userDataList = json.decode(response.body);
 
-        // Check if the widget is mounted before calling setState
         if (mounted) {
           for (var userData in userDataList) {
-            // setState(() {
-
-            phone_number=userData['phone_number'] ?? '';
-
-            // });
+            phone_number = userData['phone_number'] ?? '';
           }
         }
+
         return true;
       } else {
         print('Failed to fetch user information. Status code: ${response.body}');
@@ -79,9 +63,9 @@ class _UserBookingsState extends State<UserBookings> {
       print('Error fetching user information: $e');
       return false;
     }
-    return false;
   }
 
+  // Function to initiate a phone call
   void _makePhoneCall(String phoneNumber) async {
     final Uri launchUri = Uri(
       scheme: 'tel',
@@ -94,10 +78,9 @@ class _UserBookingsState extends State<UserBookings> {
     }
   }
 
-
   Future<void> _loadBookings({bool forceReload = false}) async {
-    if (!forceReload && isCacheLoaded) {
-      // If cache is loaded and forceReload is false, return without fetching
+    if (!forceReload && isCacheLoaded && _cachedData != null) {
+      // Use cached data if already loaded
       setState(() {
         isLoading = false;
       });
@@ -115,10 +98,12 @@ class _UserBookingsState extends State<UserBookings> {
 
     if (response.statusCode == 200) {
       List<dynamic> decodedList = json.decode(response.body);
-      bookings = decodedList.map((item) => Map<String, dynamic>.from(item)).toList();
-      print('bookings are :$bookings ');
+      // Cache the bookings data
+      _cachedData = {
+        'bookings': decodedList.map((item) => Map<String, dynamic>.from(item)).toList(),
+      };
 
-      // Cache the bookings
+      // Set cache loaded flag
       isCacheLoaded = true;
 
       setState(() {
@@ -131,23 +116,45 @@ class _UserBookingsState extends State<UserBookings> {
     }
   }
 
-  // List to keep track of rejected status for each booking
-  List<bool> rejectedStatus = [];
+  Future<String?> _getUser_id() async {
+    return await storage.read(key: 'user_id');
+  }
 
   @override
   void initState() {
     super.initState();
-    // _initializeBookings();
-    _loadBookings();
+    WidgetsBinding.instance.addObserver(this);
+    if (!hasCalledApi) {
+      _loadBookings();  // Fetch the bookings only the first time
+      hasCalledApi = true;
+    }
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    print("App lifecycle state changed: $state");
+    if (state == AppLifecycleState.detached) {
+      // Reset the cache when the app is closed
+      hasCalledApi = false;
+      _cachedData = null;  // Clear cached data on app close
+    }
+  }
 
+  @override
+  bool get wantKeepAlive => true;  // Keeps the state alive
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);  // Unregister the observer
+    super.dispose();
+  }
 
 
 
 
   Widget _buildRequestCard(String Category, String booking_date, String Time, int booking_id, int artist_id, int index) {
       double baseWidth = 390;
+      final bookings = _cachedData?['bookings'] ?? [];
       double fem = MediaQuery
           .of(context)
           .size
@@ -325,9 +332,11 @@ class _UserBookingsState extends State<UserBookings> {
       );
     }
 
-
   @override
   Widget build(BuildContext context) {
+    super.build(context); // Ensures that the AutomaticKeepAliveClientMixin works
+    final bookings = _cachedData?['bookings'] ?? [];
+
     bookings.sort((a, b) {
       DateTime createdAtA = DateTime.parse(a['created_at']);
       DateTime createdAtB = DateTime.parse(b['created_at']);
@@ -352,7 +361,9 @@ class _UserBookingsState extends State<UserBookings> {
       ),
       body: bookings.isEmpty
           ? Center(
-        child: Text(
+        child: isLoading
+            ? CircularProgressIndicator()
+            : Text(
           'No bookings done yet',
           style: TextStyle(
             color: Colors.white,
@@ -365,24 +376,15 @@ class _UserBookingsState extends State<UserBookings> {
         itemCount: bookings.length,
         itemBuilder: (context, index) {
           final booking = bookings[index];
-// <<<<<<< HEAD
           final idToUse = booking['artist_id'] ?? booking['team_id'];
-          print('team_id is ${booking['team_id']}');
           widget.isteam = (booking['team_id'] != '0' && booking['team_id'] != null) ? 'true' : 'false';
-          print('team name is ${widget.isteam}');
-// =======
-//           int idtouse= booking['artist_id'] ?? booking['team_id'] ;
-// >>>>>>> 9e3f3a1ad3317a5838219c59acad554d7748e289
+
           return _buildRequestCard(
             booking['category'],
             booking['booking_date'],
             booking['booked_from'],
             booking['id'],
-// <<<<<<< HEAD
             idToUse,
-// =======
-//             idtouse,
-// >>>>>>> 9e3f3a1ad3317a5838219c59acad554d7748e289
             index,
           );
         },
