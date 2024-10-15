@@ -274,168 +274,168 @@ class setting extends StatelessWidget {
                 ),
 
 
-                InkWell(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => SupportScreen()),
-                );
-              },
-              child: Container(
-                // depth1frame5N8P (16:2494)
-                padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 6 * fem, 10 * fem),
-                width: double.infinity,
-                height: 56 * fem,
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(
-                      color: Colors.grey, // Specify the border color here
-                      width: 0.25, // Specify the border width here
-                    ),),
-                  // Add decoration as needed
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Container(
+            //     InkWell(
+            //   onTap: () {
+            //     Navigator.push(
+            //       context,
+            //       MaterialPageRoute(builder: (context) => SupportScreen()),
+            //     );
+            //   },
+            //   child: Container(
+            //     // depth1frame5N8P (16:2494)
+            //     padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 6 * fem, 10 * fem),
+            //     width: double.infinity,
+            //     height: 56 * fem,
+            //     decoration: BoxDecoration(
+            //       border: Border(
+            //         bottom: BorderSide(
+            //           color: Colors.grey, // Specify the border color here
+            //           width: 0.25, // Specify the border width here
+            //         ),),
+            //       // Add decoration as needed
+            //     ),
+            //     child: Row(
+            //       children: [
+            //         Expanded(
+            //           child: Container(
+            //
+            //             // depth3frame02ij (16:2496)
+            //             child: Text(
+            //               'Legal',
+            //               style: SafeGoogleFont(
+            //                 'Be Vietnam Pro',
+            //                 fontSize: 17 * ffem,
+            //                 fontWeight: FontWeight.w400,
+            //                 height: 1.5 * ffem / fem,
+            //                 color: Colors.white,
+            //               ),
+            //             ),
+            //           ),
+            //         ),
+            //         Container(
+            //
+            //           // depth2frame1MPD (19:2920)
+            //           width: 64 * fem,
+            //           height: 44 * fem,
+            //           child: Icon(
+            //             Icons.arrow_forward_ios_rounded, color: Colors.white
+            //             , // Different icon
+            //             // Color of the icon
+            //             // Size of the icon
+            //           ),
+            //         ),
+            //       ],
+            //     ),
+            //   ),
+            // ),
 
-                        // depth3frame02ij (16:2496)
-                        child: Text(
-                          'Legal',
-                          style: SafeGoogleFont(
-                            'Be Vietnam Pro',
-                            fontSize: 17 * ffem,
-                            fontWeight: FontWeight.w400,
-                            height: 1.5 * ffem / fem,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                    Container(
+                // InkWell(
+                //   onTap: () {
+                //     Navigator.push(
+                //       context,
+                //       MaterialPageRoute(builder: (context) => AnimatedSearchBox()),
+                //     );
+                //   },
+                //   child: Container(
+                //     // depth1frame5N8P (16:2494)
+                //     padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 6 * fem, 10 * fem),
+                //     width: double.infinity,
+                //     height: 56 * fem,
+                //     decoration: BoxDecoration(
+                //       border: Border(
+                //         bottom: BorderSide(
+                //           color: Colors.grey, // Specify the border color here
+                //           width: 0.25, // Specify the border width here
+                //         ),),
+                //       // Add decoration as needed
+                //     ),
+                //     child: Row(
+                //       children: [
+                //         Expanded(
+                //           child: Container(
+                //
+                //             // depth3frame02ij (16:2496)
+                //             child: Text(
+                //               'Notification',
+                //               style: SafeGoogleFont(
+                //                 'Be Vietnam Pro',
+                //                 fontSize: 17 * ffem,
+                //                 fontWeight: FontWeight.w400,
+                //                 height: 1.5 * ffem / fem,
+                //                 color: Colors.white,
+                //               ),
+                //             ),
+                //           ),
+                //         ),
+                //         Container(
+                //
+                //           // depth2frame1MPD (19:2920)
+                //           width: 64 * fem,
+                //           height: 44 * fem,
+                //           child: Icon(
+                //             Icons.arrow_forward_ios_rounded,color: Colors.white, // Different icon
+                //             // Color of the icon
+                //             // Size of the icon
+                //           ),
+                //         ),
+                //       ],
+                //     ),
+                //   ),
+                // ),
 
-                      // depth2frame1MPD (19:2920)
-                      width: 64 * fem,
-                      height: 44 * fem,
-                      child: Icon(
-                        Icons.arrow_forward_ios_rounded, color: Colors.white
-                        , // Different icon
-                        // Color of the icon
-                        // Size of the icon
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-                InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => AnimatedSearchBox()),
-                    );
-                  },
-                  child: Container(
-                    // depth1frame5N8P (16:2494)
-                    padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 6 * fem, 10 * fem),
-                    width: double.infinity,
-                    height: 56 * fem,
-                    decoration: BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(
-                          color: Colors.grey, // Specify the border color here
-                          width: 0.25, // Specify the border width here
-                        ),),
-                      // Add decoration as needed
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Container(
-
-                            // depth3frame02ij (16:2496)
-                            child: Text(
-                              'Notification',
-                              style: SafeGoogleFont(
-                                'Be Vietnam Pro',
-                                fontSize: 17 * ffem,
-                                fontWeight: FontWeight.w400,
-                                height: 1.5 * ffem / fem,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                        Container(
-
-                          // depth2frame1MPD (19:2920)
-                          width: 64 * fem,
-                          height: 44 * fem,
-                          child: Icon(
-                            Icons.arrow_forward_ios_rounded,color: Colors.white, // Different icon
-                            // Color of the icon
-                            // Size of the icon
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => ReviewPage()),
-                    );
-                  },
-                  child: Container(
-                    // depth1frame5N8P (16:2494)
-                    padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 6 * fem, 10 * fem),
-                    width: double.infinity,
-                    height: 56 * fem,
-                    decoration: BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(
-                        color: Colors.grey, // Specify the border color here
-                        width: 0.25, // Specify the border width here
-                      ),),
-                      // Add decoration as needed
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Container(
-
-                            // depth3frame02ij (16:2496)
-                            child: Text(
-                              'Share App',
-                              style: SafeGoogleFont(
-                                'Be Vietnam Pro',
-                                fontSize: 17 * ffem,
-                                fontWeight: FontWeight.w400,
-                                height: 1.5 * ffem / fem,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                        Container(
-
-                          // depth2frame1MPD (19:2920)
-                          width: 64 * fem,
-                          height: 44 * fem,
-                          child: Icon(
-                            Icons.arrow_forward_ios_rounded,color: Colors.white, // Different icon
-                            // Color of the icon
-                            // Size of the icon
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                // InkWell(
+                //   onTap: () {
+                //     Navigator.push(
+                //       context,
+                //       MaterialPageRoute(builder: (context) => ReviewPage()),
+                //     );
+                //   },
+                //   child: Container(
+                //     // depth1frame5N8P (16:2494)
+                //     padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 6 * fem, 10 * fem),
+                //     width: double.infinity,
+                //     height: 56 * fem,
+                //     decoration: BoxDecoration(
+                //       border: Border(
+                //         bottom: BorderSide(
+                //         color: Colors.grey, // Specify the border color here
+                //         width: 0.25, // Specify the border width here
+                //       ),),
+                //       // Add decoration as needed
+                //     ),
+                //     child: Row(
+                //       children: [
+                //         Expanded(
+                //           child: Container(
+                //
+                //             // depth3frame02ij (16:2496)
+                //             child: Text(
+                //               'Share App',
+                //               style: SafeGoogleFont(
+                //                 'Be Vietnam Pro',
+                //                 fontSize: 17 * ffem,
+                //                 fontWeight: FontWeight.w400,
+                //                 height: 1.5 * ffem / fem,
+                //                 color: Colors.white,
+                //               ),
+                //             ),
+                //           ),
+                //         ),
+                //         Container(
+                //
+                //           // depth2frame1MPD (19:2920)
+                //           width: 64 * fem,
+                //           height: 44 * fem,
+                //           child: Icon(
+                //             Icons.arrow_forward_ios_rounded,color: Colors.white, // Different icon
+                //             // Color of the icon
+                //             // Size of the icon
+                //           ),
+                //         ),
+                //       ],
+                //     ),
+                //   ),
+                // ),
 
                 InkWell(
                   onTap: () {

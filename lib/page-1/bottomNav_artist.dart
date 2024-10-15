@@ -31,7 +31,7 @@ class _BottomNavState extends State<BottomNavart> {
     _currentIndex = widget.initialPageIndex;
     _pages = [
       artist_home(),
-      artist_inbox(),
+      // artist_inbox(),
       AllBookings(
         data: widget.data,
         newBookingTitle: widget.newBookingTitle,
@@ -49,7 +49,7 @@ class _BottomNavState extends State<BottomNavart> {
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-      onWillPop: _onWillPop, // Intercept back navigation
+        onWillPop: _onWillPop,
       child: Scaffold(
         backgroundColor: Color(0xFF292938),
         body: _pages[_currentIndex],
@@ -72,11 +72,11 @@ class _BottomNavState extends State<BottomNavart> {
               activeIcon: Icon(Icons.home_filled),
               label: 'Home',
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.mail_outline_outlined),
-              activeIcon: Icon(Icons.mail_outline_outlined),
-              label: 'Inbox',
-            ),
+            // BottomNavigationBarItem(
+            //   icon: Icon(Icons.mail_outline_outlined),
+            //   activeIcon: Icon(Icons.mail_outline_outlined),
+            //   label: 'Inbox',
+            // ),
             BottomNavigationBarItem(
               icon: Icon(Icons.calendar_month_outlined),
               activeIcon: Icon(Icons.calendar_month),

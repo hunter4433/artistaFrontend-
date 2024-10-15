@@ -37,7 +37,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
   String? teamName;
   String? artistRole;
   String? teamRole;
-  int? hasSoundSystem;
+  bool? hasSoundSystem;
   String? artistPrice;
   String? artistRatings;
   String? artistAboutText;
@@ -141,7 +141,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
             artistSpecialMessage = artistData['special_message'] ?? '';
             profilePhoto = artistData['profile_photo'] ?? '';
 
-            hasSoundSystem = artistData['sound_system'] ?? false;
+            hasSoundSystem=artistData['sound_system'] == 1 ? true: false ;
 
             // Image and video URLs
             image1 = artistData['image1'];
@@ -733,7 +733,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
                               SizedBox(width: 8.0*fem),
                               // Display Yes/No for Sound System
                               Text(
-                                hasSoundSystem != null ? 'Yes' :'Will be arranged by\n Homestage',
+                                hasSoundSystem != null && hasSoundSystem! ? 'Yes' : 'Will be arranged by\nHomestage',
                                 style: TextStyle(fontWeight: FontWeight.w400,
                                   fontSize: 16.0,
                                   color: hasSoundSystem != null ? Colors.green : Colors.pink,

@@ -71,16 +71,45 @@ class _ReviewPageState extends State<ReviewPage> {
     }
   }
 
+  void showFeedbackDialog(BuildContext context, String title, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+                if (title == 'Success') {
+                  setState(() {
+                    starRating = 0; // Reset star rating
+                    reviewController.clear(); // Clear the review text field
+                    selectedPerformance = ""; // Clear the selected performance if applicable
+                    // Reset any other fields you have
+                  });
+                }
+
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
 
   void submitReview() async {
     final String backendUrl = '${Config().apiDomain}/review'; // Replace with your API URL
     print(backendUrl);
-    String? id= await _getid();
+    String? id = await _getid();
 
     print('rating is $starRating');
 
-
-// Combine selectedPerformance and reviewController.text
+    // Combine selectedPerformance and reviewController.text
     String reviewText = '$selectedPerformance ${reviewController.text}';
     print('reviewtext is $reviewText');
 
@@ -93,26 +122,31 @@ class _ReviewPageState extends State<ReviewPage> {
       body: jsonEncode({
         'rating': starRating.toString(),
         'review_text': reviewText,
-        // 'photo': _selectedImage ?? '',
-        // 'video': _selectedVideo ?? '',
         'user_id': id,
-        'artist_id': 1,
-        // 'team_id': teamId,
+        'artist_id': 20,
       }),
     );
 
     if (response.statusCode == 201) {
       print('Review submitted successfully');
-      // return true;
       Map<String, dynamic> Data = json.decode(response.body);
-      int id=Data['id'];
+      int id = Data['id'];
       _uploadImage(id);
+
+      // Show success dialog
+      showFeedbackDialog(context, 'Success', 'Feedback submitted successfully!');
+
 
     } else {
       print('Failed to submit review: ${response.body}');
-      // return false;
+
+      // Show failure dialog
+      showFeedbackDialog(context, 'Failure', 'Failed to submit feedback. Please try again.');
     }
   }
+
+
+
 
   Future<void> _pickImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);

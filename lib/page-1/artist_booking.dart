@@ -1,5 +1,7 @@
 import 'dart:ffi';
+import 'package:geolocator/geolocator.dart';
 
+import 'location_service.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -46,18 +48,19 @@ class _BookingArtistState extends State<booking_artist> {
   late double? longitude;
   final FocusNode locationFocusNode = FocusNode();
   String? selectedToTime;
-  String? selectedAudienceSize;// Define selectedToTime variable here
   double? artistPrice=10.0;
   String? crowdSize;
 double? soundSystemPrice=0.0;
   bool hasSoundSystem = false ;
   double? totalAmount=0.0;
+  String? selectedAudienceSize;
   // Place this outside the build method in your widget tree
 
-
+  // ValueNotifier<String?> selectedAudienceSize = ValueNotifier<String?>(null);
 
   // Define TextEditingController instances
   TextEditingController nameController = TextEditingController();
+  // TextEditingController selectedAudienceSize = TextEditingController();
   TextEditingController durationController = TextEditingController();
   TextEditingController locationController = TextEditingController();
   TextEditingController specialRequestController = TextEditingController();
@@ -66,14 +69,14 @@ double? soundSystemPrice=0.0;
   String? selectedCategory;
   List<String> categories = ['House party', 'Corporate event', 'Wedding events','School or College fest','Cultural or Art Exhibitions','Festival','Birthday party','Private booking','Baby showers','Private Dinners','others']; // Replace with your actual categories
 
-
+  LocationService _locationService = LocationService();
   final storage = FlutterSecureStorage();
 
   Future<String?> _getToken() async {
     return await storage.read(key: 'token'); // Assuming you stored the token with key 'token'
   }
   Future<String?> _getid() async {
-    return await storage.read(key: 'id'); // Assuming you stored the token with key 'token'
+    return await storage.read(key: 'user_id'); // Assuming you stored the token with key 'token'
   }
   Future<String?> _getKind() async {
     return await storage.read(key: 'selected_value'); // Assuming you stored the token with key 'token'
@@ -86,6 +89,7 @@ double? soundSystemPrice=0.0;
   void initState() {
     super.initState();
     fetchArtistInformation(widget.artist_id);
+
 
     // Add a listener to the durationController to listen for changes
     durationController.addListener(() async {
@@ -103,8 +107,8 @@ print('minute is $minutes');
             // Extract the total amount and sound system price from the result
             setState(() {
               totalAmount = result.toDouble();
-              soundSystemPrice = result.toDouble();
-              netAmount = totalAmount! + soundSystemPrice!; // Calculate the net amount
+              // soundSystemPrice = result.toDouble();
+              netAmount = totalAmount! ; // Calculate the net amount
             });
 
             // Print the results or update the UI accordingly
@@ -118,6 +122,14 @@ print('minute is $minutes');
     });
 
   }
+  // void getLocation() async {
+  //   try {
+  //     String address = await _locationService.getCurrentLocationAndAddress();
+  //     print("Current address: $address");
+  //   } catch (e) {
+  //     print(e);
+  //   }
+  // }
 
   @override
   void dispose(){
@@ -137,6 +149,51 @@ print('minute is $minutes');
       // Handle external wallet
       debugPrint('External wallet: ${response.walletName}');
     }
+
+
+
+  void _saveUserInformation() async {
+
+    String? id = await _getid();
+
+    print(id);
+    // Example URL, replace with your actual API endpoint
+    String apiUrl = '${Config().apiDomain}/info/$id';
+
+    // Prepare data to send to the backend
+    Map<String, dynamic> userData = {
+      'first_name': name,
+    };
+
+    try {
+      // Make PATCH request to the API
+      var response = await http.patch(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/vnd.api+json',
+          'Accept': 'application/vnd.api+json',
+
+        },
+        body: jsonEncode(userData),
+      );
+
+      // Check if request was successful (status code 200)
+      if (response.statusCode == 200) {
+        // User information saved successfully, handle response if needed
+        print('User information saved successfully');
+        // Example response handling
+        print('Response: ${response.body}');
+      } else {
+        // Request failed, handle error
+        print('Failed to save user information. Status code: ${response.statusCode}');
+        // Example error handling
+        print('Error response: ${response.body}');
+      }
+    } catch (e) {
+      // Handle network errors
+      print('Error saving user information: $e');
+    }
+  }
 
 
 
@@ -210,21 +267,52 @@ print('minute is $minutes');
 //     }
 //   }
 
-    double calculateTotalAmount(String pricePerHour, int hours, int minutes) {
-      // Convert total time to hours
-      double totalTimeInHours = hours + (minutes / 60.0);
+  double calculateTotalAmount(String pricePerHour, int hours, int minutes) {
+    // Convert total time to hours
+    double totalTimeInHours = hours + (minutes / 60.0);
 
-      // Convert pricePerHour to double
-      double pricePerHourDouble = double.parse(pricePerHour);
+    // Convert pricePerHour to double
+    double pricePerHourDouble = double.parse(pricePerHour);
 
-      // Calculate the total amount
-      double totalAmount = totalTimeInHours * pricePerHourDouble;
-      // print(totalAmount);
+    // Calculate the total amount
+    double totalAmount = totalTimeInHours * pricePerHourDouble;
 
-      return totalAmount;
+    // Restrict the result to two decimal places
+    return double.parse(totalAmount.toStringAsFixed(2));
+  }
+
+  Future<Map<String, dynamic>> getSoundSystemPrice(String audienceSize) async {
+    final String url = '${Config().apiDomain}/sound-system-price'; // Replace with your API URL
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/vnd.api+json',
+          'Accept': 'application/vnd.api+json',},
+        body: json.encode({'audience_size': audienceSize}),
+      );
+      print(json.encode({'audience_size': audienceSize}));
+
+      if (response.statusCode == 200) {
+        print('price ${response.body}');
+
+        Map<String, dynamic> data  = json.decode(response.body);
+        // Assuming 'data' is the decoded JSON response
+
+        int? soundSystemPriceInt = data['sound_system_price'];
+         soundSystemPrice = soundSystemPriceInt?.toDouble();
+        print('Audience Size: ${data['audience_size']}');
+        print('Sound System Price (int): $soundSystemPriceInt');
+        print('Sound System Price (double): $soundSystemPrice');
+        return json.decode(response.body);// Return the response body as a Map
+
+      } else {
+        throw Exception('Failed to fetch sound system price. Status Code: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching sound system price: $e');
     }
-
-
+  }
 
     Future<void> fetchArtistInformation(String artist_id) async {
     String? token = await _getToken();
@@ -269,7 +357,7 @@ print(userDataList );
             hasSoundSystem=userData['sound_system'] == 1 ? true: false ;
 
           });
-// print('soundsystem is $hasSoundSystem');
+print('soundsystem is $hasSoundSystem');
         }
       } else {
         print('Failed to fetch user information. Status code: ${response.body}');
@@ -377,7 +465,19 @@ print(userDataList );
     }
   }
 
-
+  void toggleSoundSystem() {
+    setState(() {
+      if (hasSoundSystem) {
+        // If sound system is already added, subtract its price
+        netAmount = netAmount! - soundSystemPrice!;
+      } else {
+        // If sound system is not added, add its price
+        netAmount = netAmount! + soundSystemPrice!;
+      }
+      // Toggle the hasSoundSystem state
+      hasSoundSystem = !hasSoundSystem;
+    });
+  }
 
 
   Future<void> _selectDate(BuildContext context) async {
@@ -632,7 +732,8 @@ print(userDataList );
                            '1-50',
                            '1-70',
                            '1-100',
-                           'More than 100'
+                           'More than 100',
+                           'More than 500'
                          ].map((String size) {
                            return DropdownMenuItem<String>(
                              value: size,
@@ -650,8 +751,11 @@ print(userDataList );
                          }).toList(),
                          onChanged: (newValue) {
                            setState(() {
-                             selectedAudienceSize = newValue;
+                             selectedAudienceSize = newValue! ;
                            });
+                           if (selectedAudienceSize != null) {
+                             getSoundSystemPrice(selectedAudienceSize!);
+                           }
                          },
                          decoration: InputDecoration(
                            contentPadding: EdgeInsets.symmetric(vertical: 17.0, horizontal: 12.0),
@@ -1068,43 +1172,40 @@ print(userDataList );
                                       SizedBox(height: 10.0),
 
 
-                                     if (hasSoundSystem)
-                                     Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                       Text(
-                                         'Sound system price :',
-                                          style: TextStyle(fontSize: 17.0),
-                                           ),
-                                       Text(
-                                        '₹${soundSystemPrice}',
-                                        style: TextStyle(fontSize: 17.0),
-                                            ),
-                                      ],
-                                     ),
-                                    SizedBox(height: 5.0),
-
-                                       Row(
-                                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                         children: [
+                                    if (hasSoundSystem) // Show sound system price only if added
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
                                           Text(
-                                         'Have your own sound system?',
+                                            'Sound system price:',
+                                            style: TextStyle(fontSize: 17.0),
+                                          ),
+                                          Text(
+                                            '₹${soundSystemPrice}',
+                                            style: TextStyle(fontSize: 17.0),
+                                          ),
+                                        ],
+                                      ),
+                                    SizedBox(height: 5.0),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          'Have your own sound system?',
                                           style: TextStyle(fontSize: 16.0, fontStyle: FontStyle.italic),
-                                             ),
-                                           TextButton(
-                                             onPressed: () {
-                                              setState(() {
-                                              hasSoundSystem = !hasSoundSystem;
-                                              soundSystemPrice = hasSoundSystem ? soundSystemPrice: 0.0;
-                                                });
-                                                },
-                                             child: Text(
-                                              hasSoundSystem ? 'Remove' : 'Add',
-                                               style: TextStyle(color: hasSoundSystem ? Colors.red : Colors.green,fontSize: 16),
-                                           ),
-                                           ),
-                                            ],
-                                           ),
+                                        ),
+                                        TextButton(
+                                          onPressed: toggleSoundSystem,
+                                          child: Text(
+                                            hasSoundSystem ? 'Remove' : 'Add',
+                                            style: TextStyle(
+                                              color: hasSoundSystem ? Colors.red : Colors.green,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                      SizedBox(height: 5.0),
 
 
@@ -1146,6 +1247,7 @@ print(userDataList );
                         padding: const EdgeInsets.only(left: 25, right: 25),
                         child:ElevatedButton(
                           onPressed: () async {
+
                             // Check if all required fields are filled
                             if (selectedCategory == null ||
                                 selectedAudienceSize == null ||
@@ -1168,7 +1270,7 @@ print(userDataList );
                               Razorpay _razorpay = Razorpay();
 
                               var options = {
-                                'key': 'rzp_live_KJYr4DUx18zaJj',
+                                'key': 'rzp_test_Hb4hFCm46361XC',
 
                                 'amount': 5000,
 
@@ -1251,51 +1353,55 @@ print(userDataList );
               },
               child: Text('Enter Manually',style: TextStyle(color: Colors.black),),
             ),
-        ElevatedButton(
-        onPressed: () async {
-        // Close any modal that is open, such as a dialog
-        Navigator.of(context).pop();
+            ElevatedButton(
+              onPressed: () async {
+                if (!mounted) return; // Check if the widget is still mounted
 
-        // Show a loading indicator while transitioning to the map page
-        showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => Center(
-        child: CircularProgressIndicator(), // Display a loading spinner
-        ),
-        );
+                // Show a loading indicator
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (context) => Center(
+                    child: CircularProgressIndicator(), // Display a loading spinner
+                  ),
+                );
 
-        // Navigate to GoogleMapPage and await the result
-        final result = await Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const GoogleMapPage()),
-        );
+                try {
+                  // Fetch current location and address
+                  Map<String, dynamic> locationData = await _locationService.getCurrentLocationAndAddress();
+                  latitude = locationData['latitude'];
+                  longitude = locationData['longitude'];
+                  String address = locationData['address'];
 
-        // Remove the loading spinner after the map is closed
-        Navigator.of(context).pop();
+                  // Update the state only if the widget is still mounted
+                  if (mounted) {
+                    setState(() {
+                      locationController.text = address;
+                    });
+                  }
 
-        if (result != null && result.containsKey('coordinates')) {
-        LatLng coordinates = result['coordinates'];
-        latitude = coordinates.latitude;
-        longitude = coordinates.longitude;
-        String address = result['address'];
-
-        // Update the UI with the selected address
-        setState(() {
-        locationController.text = address;
-        });
-
-        print('Selected Coordinates: ${coordinates.latitude}, ${coordinates.longitude}');
-        } else {
-        // Optionally handle the case when the user cancels without selecting a location
-        print('No location selected');
-        }
-        },
-        child: const Text(
-        'Select On Map',
-        style: TextStyle(color: Colors.black),
-        ),
-        ),
+                  print("Latitude: $latitude");
+                  print("Longitude: $longitude");
+                  print("Current address: $address");
+                } catch (e) {
+                  // Handle any errors, and show a message if needed
+                  print(e);
+                } finally {
+                  // Ensure the loading spinner is removed, only if the widget is still mounted
+                  if (mounted && Navigator.canPop(context)) {
+                    Navigator.of(context).pop(); // Close the loading spinner
+                  }
+                }
+                // Close any modal that is open, such as a dialog
+                if (Navigator.canPop(context)) {
+                  Navigator.of(context).pop();
+                }
+              },
+              child: const Text(
+                'Use current location',
+                style: TextStyle(color: Colors.black),
+              ),
+            ),
           ],
         );
       },
@@ -1342,9 +1448,15 @@ print(userDataList );
           ),
           actions: [
             ElevatedButton(
-              onPressed: () {
+              onPressed: ()  async{
                 locationController.text =
                 "${flatController.text}, ${areaController.text}, ${cityController.text}, ${stateController.text}, ${pincodeController.text}";
+                Position position = await _locationService.getLocationFromAddress(pincodeController.text);
+                latitude=position.latitude;
+                longitude=position.longitude;
+
+                print('lat is layinh $latitude');
+                print('lot is $longitude');
                 Navigator.of(context).pop();
               },
               child: Text('OK',style: TextStyle(color: Colors.black),),
@@ -1377,6 +1489,7 @@ print(userDataList );
 
       // Save booking information and handle potential error
       String? bookingId;
+      _saveUserInformation();
       try {
         bookingId = (await _saveBookingInformation()).toString();
         if (bookingId == null || bookingId.isEmpty) {

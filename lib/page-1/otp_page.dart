@@ -25,7 +25,7 @@ class VerificationCodeInputScreen extends StatefulWidget {
 
 class _VerificationCodeInputScreenState
     extends State<VerificationCodeInputScreen> {
-  final List<TextEditingController> _codeController =
+   final List<TextEditingController> _codeController =
   List.generate(6, (index) => TextEditingController());
   List<FocusNode> _focusNodes = List.generate(6, (index) => FocusNode());
 
@@ -34,6 +34,10 @@ class _VerificationCodeInputScreenState
   bool _isButtonVisible = false; // Control visibility of the button
 
   final storage = FlutterSecureStorage();
+  Timer? _timer; // Store the timer instance
+
+
+
 
   Future<String?> _getFCMToken() async {
     return await storage.read(key: 'fCMToken');
@@ -46,13 +50,19 @@ class _VerificationCodeInputScreenState
   Future<String?> _getSelectedValue() async {
     return await storage.read(key: 'selected_value');
   }
+   Future<String?> _getTrimmedPhoneNumber() async {
+     String? phoneNumber = await _getPhoneNumber();
+     if (phoneNumber != null && phoneNumber.startsWith('+91')) {
+       return phoneNumber.substring(3).trim(); // Remove '+91' and trim spaces
+     }
+     return phoneNumber?.trim(); // Return trimmed number if '+91' is not present
+   }
+
   @override
   void initState() {
     super.initState();
     _startCountdown(); // Start the countdown timer when the screen loads
   }
-
-
   @override
   void dispose() {
     for (var controller in _codeController) {
@@ -61,6 +71,7 @@ class _VerificationCodeInputScreenState
     for (var node in _focusNodes) {
       node.dispose();
     }
+    _timer?.cancel(); // Cancel the timer if it's running
     super.dispose();
   }
 
@@ -81,16 +92,25 @@ class _VerificationCodeInputScreenState
   //   }
   // }
 
-  Future<bool> _verifyTwilioOTP(String phoneNumber, String otpCode) async {
+
+
+
+
+
+   Future<bool> _verifyTwilioOTP(String phoneNumber, String otpCode) async {
     // Your backend endpoint that verifies the OTP via Twilio
-    final String url = '${Config().apiDomain}/verify-otp';
+    final String url = '${Config().apiDomain}/verify';
     String? userType = await _getSelectedValue();
+    if (phoneNumber.startsWith('+91')) {
+      phoneNumber = phoneNumber.substring(3).trim();
+    }
+    print(phoneNumber);
 
     final response = await http.post(
       Uri.parse(url),
       headers: {'Content-Type': 'application/vnd.api+json',
         'Accept': 'application/vnd.api+json'},
-      body: jsonEncode({'phone_number': phoneNumber, 'otp_code': otpCode}),
+      body: jsonEncode({'numbers': phoneNumber, 'otp': otpCode}),
     );
 
     if (response.statusCode == 200) {
@@ -216,108 +236,94 @@ class _VerificationCodeInputScreenState
     final smsCode = _codeController.map((controller) => controller.text.trim()).join();
 
     try {
-      // Fetch the stored phone number
+      // Fetch stored phone number
       String? phoneNumber = await _getPhoneNumber();
+      if (phoneNumber == null) throw Exception('Phone number not found.');
 
-      // Verify the OTP with Twilio
-      bool otpVerified = await _verifyTwilioOTP(phoneNumber!, smsCode);
-
+      // Verify OTP with Twilio
+      bool otpVerified = await _verifyTwilioOTP(phoneNumber, smsCode);
       if (!otpVerified) {
-        // If OTP verification fails, show Snackbar and stop further execution
         _showSnackBar('OTP verification failed. Please try again.');
-        return; // Stop further execution
+        return; // Stop further execution if OTP fails
       }
 
-      // Fetch the FCM token, phone number, and user type
+      // Fetch FCM token and user type
       String? fCMToken = await _getFCMToken();
       String? userType = await _getSelectedValue();
 
-      // Attempt to log in with the appropriate user type
+      // Attempt login
       bool loginSuccessful = await login(fCMToken, phoneNumber);
 
       if (loginSuccessful) {
-// <<<<<<< HEAD
-// =======
-        print('lodu here ');
-        // Store authorization and navigate to home
-// >>>>>>> 9e3f3a1ad3317a5838219c59acad554d7748e289
         await storage.write(key: 'authorised', value: 'true');
-        _navigateToHome(userType);
-
+        if (mounted) _navigateToHome(userType);
       } else {
         if (userType == 'hire') {
           bool success = await sendFCMTokenBackend(fCMToken, phoneNumber);
           if (success) {
             await storage.write(key: 'authorised', value: 'true');
-            _navigateToSignUp(userType);
+            if (mounted) _navigateToSignUp(userType);
           }
         } else {
-          _navigateToSignUp(userType);
+          if (mounted) _navigateToSignUp(userType);
         }
       }
     } catch (e) {
       print('Failed to sign in: $e');
-      _showSnackBar('Failed to sign in: $e');
+      if (mounted) _showSnackBar('Failed to sign in: $e');
     }
   }
 
-// Function to show the SnackBar
+// Function to show a SnackBar
   void _showSnackBar(String message) {
-    final snackBar = SnackBar(content: Text(message));
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    if (mounted) {
+      final snackBar = SnackBar(content: Text(message));
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    }
   }
 
-
-
+// Function to navigate to the home screen
   void _navigateToHome(String? userType) {
-    if (!mounted) {
-      print('not mounted widget');
-      return; // Ensure the widget is still mounted before proceeding
-    }
+    if (!mounted) return; // Ensure the widget is still mounted
+
+    Widget targetPage;
     if (userType == 'hire') {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => ServiceCheckerPage()),
-      );
+      targetPage = ServiceCheckerPage();
     } else if (userType == 'solo_artist' || userType == 'team') {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => BottomNavart(data: {},)),
-      );
+      targetPage = BottomNavart(data: {});
+    } else {
+      return; // Exit if no valid userType is found
     }
 
-
-    // Show a snackbar indicating successful login
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Logged In Successfully')),
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => targetPage),
     );
+
+    _showSnackBar('Logged In Successfully');
   }
 
-
-
+// Function to navigate to the sign-up screen
   void _navigateToSignUp(String? userType) {
-    // Navigate to the correct screen based on user type
+    if (!mounted) return; // Ensure the widget is still mounted
+
+    Widget targetPage;
     if (userType == 'hire') {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => ServiceCheckerPage()),
-      );
+      targetPage = ServiceCheckerPage();
     } else if (userType == 'solo_artist') {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => artist_cred()),
-      );
+      targetPage = artist_cred();
     } else if (userType == 'team') {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => team_info()),
-      );
+      targetPage = team_info();
+    } else {
+      return; // Exit if no valid userType is found
     }
 
-    // Show a snackbar indicating successful login
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Signed Up Successfully')),
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => targetPage),
     );
+
+    _showSnackBar('Signed Up Successfully');
   }
 
   // void _showSnackBar(String message) {
@@ -328,30 +334,68 @@ class _VerificationCodeInputScreenState
 
   // Start the countdown timer
   void _startCountdown() {
-    Timer.periodic(Duration(seconds: 1), (timer) {
-      setState(() {
-        if (_countdown > 0) {
-          _countdown--;
-        } else {
-          _isButtonVisible = true; // Show the button after countdown ends
-          timer.cancel();
-        }
-      });
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      if (mounted) { // Check if the widget is still mounted
+        setState(() {
+          if (_countdown > 0) {
+            _countdown--;
+          } else {
+            _isButtonVisible = true; // Show the button after countdown ends
+            timer.cancel();
+          }
+        });
+      } else {
+        timer.cancel(); // Cancel the timer if the widget is not mounted
+      }
     });
   }
 
   // Function to handle Resend Code functionality
-  void _resendCode() {
-    // Call your resend code logic here...
-
+  void _resendCode(BuildContext context)  async {
     // Restart the countdown and hide the button
     setState(() {
       _countdown = 30;
       _isButtonVisible = false;
     });
     _startCountdown();
-  }
 
+    String? phoneNumber = await _getTrimmedPhoneNumber();
+    print(phoneNumber); //
+
+    // Prepare the API request
+    final url = '${Config().apiDomain}/sms'; // Update this with your backend URL
+    final body = json.encode({
+      'numbers': phoneNumber,
+    });
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: body,
+      );
+
+      // Handle the response
+      if (response.statusCode == 200) {
+        // Navigate to OTP input screen if successful
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => VerificationCodeInputScreen(
+              // phoneNumber: phoneNumber,  // Pass phone number to OTP screen
+            ),
+          ),
+        );
+      } else {
+        final error = json.decode(response.body)['message'];
+        _showSnackBar('Error: $error');
+      }
+    } catch (e) {
+      _showSnackBar('Something went wrong: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -503,9 +547,7 @@ class _VerificationCodeInputScreenState
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              _countdown > 0
-                                  ? 'Resend code in $_countdown seconds'
-                                  : '',
+                              _countdown > 0 ? 'Resend code in $_countdown seconds' : '',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 16,
@@ -513,17 +555,22 @@ class _VerificationCodeInputScreenState
                             ),
                             if (_isButtonVisible)
                               TextButton(
-                                onPressed: _resendCode,
+                                onPressed: () async {
+                                  // Call _resendCode function and handle phone number trimming
+                                   // Debugging line
+                                    _resendCode(context); // Pass phone number to _resendCode
+
+                                },
                                 child: Text(
                                   'Resend Code',
-                                  style: TextStyle(fontSize: 16,
+                                  style: TextStyle(
+                                    fontSize: 16,
                                     color: Colors.blue, // Change button color
                                   ),
                                 ),
                               ),
                           ],
-                        ),
-
+                        )
                       ],
                     ),
                   ),

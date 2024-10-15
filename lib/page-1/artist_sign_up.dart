@@ -339,16 +339,11 @@ class _artist_credState extends State<artist_cred> {
                 ),
                 ElevatedButton(
                   onPressed: () async {
-                    // Show loading state while fetching the location
-                    setState(() {
-                      isLoading = true;
-                    });
-                    // print('hi mojhit ');
+                    setState(() => isLoading = true); // Use StatefulBuilder's setState
 
-                    await _useCurrentLocation();
+                    await _useCurrentLocation(setState); // Pass setState from StatefulBuilder
 
-                    // Close the dialog after fetching the location
-                    // Navigator.of(context).pop();
+                    Navigator.of(context).pop(); // Close the dialog once location is fetched
                   },
                   child: Text(
                     'Use Current Location',
@@ -475,16 +470,16 @@ class _artist_credState extends State<artist_cred> {
     );
   }
 
-  Future<void> _useCurrentLocation() async {
-    setState(() {
-      isLoading = true; // Show loading indicator
-    });
+  Future<void> _useCurrentLocation(Function setState) async {
+    setState(() => isLoading = true); // Show loading indicator
 
     LocationService _locationService = LocationService();
     _currentPosition = await _locationService.getCurrentLocation();
 
     if (_currentPosition != null) {
       print('Latitude: ${_currentPosition!.latitude}, Longitude: ${_currentPosition!.longitude}');
+      _latitude=_currentPosition!.latitude;
+      _longitude=_currentPosition!.longitude;
       _address = await MyCustomScrollBehavior.getAddressFromLatLng(_currentPosition!);
 
       if (_address != null) {
@@ -492,9 +487,7 @@ class _artist_credState extends State<artist_cred> {
       }
     }
 
-    setState(() {
-      isLoading = false; // Hide loading indicator
-    });
+    setState(() => isLoading = false); // Hide loading indicator
   }
 
   //pincode to latLng

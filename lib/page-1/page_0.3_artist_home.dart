@@ -79,7 +79,7 @@ class _artist_home extends State<artist_home> {
           loading = false; // Set loading to false once data is fetched
         });
 
-        // print('status is $status');
+        print('status is $imageUrl');
 
       } else {
         print('Failed to fetch data. Status code: ${response.statusCode}');
@@ -109,7 +109,9 @@ class _artist_home extends State<artist_home> {
         .size
         .width / baseWidth;
     double ffem = fem * 0.97;
-
+    bool _isValidImageUrl(String? url) {
+      return url != null && url != 'null' && url.isNotEmpty;
+    }
     return Scaffold(
       backgroundColor:Color(0xFF121217),
       appBar: AppBar(
@@ -140,33 +142,34 @@ class _artist_home extends State<artist_home> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 SizedBox(height: 18),
-                if (imageUrl != null)
-        Container(
-        width: 170 * fem,
-        height: 200 * fem,
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: Color(0xFF9E9EB8),
-            width: 3.50, // Adjust the thickness of the border
-          ),
-          borderRadius: BorderRadius.circular(10),
-          gradient: LinearGradient(
-            colors: [Colors.grey.shade300, Colors.grey.shade700],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-
-                    child: Padding(
-                      padding: EdgeInsets.all(4.0),
-
-                        child: Image.network(
-                          imageUrl!,
-                          fit: BoxFit.cover,
-
-                      ),
+                Container(
+                  width: 170 * fem,
+                  height: 200 * fem,
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: Color(0xFF9E9EB8),
+                      width: 3.5, // Adjust the thickness of the border
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                    gradient: LinearGradient(
+                      colors: [Colors.grey.shade300, Colors.grey.shade700],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
                   ),
+                  child: Padding(
+                    padding: EdgeInsets.all(4.0),
+                    child: _isValidImageUrl(imageUrl)
+                        ? Image.network(
+                      imageUrl!,
+                      fit: BoxFit.cover,
+                    )
+                        : Image.asset(
+                      'assets/page-1/images/depth-4-frame-0-Kvf.png', // Provide path to your default image
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
                 SizedBox(height: 18 * fem),
                 if (name != null)
                   Text(

@@ -20,12 +20,15 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
 
   // Function to send phone number to backend for Twilio OTP
   void _sendPhoneNumberToBackend() async {
-    final phoneNumber = _phoneController.text.trim();
+    String phoneNumber = _phoneController.text.trim();
+    if (phoneNumber.startsWith('+91')) {
+      phoneNumber = phoneNumber.substring(3).trim();
+    }
 
     // Prepare the API request
-    final url = '${Config().apiDomain}/send-otp'; // Update this with your backend URL
+    final url = '${Config().apiDomain}/sms'; // Update this with your backend URL
     final body = json.encode({
-      'phone_number': phoneNumber,
+      'numbers': phoneNumber,
     });
 
     try {
@@ -363,8 +366,32 @@ class PrivacyPolicyScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Privacy Policy')),
-      body: Center(child: Text('Privacy Policy content goes here.')),
+      appBar: AppBar(title: Text('Privacy Policy',style: TextStyle(color: Colors.black),)),
+      body: SingleChildScrollView(
+        child: Center(child: Text('''We at HomeStage are committed to protecting your privacy. This Privacy Policy outlines how we collect, 
+use, and protect your personal information when you use our app. By using our services, you agree to the terms outlined below.
+
+1. Information We Collect
+- Location Data: We collect your location and the artist's location to provide tailored search results. This data is collected only while the app is in use, not in the background.
+- Contact Information: We collect the phone numbers of both users and artists to facilitate bookings. User phone numbers will not be shared with third parties, except for facilitating communication between users and artists. Artist phone numbers will be shared with users to complete the booking process, and vice versa.
+- Payment Information: For artists, we collect payment details (e.g., bank account information) to send payments for services rendered. HomeStage does not store credit card or payment gateway details on our servers.
+
+2. Use of Third-Party Services
+- We use third-party payment gateways to process payments. These services comply with Indian laws, and we ensure that your payment information is handled securely. However, we are not responsible for any issues arising from their service.
+
+3. Data Security
+- We take the security of your personal data seriously and use appropriate measures to protect it from unauthorized access, alteration, or disclosure.
+
+4. Changes to This Policy
+- We may update this Privacy Policy from time to time. You will be notified of any significant changes, and your continued use of the app signifies your acceptance of the updated terms.
+
+5. Contact Us
+- If you have any questions or concerns about this Privacy Policy, please contact us at [support@homestage].
+
+By using HomeStage, you agree to this Privacy Policy.
+''',
+        )),
+      ),
     );
   }
 }
@@ -373,8 +400,46 @@ class TermsConditionsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Terms and Conditions')),
-      body: Center(child: Text('Terms and Conditions content goes here.')),
+      appBar: AppBar(title: Text('Terms and Conditions',style: TextStyle(color: Colors.black),)),
+      body: SingleChildScrollView(
+        child: Center(child: Text('''Welcome to HomeStage! By using our app, you agree to comply with and be bound by the following Terms and Conditions. Please read them carefully.
+
+    1. Use of the App
+    Eligibility: You must be at least 18 years old to use HomeStage. By registering or using the app, you confirm that you meet this requirement.
+    Services: HomeStage is a platform that connects users with artists for private events. We act as an intermediary and are not responsible for the quality of services provided by the artists.
+    Account Information: Users and artists are required to provide accurate and up-to-date information when creating an account. Falsifying information or impersonating another person is prohibited.
+    2. Bookings and Payments
+    Booking Process: Users can book artists through the app for private events. Once a booking is made, the artist's phone number will be shared with the user, and the user's phone number will be shared with the artist for coordination.
+    Payments: Payments for artist services are processed through third-party payment gateways. By using our services, you agree to the terms and conditions of the payment provider. HomeStage is not liable for any issues arising from payment processing.
+    Artist Payments: HomeStage collects bank details from artists to transfer payments for completed services. Payments will be made after the successful completion of the event, and any disputes must be resolved between the user and the artist.
+    3. Cancellation and Refunds
+    User Cancellations: Users may cancel bookings according to the cancellation policy set by the artist. Any applicable refunds will be processed through the payment gateway.
+    Artist Cancellations: Artists may cancel bookings in unforeseen circumstances, but repeated cancellations may result in penalties or account suspension.
+    4. Responsibilities and Liabilities
+    For Users: Users are responsible for ensuring the event details and requirements are accurate and for providing a safe environment for the artists. Users agree not to use the app for any unlawful or inappropriate activities.
+    For Artists: Artists are responsible for delivering the services agreed upon during the booking. Failure to provide services or unsatisfactory performance may lead to removal from the platform.
+    HomeStage’s Liability: HomeStage acts only as a facilitator between users and artists. We are not responsible for any issues that arise during the event, such as service quality, cancellations, or disputes. We are also not liable for any damages or losses incurred during an event.
+    5. Privacy
+    Your use of the app is governed by our Privacy Policy, which outlines how we collect, use, and protect your personal information.
+
+    6. Third-Party Services
+    HomeStage uses third-party services, including payment gateways. By using the app, you agree to the terms of these third-party services. We are not responsible for any issues related to their use.
+
+    7. Changes to Terms
+    We may update these Terms and Conditions from time to time. You will be notified of any significant changes, and your continued use of the app signifies your acceptance of the updated terms.
+
+    8. Termination
+    HomeStage reserves the right to suspend or terminate accounts that violate these Terms and Conditions or engage in fraudulent or unlawful activities.
+
+    9. Dispute Resolution
+    Any disputes arising from the use of HomeStage shall be resolved amicably between the user and the artist. In the event of legal action, it will be governed by the laws of India.
+
+    10. Contact Us
+    If you have any questions or concerns about these Terms and Conditions, please contact us at [support@homstage].
+
+    By using HomeStage, you agree to abide by these Terms and Conditions.'''
+        )),
+      ),
     );
   }
 }

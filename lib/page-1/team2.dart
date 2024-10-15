@@ -1292,7 +1292,7 @@ Future<String?>_getPhoneNumber()async {
   Future<bool> uploadImages(List<File?> imageFiles, String id) async {
     try {
       // Your image upload API endpoint
-      var uploadUrl = Uri.parse('${Config().apiDomain}/upload-images/$id');
+      var uploadUrl = Uri.parse('${Config().apiDomain}/images_upload/$id');
       var request = http.MultipartRequest('POST', uploadUrl);
 
       // Add user type as a field in the request

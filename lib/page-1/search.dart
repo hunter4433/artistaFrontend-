@@ -176,6 +176,8 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     final List<String> skills = [
+      'Comedian',
+      'Chef',
       'Classical Musician',
       // 'DJ',
       'Dhol Artist',
@@ -183,8 +185,8 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
       'Ghazal',
       'Magician',
       'Band',
-      'Chef',
-      'Comedian'
+
+
     ];
 
     double baseWidth = 390;
@@ -257,8 +259,10 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
                         ),
                         style: TextStyle(color: Colors.white),
                         onFieldSubmitted: (value) async {
+
                           List<Map<String, dynamic>> filteredData =
                           await searchArtists(value);
+
                           // Dispose the video when navigating to another page
                           _controller.pause();
                           // Navigate to your search results screen
@@ -337,8 +341,22 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
 
                     SizedBox(height: 10),
                     GestureDetector(
-                      onTap: () {
-                        print('Nearby text tapped');
+                      onTap: () async {
+                        List<Map<String, dynamic>> filteredData =
+                            await searchArtists('Comedian');
+
+                        // Dispose the video when navigating to another page
+                        _controller.pause();
+                        // Navigate to your search results screen
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  SearchedArtist(filteredArtistData: filteredData)),
+                        ).then((value) {
+                          // Reinitialize the video when returning to this page
+                          _controller.play();
+                        });
                       },
                       child: Text(
                         'Singers for Mehandi',
@@ -350,8 +368,22 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
                     ),
                     SizedBox(height: 10),
                     GestureDetector(
-                      onTap: () {
-                        print('Nearby text tapped');
+                      onTap: ()  async {
+                        List<Map<String, dynamic>> filteredData =
+                            await searchArtists('Comedian');
+
+                        // Dispose the video when navigating to another page
+                        _controller.pause();
+                        // Navigate to your search results screen
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  SearchedArtist(filteredArtistData: filteredData)),
+                        ).then((value) {
+                          // Reinitialize the video when returning to this page
+                          _controller.play();
+                        });
                       },
                       child: Text(
                         'Bands for wedding',
@@ -363,8 +395,22 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
                     ),
                     SizedBox(height: 8 * fem),
                     GestureDetector(
-                      onTap: () {
-                        print('Poojan Special');
+                      onTap: () async {
+                        List<Map<String, dynamic>> filteredData =
+                            await searchArtists('Comedian');
+
+                        // Dispose the video when navigating to another page
+                        _controller.pause();
+                        // Navigate to your search results screen
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  SearchedArtist(filteredArtistData: filteredData)),
+                        ).then((value) {
+                          // Reinitialize the video when returning to this page
+                          _controller.play();
+                        });
                       },
                       child: Text(
                         'Poojan Special',
@@ -375,61 +421,75 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
                       ),
                     ),
                     SizedBox(height: 8 * fem),
-                    GestureDetector(
-                      onTap: () {
-                        print('Ghazal Singers');
-                      },
-                      child: Text(
-                        'Ghazal Artist',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18 * ffem,
-                        ),
-                      ),
-                    ),
+                    // GestureDetector(
+                    //   onTap: () {
+                    //     print('Ghazal Singers');
+                    //   },
+                    //   child: Text(
+                    //     'Ghazal Artist',
+                    //     style: TextStyle(
+                    //       color: Colors.white,
+                    //       fontSize: 18 * ffem,
+                    //     ),
+                    //   ),
+                    // ),
+                    // SizedBox(height: 8 * fem),
+                    // GestureDetector(
+                    //   onTap: () {
+                    //     print('Ghazal Singers');
+                    //   },
+                    //   child: Text(
+                    //     'DJ for House Party',
+                    //     style: TextStyle(
+                    //       color: Colors.white,
+                    //       fontSize: 18 * ffem,
+                    //     ),
+                    //   ),
+                    // ),
+                    // SizedBox(height: 8 * fem),
+                    // GestureDetector(
+                    //   onTap: () {
+                    //     print('Ghazal Singers');
+                    //   },
+                    //   child: Text(
+                    //     'Stand-Up Artist',
+                    //     style: TextStyle(
+                    //       color: Colors.white,
+                    //       fontSize: 18 * ffem,
+                    //     ),
+                    //   ),
+                    // ),
+                    // SizedBox(height: 8 * fem),
+                    // GestureDetector(
+                    //   onTap: () {
+                    //     print('Gazal Singers');
+                    //   },
+                    //   child: Text(
+                    //     'Chef for House Party',
+                    //     style: TextStyle(
+                    //       color: Colors.white,
+                    //       fontSize: 18 * ffem,
+                    //     ),
+                    //   ),
+                    // ),
                     SizedBox(height: 8 * fem),
                     GestureDetector(
-                      onTap: () {
-                        print('Ghazal Singers');
-                      },
-                      child: Text(
-                        'DJ for House Party',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18 * ffem,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 8 * fem),
-                    GestureDetector(
-                      onTap: () {
-                        print('Ghazal Singers');
-                      },
-                      child: Text(
-                        'Stand-Up Artist',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18 * ffem,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 8 * fem),
-                    GestureDetector(
-                      onTap: () {
-                        print('Gazal Singers');
-                      },
-                      child: Text(
-                        'Chef for House Party',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18 * ffem,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 8 * fem),
-                    GestureDetector(
-                      onTap: () {
-                        print('Gazal Singers');
+                      onTap: () async {
+                        List<Map<String, dynamic>> filteredData =
+                            await searchArtists('Comedian');
+
+                        // Dispose the video when navigating to another page
+                        _controller.pause();
+                        // Navigate to your search results screen
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  SearchedArtist(filteredArtistData: filteredData)),
+                        ).then((value) {
+                          // Reinitialize the video when returning to this page
+                          _controller.play();
+                        });
                       },
                       child: Text(
                         'Sketch Artist',
@@ -441,8 +501,22 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
                     ),
                     SizedBox(height: 8 * fem),
                     GestureDetector(
-                      onTap: () {
-                        print('Gazal Singers');
+                      onTap: () async {
+                        List<Map<String, dynamic>> filteredData =
+                            await searchArtists('Comedian');
+
+                        // Dispose the video when navigating to another page
+                        _controller.pause();
+                        // Navigate to your search results screen
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  SearchedArtist(filteredArtistData: filteredData)),
+                        ).then((value) {
+                          // Reinitialize the video when returning to this page
+                          _controller.play();
+                        });
                       },
                       child: Text(
                         'Choreographers',
@@ -453,31 +527,31 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
                       ),
                     ),
                     SizedBox(height: 8 * fem),
-                    GestureDetector(
-                      onTap: () {
-                        print('Ghazal Singers');
-                      },
-                      child: Text(
-                        'Magician for birthdays',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18 * ffem,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 8 * fem),
-                    GestureDetector(
-                      onTap: () {
-                        print('Gazal Singers');
-                      },
-                      child: Text(
-                        'Singers for Corporate Events',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18 * ffem,
-                        ),
-                      ),
-                    ),
+                    // GestureDetector(
+                    //   onTap: () {
+                    //     print('Ghazal Singers');
+                    //   },
+                    //   child: Text(
+                    //     'Magician for birthdays',
+                    //     style: TextStyle(
+                    //       color: Colors.white,
+                    //       fontSize: 18 * ffem,
+                    //     ),
+                    //   ),
+                    // ),
+                    // SizedBox(height: 8 * fem),
+                    // GestureDetector(
+                    //   onTap: () {
+                    //     print('Gazal Singers');
+                    //   },
+                    //   child: Text(
+                    //     'Singers for Corporate Events',
+                    //     style: TextStyle(
+                    //       color: Colors.white,
+                    //       fontSize: 18 * ffem,
+                    //     ),
+                    //   ),
+                    // ),
                   ],
                 ),
               ),

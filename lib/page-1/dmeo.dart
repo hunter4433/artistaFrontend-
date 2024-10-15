@@ -39,18 +39,22 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
 
       'name':'Infuse your gathering with the singer.',
       'type': 'video',
-      'url': 'assets/page-1/images/newmarraige.mov'
+      'url': 'assets/page-1/images/newmarraige.mov',
+      'nav':'Singer'
     },
     {
       'name': 'Treat your elite guests to culinary perfection.',
       'type': 'video',
-      'url': 'assets/page-1/images/homestage2.mov'
+      'url': 'assets/page-1/images/homestage2.mov',
+      'nav': 'Dancer'
+
 
     },
     {
       'name': 'Make your little one’s birthday magical.',
       'type': 'video',
-      'url': 'assets/page-1/images/mehandi.mov'
+      'url': 'assets/page-1/images/mehandi.mov',
+      'nav':'Comedian'
 
     },
   ];
@@ -129,6 +133,7 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
               // 'rating': item['rating'].toString(),
 
               'skill': item['skills'],
+              'average_rating' : item['average_rating']
             });
           }
 
@@ -220,25 +225,47 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
             else if (section['section_name'] == 'Seasonal') {
 
               for (var item in section['items']) {
+                List<String> parts = item['item_name'].split('/');
+
+                String name = parts.isNotEmpty ? parts[0].trim() : '';
+                String id = parts.length > 1 ? parts[1].trim() : '';
                 seasonal.add({
                   // 'id': item['item_id'],
-                  'name': item['item_name'],
+                  'name': name,
+                  'team_id':id,
                   // 'type': 'image',
                   'image': '${item['item_data']}',
                 });
 
               }
 
-          }
+          }else if (section['section_name'] == 'Best_Artist') {
 
+            for (var item in section['items']) {
+              List<String> parts = item['item_name'].split('/');
+
+              String name = parts.isNotEmpty ? parts[0].trim() : '';
+              String id = parts.length > 1 ? parts[1].trim() : '';
+              combined.add({
+                // 'id': item['item_id'],
+                'name': name,
+                'artist_id':id,
+                // 'type': 'image',
+                'image': '${item['item_data']}',
+              });
+
+            }
+
+          }
         }
         print('seasonal is very  coomon $seasonal');
-
+        print('seasonal is very  coomon $combined');
 
         return {
           'categories': categories,
           'recommended': recommended,
           'seasonal':seasonal,
+          'combined':combined,
         };
 
 
@@ -295,6 +322,7 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
 
               'skill': item['skill_category'],
               'team': 'true',
+              'average_rating':item['average_rating']
             });
           }
 
@@ -308,7 +336,7 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
           };
         }
 
-        print('team artista are $featuredArtists');
+        print('team artista are $data');
       } else {
         print('Failed to load datasssssss: ${response.body}');
       }
@@ -318,6 +346,9 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
   }
 
   final List<Map<String, dynamic>> seasonal = [
+
+  ];
+  final List<Map<String, dynamic>> combined = [
 
   ];
 
@@ -473,6 +504,7 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
               var categories = _cachedData!['categories'];
               var recommended = _cachedData!['recommended'];
               var seasonal = _cachedData!['seasonal'];
+              var combined = _cachedData!['combined'];
               var featuredArtist=_cachedData!['featuredArtists'];
               print('cached featured artist afe $featuredArtist');
               // Ensure that featured artists are included in the cached data
@@ -556,11 +588,13 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
                                   image: category != null && category['image'] != null
                                       ? DecorationImage(
                                     fit: BoxFit.cover,
+
                                     image: NetworkImage(category['image']),
                                   )
                                       : DecorationImage(
                                     fit: BoxFit.cover,
                                     image: AssetImage('assets/page-1/images/depth-4-frame-0-Kvf.png'), // Add a placeholder image
+
                                   ),
 
 //                             return Container(
@@ -831,7 +865,7 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
                                           padding:  EdgeInsets.fromLTRB(
                                               0, 0, 5*fem, 0),
                                           child: Text(
-                                            ' ${featuredArtist?[index]['rating']}/5' ?? '',
+                                            ' ${featuredArtist?[index]['average_rating']}/5' ?? '',
                                             style: TextStyle(
                                               fontSize: 16 * ffem,
                                               fontWeight: FontWeight.w500,
@@ -956,12 +990,21 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
                           height: 330 * fem,  // Set a specific height for the Container
                           child: ListView.builder(
                             scrollDirection: Axis.horizontal,
-                            itemCount: seasonal?.length,
+                            itemCount: combined?.length,
                             itemBuilder: (context, index) {
                               return GestureDetector(
                                 onTap: () {
-                                  // Handle tap event here, for example, navigate to a new screen
-                                  print('Item tapped: ${seasonal?[index]['name']}');
+                                  // Perform your desired action on tap
+                                  String id =combined?[index]['artist_id'];
+
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          ArtistProfile(
+                                              artist_id: id.toString(), isteam : 'false' ),
+                                    ),
+                                  );
                                 },
                                 child: Container(
                                   width: 180 * fem,
@@ -976,13 +1019,13 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
                                         child: ClipRRect(
                                           borderRadius: BorderRadius.circular(10 * fem),
                                           child: Image.network(
-                                            seasonal?[index]['image'],
+                                            combined?[index]['image'],
                                             fit: BoxFit.cover,
                                           ),
                                         ),
                                       ),
                                       Text(
-                                        seasonal?[index]['name'],
+                                        combined?[index]['name'],
                                         style: TextStyle(
                                           fontSize: 17 * ffem,
                                           fontWeight: FontWeight.w400,
@@ -1010,43 +1053,56 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
                           ),
                         ),
                         Container(
-                          height: 330 * fem,
-                          // Set a specific height for the Container
-
+                          height: 330 * fem, // Set a specific height for the Container
                           child: ListView.builder(
                             scrollDirection: Axis.horizontal,
                             itemCount: seasonal?.length,
                             itemBuilder: (context, index) {
-                              return Container(
-                                width: 180 * fem,
-                                padding: EdgeInsets.fromLTRB(
-                                    12 * fem, 16 * fem, 0 * fem, 0 * fem),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      margin: EdgeInsets.only(bottom: 12 * fem),
-                                      width: 175 * fem,
-                                      height: 223 * fem,
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(
-                                            12 * fem),
-                                        child: Image.network(
-                                          seasonal?[index]['image'],
-                                          fit: BoxFit.cover,
+                              return GestureDetector(
+                                onTap: () {
+                                  // Perform your desired action on tap
+                                  String id =seasonal?[index]['team_id'];
+
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          ArtistProfile(
+                                              artist_id: id.toString(), isteam : 'true' ),
+                                    ),
+                                  );
+                                  // You can also navigate to another page if needed:
+                                  // Navigator.push(context, MaterialPageRoute(builder: (context) => DetailPage()));
+                                },
+                                child: Container(
+                                  width: 180 * fem,
+                                  padding: EdgeInsets.fromLTRB(12 * fem, 16 * fem, 0 * fem, 0 * fem),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        margin: EdgeInsets.only(bottom: 12 * fem),
+                                        width: 175 * fem,
+                                        height: 223 * fem,
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(12 * fem),
+                                          child: Image.network(
+                                            seasonal?[index]['image'],
+                                            fit: BoxFit.cover,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    Text(
-                                      seasonal?[index]['name'],
-                                      style: TextStyle(
-                                        fontSize: 17 * ffem,
-                                        fontWeight: FontWeight.w500,
-                                        height: 1.5 * ffem / fem,
-                                        color: Colors.white,
+                                      Text(
+                                        seasonal?[index]['name'],
+                                        style: TextStyle(
+                                          fontSize: 17 * ffem,
+                                          fontWeight: FontWeight.w500,
+                                          height: 1.5 * ffem / fem,
+                                          color: Colors.white,
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               );
                             },
@@ -1106,11 +1162,13 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
                                         margin: EdgeInsets.symmetric(horizontal: 6),
                                         child: GestureDetector(
                                           onTap: () async {
-                                            String team_id = artist['id']; // Use artist ID if needed
+                                            List<Map<String, dynamic>> filteredData =
+                                            await searchArtists(artist['nav']);
+                                            // Navigate to a new page on tap, passing the category data if needed
                                             Navigator.push(
                                               context,
                                               MaterialPageRoute(
-                                                builder: (context) => TeamProfile(),
+                                                builder: (context) => SearchedArtist(filteredArtistData: filteredData),
                                               ),
                                             );
                                           },
