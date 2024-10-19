@@ -13,6 +13,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 // import 'team1.dart';
 import 'package:test1/page-1/team1.dart';
+import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'bottomNav_artist.dart';
 
@@ -104,11 +106,51 @@ Future<String?>_getPhoneNumber()async {
   //
   // File profilePhotoFile = File(profilePhotoPath!);
 
+
+  Future<void> storeBankDetails() async {
+    final url = Uri.parse('${Config().apiDomain}/artist-bank-details');
+    String? team_id= await storage.read(key: 'team_id');
+
+    // Collect data from controllers
+    final Map<String, dynamic> bankData = {
+      'UPI_id': _upiController.text,
+      'account_number': _accountNumberController.text,
+      'IFSC_code':  _ifscController.text,
+      'account_holder_name': _accountHolderNameController.text,
+      'artist_id': team_id ?? '',
+      // 'team_id': int.tryParse(_teamIdController.text) ?? null,
+    };
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body:jsonEncode(bankData),
+      );
+
+      if (response.statusCode == 201) {
+        // Success
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Bank details saved successfully!')),
+        );
+      } else {
+        // Failure
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to save bank details.')),
+        );
+      }
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: $error')),
+      );
+    }
+  }
+
   Future<bool> _onFinishButtonClicked() async {
     try {
       // Send data to the backend and get the ID
       bool dataSent = await _sendDataToBackend();
-
+await storeBankDetails();
       // if (!dataSent) {
       //   print('Failed to send data to backend. mohit ');
       //   return false;
@@ -122,7 +164,7 @@ Future<String?>_getPhoneNumber()async {
         return false;
       }
 
-      List<File?> imageFiles = [_image1, _image2, _image3, _image4, widget.profilePhoto];
+      List<File?> imageFiles = [_image1, _image2, _image3, widget.profilePhoto];
       List<File?> videoFiles = [_video1, _video2, _video3, _video4];
 
       // Run upload functions in parallel with ID
@@ -239,37 +281,48 @@ Future<String?>_getPhoneNumber()async {
     try {
       for (File? videoFile in videoFiles) {
         if (videoFile != null) {
+          // Trim the video if needed
+          // File trimmedVideo = await trimVideoIfNeeded(videoFile);
           bool uploadSuccess = await uploadVideo(videoFile, id);
+
           if (!uploadSuccess) {
             print('Failed to upload video: ${videoFile.path}');
-            return false; // If any video fails to upload, return false
+            return false; // If any video fails, stop further uploads
           }
         }
       }
       return true; // All videos uploaded successfully
     } catch (e) {
-      // Handle errors if needed
       print('Error uploading videos: $e');
       return false;
     }
   }
 
-  Future<bool> uploadVideo(File? videoFile, String id) async {
-    if (videoFile == null) {
-      throw ArgumentError('Video file cannot be null');
-    }
+  // Future<File> trimVideoIfNeeded(File videoFile) async {
+  //   String inputPath = videoFile.path;
+  //   String outputPath = '${(await getTemporaryDirectory()).path}/trimmed_${videoFile.path.split('/').last}';
+  //
+  //   // FFmpeg command to get the first 20 seconds of the video
+  //   String trimCommand = '-i $inputPath -t 20 -c copy $outputPath';
+  //
+  //   await FFmpegKit.execute(trimCommand);
+  //
+  //   // Check if the output file exists; if not, return the original file
+  //   File outputFile = File(outputPath);
+  //   if (outputFile.existsSync()) {
+  //     print('Video trimmed to 20 seconds: $outputPath');
+  //     return outputFile;
+  //   } else {
+  //     print('No trimming needed or trimming failed.');
+  //     return videoFile; // Use original if trimming fails
+  //   }
+  // }
 
+  Future<bool> uploadVideo(File videoFile, String id) async {
     try {
-      // Your video upload API endpoint
-      var uploadUrl = Uri.parse('${Config().apiDomain}/upload-video/$id'); // Include ID in URL
-
-      // Create a multipart request
+      var uploadUrl = Uri.parse('${Config().apiDomain}/upload-video/$id');
       var request = http.MultipartRequest('POST', uploadUrl);
 
-      // Add the user type as a field
-      request.fields['user_type'] = 'team';
-
-      // Add the video file to the request
       var videoStream = http.ByteStream(videoFile.openRead());
       var videoLength = await videoFile.length();
 
@@ -282,10 +335,8 @@ Future<String?>_getPhoneNumber()async {
 
       request.files.add(multipartFile);
 
-      // Send the request to upload the video
       var streamedResponse = await request.send();
 
-      // Check if the video upload was successful
       if (streamedResponse.statusCode == 201) {
         var response = await streamedResponse.stream.bytesToString();
         print(response);
@@ -295,11 +346,11 @@ Future<String?>_getPhoneNumber()async {
         return false;
       }
     } catch (e) {
-      // Handle errors if needed
       print('Error uploading video: $e');
       return false;
     }
   }
+
 
 
   @override

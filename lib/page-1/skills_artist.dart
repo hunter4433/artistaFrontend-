@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:ffmpeg_kit_flutter/return_code.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -10,6 +11,8 @@ import 'bottomNav_artist.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
+import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 
 
@@ -86,26 +89,64 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
   Future<String?> _getToken() async {
     return await storage.read(key: 'token'); // Assuming you stored the token with key 'token'
   }
+  Future<void> storeBankDetails() async {
+    final url = Uri.parse('${Config().apiDomain}/artist-bank-details');
+    String? artist_id= await storage.read(key: 'artist_id');
+
+    // Collect data from controllers
+    final Map<String, dynamic> bankData = {
+      'UPI_id': _upiController.text,
+      'account_number': _accountNumberController.text,
+      'IFSC_code':  _ifscController.text,
+      'account_holder_name': _accountHolderNameController.text,
+      'artist_id': artist_id ?? '',
+      // 'team_id': int.tryParse(_teamIdController.text) ?? null,
+    };
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body:jsonEncode(bankData),
+      );
+
+      if (response.statusCode == 201) {
+        // Success
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Bank details saved successfully!')),
+        );
+      } else {
+        // Failure
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to save bank details.')),
+        );
+      }
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: $error')),
+      );
+    }
+  }
 
 
   Future<bool> _onFinishButtonClicked() async {
     try {
       // Send data to the backend and get the ID
       bool dataSent = await _sendDataToBackend();
-
+         await  storeBankDetails();
       // if (!dataSent) {
       //   print('Failed to send data to backend. mohit ');
       //   return false;
       // }
 
       // Retrieve the stored ID
-      String? id = await storage.read(key: 'id');
+      String? id = await storage.read(key: 'artist_id');
       if (id == null) {
         print('Failed to retrieve ID from storage.');
         return false;
       }
 
-      List<File?> imageFiles = [_image1, _image2, _image3, _image4, widget.profilePhoto];
+      List<File?> imageFiles = [_image1, _image2, _image3, widget.profilePhoto];
       List<File?> videoFiles = [_video1, _video2, _video3, _video4];
 
       // Run upload functions in parallel with ID
@@ -118,7 +159,8 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
       bool videosUploaded = results[1] as bool; // Result from uploadVideo
 
       // Handle the results
-      if (imagesUploaded && videosUploaded) {
+     if (imagesUploaded && videosUploaded) {
+    //   if (imagesUploaded){
         print('All operations completed successfully.');
         return true;
       } else {
@@ -218,7 +260,10 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
     try {
       for (File? videoFile in videoFiles) {
         if (videoFile != null) {
+          // Trim the video if it is longer than 15 seconds
+          // File trimmedVideo = await trimVideoIfNeeded(videoFile);
           bool uploadSuccess = await uploadVideo(videoFile, id);
+
           if (!uploadSuccess) {
             print('Failed to upload video: ${videoFile.path}');
             return false; // If any video fails to upload, return false
@@ -227,25 +272,62 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
       }
       return true; // All videos uploaded successfully
     } catch (e) {
-      // Handle errors if needed
       print('Error uploading videos: $e');
       return false;
     }
   }
 
-  Future<bool> uploadVideo(File? videoFile, String id) async {
-    if (videoFile == null) {
-      throw ArgumentError('Video file cannot be null');
-    }
+  // Future<File> trimVideoIfNeeded(File videoFile) async {
+  //   String inputPath = videoFile.path;
+  //   String outputPath =
+  //       '${(await getTemporaryDirectory()).path}/trimmed_${videoFile.path.split('/').last}';
+  //
+  //   try {
+  //     // FFmpeg command to retrieve video duration in seconds.
+  //     String durationCommand = '-i $inputPath -v error -select_streams v:0 -show_entries stream=duration -of default=noprint_wrappers=1:nokey=1';
+  //
+  //     // Execute the FFmpeg command.
+  //     var session = await FFmpegKit.execute(durationCommand);
+  //
+  //     // Check the result of the session.
+  //     final returnCode = await session.getReturnCode();
+  //
+  //     if (ReturnCode.isSuccess(returnCode)) {
+  //       // Extract the output from FFmpeg session.
+  //       final output = await session.getOutput();
+  //       double duration = double.tryParse(output!.trim()) ?? 0.0;
+  //
+  //       print('Video duration is $duration seconds.');
+  //
+  //       if (duration > 20) {
+  //         print('Trimming video to 20 seconds...');
+  //
+  //         // FFmpeg command to trim the video to 20 seconds.
+  //         String trimCommand = '-i $inputPath -t 20 -c copy $outputPath';
+  //         await FFmpegKit.execute(trimCommand);
+  //
+  //         print('Video trimmed to 20 seconds: $outputPath');
+  //         return File(outputPath);
+  //       } else {
+  //         print('No trimming needed.');
+  //         return videoFile; // Return original video if no trimming is required.
+  //       }
+  //     } else {
+  //       print('Failed to get video information. FFmpeg return code: $returnCode');
+  //       return videoFile;
+  //     }
+  //   } catch (e) {
+  //     print('Error while processing video: $e');
+  //     return videoFile;
+  //   }
+  // }
 
+  Future<bool> uploadVideo(File videoFile, String id) async {
     try {
-      // Your video upload API endpoint
-      var uploadUrl = Uri.parse('${Config().apiDomain}/upload-video/$id'); // Include ID in URL
+      var uploadUrl = Uri.parse('${Config().apiDomain}/upload-video/$id');
 
-      // Create a multipart request
       var request = http.MultipartRequest('POST', uploadUrl);
 
-      // Add the video file to the request
       var videoStream = http.ByteStream(videoFile.openRead());
       var videoLength = await videoFile.length();
 
@@ -258,10 +340,8 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
 
       request.files.add(multipartFile);
 
-      // Send the request to upload the video
       var streamedResponse = await request.send();
 
-      // Check if the video upload was successful
       if (streamedResponse.statusCode == 201) {
         var response = await streamedResponse.stream.bytesToString();
         print(response);
@@ -271,12 +351,10 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
         return false;
       }
     } catch (e) {
-      // Handle errors if needed
       print('Error uploading video: $e');
       return false;
     }
   }
-
 
 
 
@@ -820,10 +898,9 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
 
 
                       const Padding(
-                        padding: EdgeInsets.fromLTRB(0,30,0,0),
+                        padding: EdgeInsets.fromLTRB(0, 30, 0, 0),
                         child: SizedBox(
-                          height: 40,
-
+                          height: 20,
                           child: Text(
                             'Upload Your Videos Here',
                             textAlign: TextAlign.left,
@@ -836,6 +913,22 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                           ),
                         ),
                       ),
+
+// Description to indicate the duration limit
+                      const Padding(
+                        padding: EdgeInsets.fromLTRB(0, 5, 0, 20),
+                        child: Text(
+                          'Keep the video duration maximum to 15 seconds.',
+                          textAlign: TextAlign.left,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            color: Colors.red,
+                            fontFamily: 'Be Vietnam Pro',
+                          ),
+                        ),
+                      ),
+
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: Row(
@@ -844,16 +937,16 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                             GestureDetector(
                               onTap: _pickVideo1,
                               child: Container(
-                                width: 150 * fem,  // Set your desired width
-                                height: 170 * fem, // Set your desired height
-                                margin: EdgeInsets.only(right: 16.0), // Spacing between boxes
+                                width: 150 * fem,
+                                height: 170 * fem,
+                                margin: EdgeInsets.only(right: 16.0),
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(10 * fem),
                                   border: Border.all(color: Colors.grey),
                                 ),
                                 child: _controller1 != null
                                     ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(10 * fem), // Rounded corners for the video
+                                  borderRadius: BorderRadius.circular(10 * fem),
                                   child: VideoPlayer(_controller1!),
                                 )
                                     : Icon(Icons.add, color: Colors.white),
@@ -1328,17 +1421,18 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
     setState(() {
       _isLoading = false;
     });
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => BottomNavart(data: {})),
-    );
+if (wait) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(builder: (context) => BottomNavart(data: {})),
+  );
+}
   }
 
 
   Future<bool> uploadImages(List<File?> imageFiles, String id) async {
     try {
-      var uploadUrl = Uri.parse('${Config().apiDomain}/images_upload/$id');
+      var uploadUrl = Uri.parse('${Config().apiDomain}/upload-images/$id');
       var request = http.MultipartRequest('POST', uploadUrl);
 
       for (int i = 0; i < imageFiles.length; i++) {
@@ -1353,7 +1447,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
 
       var streamedResponse = await request.send();
 
-      if (streamedResponse.statusCode == 201) {
+      if (streamedResponse.statusCode == 200) {
         var response = await streamedResponse.stream.bytesToString();
         print('Upload successful: $response');
         return true;

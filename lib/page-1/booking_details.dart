@@ -27,6 +27,8 @@ class _EventDetailsState extends State<EventDetails> {
   int? artist_id;
   String? amount;
   String? duration;
+  String? user_id;
+  String? number ;
   late Future<void> fetchFuture;
 
   @override
@@ -123,6 +125,8 @@ class _EventDetailsState extends State<EventDetails> {
             duration = booking['duration'];
             booked_from=booking['booked_from'];
             booked_to=booking['booked_to'];
+            user_id=booking['user_id'].toString();
+
           });
         }
       } else {
@@ -182,6 +186,31 @@ class _EventDetailsState extends State<EventDetails> {
           ),
         ),
         backgroundColor: Color(0xFF121217),
+        // actions: [
+        //   Padding(
+        //     padding: const EdgeInsets.only(right: 16.0),
+        //     child: ElevatedButton(
+        //       onPressed: () async {
+        //         await generateOtp(context); // Call OTP generation function
+        //         showOtpDialog(context); // Show OTP dialog
+        //       },
+        //       style: ElevatedButton.styleFrom(
+        //         backgroundColor: Colors.blue,
+        //         shape: RoundedRectangleBorder(
+        //           borderRadius: BorderRadius.circular(8.0),
+        //         ),
+        //       ),
+        //       child: Text(
+        //         'Generate OTP',
+        //         style: TextStyle(
+        //           fontSize: 14,
+        //           fontWeight: FontWeight.w600,
+        //           color: Colors.white,
+        //         ),
+        //       ),
+        //     ),
+        //   ),
+        // ],
       ),
       body: FutureBuilder(
         future: fetchFuture,
@@ -280,6 +309,138 @@ class _EventDetailsState extends State<EventDetails> {
       ),
     );
   }
+
+// Function to generate OTP
+  Future<void> generateOtp(BuildContext context) async {
+    // Your OTP generation logic here
+    final String apiUrl = '${Config().apiDomain}/sms/user/10'; // Replace with the correct API URL
+
+    try {
+      final response = await http.get(
+        Uri.parse(apiUrl),
+        headers: {'Accept': 'application/json',
+        'Content-Type': 'application/json',},
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+         number = responseData['number']; // Display only in testing, remove in production
+        _showSnackBar('OTP sent successfully! ');
+      } else {
+        final errorMessage = jsonDecode(response.body)['response']['message'];
+        _showSnackBar(errorMessage ?? 'Failed to send OTP');
+      }
+    } catch (e) {
+      _showSnackBar('Error: $e');
+    }
+  }
+
+  // Function to display a Snackbar with the provided message
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: Duration(seconds: 3),
+      ),
+    );
+  }
+
+/// Function to show OTP dialog
+  void showOtpDialog(BuildContext context) {
+    TextEditingController otpController = TextEditingController();
+    bool isVerified = false; // Track verification status
+
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Prevent dialog from closing without user action
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Row(
+                children: [
+                  Text('Enter OTP'),
+                  SizedBox(width: 10),
+                  if (isVerified) // Show tick mark if verified
+                    Icon(Icons.check_circle, color: Colors.green),
+                ],
+              ),
+              content: TextField(
+                controller: otpController,
+                decoration: InputDecoration(
+                  hintText: 'Enter OTP sent to the user',
+                ),
+                keyboardType: TextInputType.number,
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    // Handle OTP verification logic
+                    String enteredOtp = otpController.text;
+
+                    print('Entered OTP: $enteredOtp');
+
+                    bool verify = await _verifyOTP(enteredOtp);
+
+                    if (verify) {
+                      setState(() {
+                        isVerified = true; // Update verification status
+                      });
+
+                      // Optionally close dialog after showing the tick for a short period
+                      await Future.delayed(Duration(seconds: 2));
+                      Navigator.of(context).pop();
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Invalid OTP!')),
+                      );
+                    }
+                  },
+                  child: Text('Submit'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<bool> _verifyOTP(String otpCode) async {
+    // Your backend endpoint that verifies the OTP via Twilio
+    final String url = '${Config().apiDomain}/verify/user';
+    // String? userType = await _getSelectedValue();
+    // if (phoneNumber.startsWith('+91')) {
+    //   phoneNumber = phoneNumber.substring(3).trim();
+    // }
+    // print(phoneNumber);
+
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {'Content-Type': 'application/vnd.api+json',
+        'Accept': 'application/vnd.api+json'},
+      body: jsonEncode({'user_id': '10', 'otp': otpCode}),
+    );
+
+    if (response.statusCode == 200) {
+      print('OTP verified successfully');
+      // Navigate to the relevant home page
+
+      return true;
+    } else {
+      print('Failed to verify OTP: ${response.body}');
+      return false;
+      _showSnackBar('Invalid OTP. Please try again.');
+    }
+    return false;
+  }
+
 
   Widget _buildInfoSection({required String title, required String info}) {
     return Container(

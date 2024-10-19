@@ -3,67 +3,53 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:test1/page-1/page_0.3_artist_home.dart';
 import 'package:test1/page-1/searched_artist.dart';
 import 'package:video_player/video_player.dart';
 
 import '../config.dart';
 
 class Search extends StatefulWidget {
+  Search({Key? key}) : super(key: key);
+
   @override
   _SearchState createState() => _SearchState();
 }
 
 class _SearchState extends State<Search> with WidgetsBindingObserver {
+  late VideoPlayerController _controller;
   final FocusNode _searchFocusNode = FocusNode();
   bool _isSearchBarSelected = false;
-  final storage = FlutterSecureStorage();
-  late VideoPlayerController _controller;
 
   @override
   void initState() {
     super.initState();
-    // Initialize the video player with mute
     _controller = VideoPlayerController.asset('assets/page-1/images/search.mp4')
       ..initialize().then((_) {
         setState(() {});
-        _controller.play();
-        _controller.setLooping(true);
       });
-    _controller.setVolume(0); // Mute the video
+    _controller.setVolume(0);
+    _controller.setLooping(true);
 
     _searchFocusNode.addListener(_onSearchFocusChange);
-    WidgetsBinding.instance.addObserver(this); // Add observer to track app lifecycle
+    WidgetsBinding.instance.addObserver(this);
   }
 
   @override
   void dispose() {
     _searchFocusNode.removeListener(_onSearchFocusChange);
     _searchFocusNode.dispose();
-    _controller.dispose(); // Dispose the video controller when leaving the page
-    WidgetsBinding.instance.removeObserver(this); // Remove observer
+    _controller.dispose();
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      // Play video when the app comes back into view
-      _controller.play();
+      playVideo();
     } else if (state == AppLifecycleState.paused) {
-      // Pause video when the app is not in view
-      _controller.pause();
-    }
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // Reinitialize the video when the page comes back into view
-    if (!_controller.value.isInitialized) {
-      _controller.initialize().then((_) {
-        setState(() {});
-        _controller.play();
-      });
+      pauseVideo();
     }
   }
 
@@ -73,6 +59,18 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
     });
   }
 
+  // Public methods to control video playback
+  void playVideo() {
+    if (_controller.value.isInitialized) {
+      _controller.play();
+    }
+  }
+
+  void pauseVideo() {
+    if (_controller.value.isInitialized) {
+      _controller.pause();
+    }
+  }
   Future<String?> _getLatitude() async {
     return await storage.read(key: 'latitude');
   }

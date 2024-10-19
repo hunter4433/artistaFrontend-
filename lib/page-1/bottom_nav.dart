@@ -33,7 +33,7 @@ class _BottomNavState extends State<BottomNav> {
     _currentIndex = widget.initialPageIndex;
     _pages = [
       Home_user(),
-      Search(),
+      Search(key: null,),
       UserBookings(isteam: widget.isteam),
       setting(),
     ];

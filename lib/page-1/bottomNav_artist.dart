@@ -48,10 +48,11 @@ class _BottomNavState extends State<BottomNavart> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
+    return
+      WillPopScope(
         onWillPop: _onWillPop,
-      child: Scaffold(
-        backgroundColor: Color(0xFF292938),
+        child :Scaffold(
+          backgroundColor: Color(0xFF292938),
         body: _pages[_currentIndex],
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: _currentIndex,
@@ -89,7 +90,7 @@ class _BottomNavState extends State<BottomNavart> {
             ),
           ],
         ),
-      ),
+        ),
     );
   }
 }

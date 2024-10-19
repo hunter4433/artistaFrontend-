@@ -24,7 +24,7 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
     if (phoneNumber.startsWith('+91')) {
       phoneNumber = phoneNumber.substring(3).trim();
     }
-
+print(phoneNumber);
     // Prepare the API request
     final url = '${Config().apiDomain}/sms'; // Update this with your backend URL
     final body = json.encode({
@@ -39,7 +39,7 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
         },
         body: body,
       );
-
+print(response.statusCode );
       // Handle the response
       if (response.statusCode == 200) {
         // Navigate to OTP input screen if successful
@@ -52,7 +52,7 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
           ),
         );
       } else {
-        final error = json.decode(response.body)['message'];
+        final error = json.decode(response.body)['response']['message'];
         _showSnackBar('Error: $error');
       }
     } catch (e) {
@@ -305,7 +305,15 @@ class _PhoneNumberInputScreenState extends State<PhoneNumberInputScreen> {
                       onPressed: isChecked
                           ? () async {
                         await storage.write(key: 'phone_number', value: _phoneController.text);
-                        _sendPhoneNumberToBackend(); // Send phone number to backend
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => VerificationCodeInputScreen(
+                              // phoneNumber: phoneNumber,  // Pass phone number to OTP screen
+                            ),
+                          ),
+                        );
+                        // _sendPhoneNumberToBackend(); // Send phone number to backendUrl
                       }
                           : null, // Disabled when unchecked
                       child: Text(

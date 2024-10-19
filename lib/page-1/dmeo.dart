@@ -64,15 +64,17 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     if (!hasCalledApi) {
-      _fetchAssetsFuture = fetchAssets();
-      fetchFeaturedArtists();
-      fetchFeaturedTeams();
+      // fetchAllData();
+       fetchData();
       hasCalledApi = true;
     }
 
     // fetchFeaturedTeams();
     // fetchAssets();
   }
+  // Future<void> fetchAllData() async {
+  //   await Future.wait([_fetchAssetsFuture = fetchData(), fetchFeaturedArtists(),  fetchFeaturedTeams()]);
+  // }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -93,253 +95,131 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
     super.dispose();
   }
 
-  Future<void> fetchFeaturedArtists() async {
-
-    Future<String?> _getLatitude() async {
-      return await storage.read(key: 'latitude'); // Assuming you stored the token with key 'token'
-    }
-    Future<String?> _getLongitude() async {
-      return await storage.read(key: 'longitude');
-    }
-
-    String? latitude = await _getLatitude();
-    String? longitude = await _getLongitude();
-
-
+  Future<void> fetchData() async {
     try {
-      String apiUrl = '${Config().apiDomain}/home/featured?lat=$latitude&lng=$longitude';
+      // Fetch latitude and longitude from secure storage
+      String? latitude = await storage.read(key: 'latitude');
+      String? longitude = await storage.read(key: 'longitude');
 
-      var response = await http.get(
-        Uri.parse(apiUrl),
-        headers: <String, String>{
-          'Content-Type': 'application/vnd.api+json',
-          'Accept': 'application/vnd.api+json',
-        },
-      );
+      // Define URLs for featured artists, teams, and sections
+      String featuredArtistsUrl = '${Config().apiDomain}/home/featured?lat=$latitude&lng=$longitude';
+      String featuredTeamsUrl = '${Config().apiDomain}/home/featured/team?lat=$latitude&lng=$longitude';
+      String sectionsUrl = '${Config().apiDomain}/sections';
 
-      if (response.statusCode == 200) {
-        List<dynamic> data = jsonDecode(response.body);
-// print(data);
+      // Perform multiple parallel HTTP requests
+      final responses = await Future.wait([
+        http.get(Uri.parse(featuredArtistsUrl)),
+        http.get(Uri.parse(featuredTeamsUrl)),
+        http.get(Uri.parse(sectionsUrl)),
+      ]);
+
+      // Handle featured artists response
+      if (responses[0].statusCode == 200) {
+        List<dynamic> artistData = jsonDecode(responses[0].body);
         setState(() {
           featuredArtists.clear();
-
-
-          for (var item in data) {
+          for (var item in artistData) {
             featuredArtists.add({
               'id': item['id'],
               'name': item['name'],
-
               'image': '${item['profile_photo']}',
-              // 'rating': item['rating'].toString(),
-
               'skill': item['skills'],
-              'average_rating' : item['average_rating']
+              'average_rating': item['average_rating'],
             });
           }
-
         });
-
-        print('fetched artist are :$data ');
-        // Store featured artists data in cachedData
-        if (_cachedData != null) {
-          _cachedData!['featuredArtists'] = featuredArtists;
-        } else {
-          _cachedData = {
-            'featuredArtists': featuredArtists,
-          };
-        }
-
-        // Simulate an API call
-        print("API called at: ${DateTime.now()}");
-
-        // fetchFeaturedTeams();
-
-        // print('fetauredartist rae as follows:$featuredArtists');
       } else {
-        print('Failed to load data: ${response.body}');
-      }
-    } catch (error) {
-      print('Error fetching data: $error');
-    }
-  }
-
-  // final List<Map<String, dynamic>> categories = [];
-
-  Future<Map<String, List<dynamic>>> fetchAssets() async {
-
-    try {
-
-
-      String apiUrl = '${Config().apiDomain}/sections';
-
-      var response = await http.get(
-        Uri.parse(apiUrl),
-        headers: <String, String>{
-          'Content-Type': 'application/vnd.api+json',
-          'Accept': 'application/vnd.api+json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        List<dynamic> data = jsonDecode(response.body);
-        // List<Map<String, String>> categories = [];
-        // List<Map<String, String>> recommended = [];
-        recommended.clear();
-        categories.clear();
-        seasonal.clear();
-
-        for (var section in data) {
-          if (section['section_name'] == 'Recommended') {
-
-            for (var item in section['items']) {
-              List<String> parts = item['item_name'].split('/');
-
-              String subheading = parts.isNotEmpty ? parts[0].trim() : '';
-              String name = parts.length > 1 ? parts[1].trim() : '';
-              String type = parts.length > 2 ? parts[2].trim() : '';
-              String skill = parts.length > 3 ? parts[3].trim() : '';
-
-
-              recommended.add({
-                // 'id': item['item_id'],
-                'subheading': subheading,
-                'name': name,
-                'type': type,
-                'image': '${item['item_data']}',
-                'skill':skill,
-
-              });
-            }
-          } else if (section['section_name'] == 'Categories') {
-
-
-            for (var item in section['items']) {
-              categories.add({
-                // 'id': item['item_id'],
-                'name': item['item_name'],
-                'type': 'image',
-                'image': '${item['item_data']}',
-              });
-            }
-            }
-            else if (section['section_name'] == 'Seasonal') {
-
-              for (var item in section['items']) {
-                List<String> parts = item['item_name'].split('/');
-
-                String name = parts.isNotEmpty ? parts[0].trim() : '';
-                String id = parts.length > 1 ? parts[1].trim() : '';
-                seasonal.add({
-                  // 'id': item['item_id'],
-                  'name': name,
-                  'team_id':id,
-                  // 'type': 'image',
-                  'image': '${item['item_data']}',
-                });
-
-              }
-
-          }else if (section['section_name'] == 'Best_Artist') {
-
-            for (var item in section['items']) {
-              List<String> parts = item['item_name'].split('/');
-
-              String name = parts.isNotEmpty ? parts[0].trim() : '';
-              String id = parts.length > 1 ? parts[1].trim() : '';
-              combined.add({
-                // 'id': item['item_id'],
-                'name': name,
-                'artist_id':id,
-                // 'type': 'image',
-                'image': '${item['item_data']}',
-              });
-
-            }
-
-          }
-        }
-        print('seasonal is very  coomon $seasonal');
-        print('seasonal is very  coomon $combined');
-
-        return {
-          'categories': categories,
-          'recommended': recommended,
-          'seasonal':seasonal,
-          'combined':combined,
-        };
-
-
-      } else {
-        print('Failed to load data: ${response.body}');
-        return {};
-      }
-    } catch (error) {
-      print('Error fetching data: $error');
-      return {};
-    }
-  }
-
-
-
-  Future<void> fetchFeaturedTeams() async {
-    try {
-      Future<String?> _getLatitude() async {
-        return await storage.read(key: 'latitude'); // Assuming you stored the token with key 'token'
-      }
-      Future<String?> _getLongitude() async {
-        return await storage.read(key: 'longitude'); // Assuming you stored the token with key 'token'
-// >>>>>>> 7351e5c0eb3d956ca9c6894a0710f105a9f2df77
+        print('Failed to fetch featured artists: ${responses[0].body}');
       }
 
-      String? latitude = await _getLatitude();
-      String? longitude = await _getLongitude();
-
-      String apiUrl = '${Config().apiDomain}/home/featured/team?lat=$latitude&lng=$longitude';
-      // Make the HTTP GET request
-
-      var response = await http.get(
-        Uri.parse(apiUrl),
-        headers: <String, String>{
-          'Content-Type': 'application/vnd.api+json',
-          'Accept': 'application/vnd.api+json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        List<dynamic> data = jsonDecode(response.body);
-        // print(data);
+      // Handle featured teams response
+      if (responses[1].statusCode == 200) {
+        List<dynamic> teamData = jsonDecode(responses[1].body);
         setState(() {
-          // featuredArtists.clear();
-
-
-          for (var item in data) {
+          for (var item in teamData) {
             featuredArtists.add({
               'id': item['id'],
               'name': item['team_name'],
-
               'image': '${item['profile_photo']}',
-              // 'rating': item['rating'].toString(),
-
               'skill': item['skill_category'],
               'team': 'true',
-              'average_rating':item['average_rating']
+              'average_rating': item['average_rating'],
             });
           }
-
         });
+      } else {
+        print('Failed to fetch featured teams: ${responses[1].body}');
+      }
 
-        if (_cachedData != null) {
-          _cachedData!['featuredArtists'] = featuredArtists;
-        } else {
-          _cachedData = {
-            'featuredArtists': featuredArtists,
-          };
+      // Handle sections response
+      if (responses[2].statusCode == 200) {
+        List<dynamic> sectionData = jsonDecode(responses[2].body);
+        categories.clear();
+        recommended.clear();
+        seasonal.clear();
+        combined.clear();
+
+        for (var section in sectionData) {
+          if (section == null) continue;
+
+          String? sectionName = section['section_name'];
+          List<dynamic>? items = section['items'];
+
+          if (sectionName == 'Recommended' && items != null) {
+            for (var item in items) {
+              List<String> parts = item['item_name']?.split('/') ?? [];
+              recommended.add({
+                'subheading': parts.isNotEmpty ? parts[0].trim() : '',
+                'name': parts.length > 1 ? parts[1].trim() : '',
+                'type': parts.length > 2 ? parts[2].trim() : '',
+                'image': item['item_data'] ?? '',
+                'skill': parts.length > 3 ? parts[3].trim() : '',
+              });
+            }
+          } else if (sectionName == 'Categories' && items != null) {
+            for (var item in items) {
+              categories.add({
+                'name': item['item_name'] ?? 'Unknown',
+                'type': 'image',
+                'image': item['item_data'] ?? '',
+              });
+            }
+          } else if (sectionName == 'Seasonal' && items != null) {
+            for (var item in items) {
+              List<String> parts = item['item_name']?.split('/') ?? [];
+              seasonal.add({
+                'name': parts.isNotEmpty ? parts[0].trim() : '',
+                'team_id': parts.length > 1 ? parts[1].trim() : '',
+                'image': item['item_data'] ?? '',
+              });
+            }
+          } else if (sectionName == 'Best_Artist' && items != null) {
+            for (var item in items) {
+              List<String> parts = item['item_name']?.split('/') ?? [];
+              combined.add({
+                'name': parts.isNotEmpty ? parts[0].trim() : '',
+                'artist_id': parts.length > 1 ? parts[1].trim() : '',
+                'image': item['item_data'] ?? '',
+              });
+            }
+          }
         }
 
-        print('team artista are $data');
+        print('Categories: $categories');
       } else {
-        print('Failed to load datasssssss: ${response.body}');
+        print('Failed to fetch sections: ${responses[2].body}');
       }
+
+      // Cache the fetched data
+      _cachedData = {
+        'featuredArtists': featuredArtists,
+        'categories': categories,
+        'recommended': recommended,
+        'seasonal': seasonal,
+        'combined': combined,
+      };
+      print("Fetched data cached successfully at: ${DateTime.now()}");
+
     } catch (error) {
       print('Error fetching data: $error');
     }
@@ -488,41 +368,38 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
           future: _cachedData != null ? Future.value(_cachedData) : _fetchAssetsFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(
-                child: CircularProgressIndicator(), // Display a loading indicator
+              // Display a loading indicator while waiting for the data
+              return const Center(
+                child: CircularProgressIndicator(),
               );
-            } else if (snapshot.hasError) {
+            }
+
+            if (snapshot.hasError) {
+              // Display an error message if there's an issue
               return Center(
-                child: Text('Error: ${snapshot.error}'), // Display an error message
+                child: Text('Error: ${snapshot.error}'),
               );
-            } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-              // Cache the data once it is fetched successfully
-              if (_cachedData == null) {
-                _cachedData = snapshot.data;
+            }
+
+            if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+              // Cache the data after it's successfully fetched
+              _cachedData ??= snapshot.data;
+
+              // Extract cached data into individual variables for UI use
+              var categories = _cachedData?['categories'];
+              var recommended = _cachedData?['recommended'];
+              var seasonal = _cachedData?['seasonal'];
+              var combined = _cachedData?['combined'];
+              var featuredArtist = _cachedData?['featuredArtists'];
+
+              print('Cached data: $_cachedData');
+
+              // If no data is present, display a "No Data" message
+              if (categories == null || categories.isEmpty) {
+                return const Center(
+                  child: Text('An error occured ,please reload '),
+                );
               }
-
-              var categories = _cachedData!['categories'];
-              var recommended = _cachedData!['recommended'];
-              var seasonal = _cachedData!['seasonal'];
-              var combined = _cachedData!['combined'];
-              var featuredArtist=_cachedData!['featuredArtists'];
-              print('cached featured artist afe $featuredArtist');
-              // Ensure that featured artists are included in the cached data
-              // if (_cachedData!['featuredArtists'] == null && featuredArtists.isNotEmpty) {
-              // print( featuredArtists = (_cachedData!['featuredArtists'] as List<dynamic>)
-              //     .cast<Map<String, dynamic>>());
-
-              // }
-
-              // print(_cachedData!['featuredArtists']);
-              // Once the data is fetched, build your UI
-              // var data = snapshot.data;
-              // if (data == null || data.isEmpty) {
-              //   return Center(
-              //     child: Text('No data found'), // Display no data found message
-              //   );
-              // }
-              // print(data);
               return Container(
                 color: Color(0xFF121217),
                 child: SafeArea(
@@ -552,10 +429,13 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
                             mainAxisSpacing: 15.0*fem,
                             childAspectRatio: 2.5*fem,
                           ),
-                          itemCount: categories?.length,
+                          itemCount: categories?.length ?? 0,
                           itemBuilder: (context, index) {
                             final category = categories?[index];
 // <<<<<<< HEAD
+                            if (category == null) {
+                              return SizedBox(); // Return an empty widget if category is null
+                            }
 
                             return GestureDetector(
                               onTap: () async {
@@ -597,21 +477,7 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
 
                                   ),
 
-//                             return Container(
-//                               height: 83.0*fem,
-//                               decoration: BoxDecoration(
-//                                 borderRadius: BorderRadius.circular(10),
-//                                 gradient: LinearGradient(
-//                                   begin: Alignment(0, 1),
-//                                   end: Alignment(0, -1),
-//                                   colors: <Color>[
-//                                     Color(0x66000000),
-//                                     Color(0x00000000),
-//                                     Color(0x1A000000),
-//                                     Color(0x00000000),
-//                                   ],
-//                                   stops: <double>[0, 1, 1, 1],
-// >>>>>>> 7843d0fd9f9f56e19be3ee78285dd0192d2cb138
+//
                                 ),
 // <<<<<<< HEAD
                                 child: Align(
@@ -619,7 +485,7 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
                                   child: Container(
                                     margin: EdgeInsets.all(16),
                                     child: Text(
-                                      category['name'],
+                                      category['name'] ?? '',
                                       style: GoogleFonts.getFont(
                                         'Be Vietnam Pro',
                                         fontWeight: FontWeight.w600,

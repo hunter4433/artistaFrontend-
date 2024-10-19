@@ -99,7 +99,7 @@ class _VerificationCodeInputScreenState
 
    Future<bool> _verifyTwilioOTP(String phoneNumber, String otpCode) async {
     // Your backend endpoint that verifies the OTP via Twilio
-    final String url = '${Config().apiDomain}/verify';
+    final String url = '${Config().apiDomain}/verify/test';
     String? userType = await _getSelectedValue();
     if (phoneNumber.startsWith('+91')) {
       phoneNumber = phoneNumber.substring(3).trim();
@@ -116,7 +116,7 @@ class _VerificationCodeInputScreenState
     if (response.statusCode == 200) {
       print('OTP verified successfully');
       // Navigate to the relevant home page
-      _navigateToHome(userType);
+      // _navigateToHome(userType);
       return true;
     } else {
       print('Failed to verify OTP: ${response.body}');
@@ -257,6 +257,7 @@ class _VerificationCodeInputScreenState
       if (loginSuccessful) {
         await storage.write(key: 'authorised', value: 'true');
         if (mounted) _navigateToHome(userType);
+        // if (mounted) _navigateToSignUp(userType);
       } else {
         if (userType == 'hire') {
           bool success = await sendFCMTokenBackend(fCMToken, phoneNumber);
