@@ -374,6 +374,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+
       appBar: AppBar(title: Text('Privacy Policy',style: TextStyle(color: Colors.black),)),
       body: SingleChildScrollView(
         child: Center(child: Text('''We at HomeStage are committed to protecting your privacy. This Privacy Policy outlines how we collect, 
@@ -401,6 +402,7 @@ By using HomeStage, you agree to this Privacy Policy.
         )),
       ),
     );
+
   }
 }
 
@@ -408,6 +410,7 @@ class TermsConditionsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+
       appBar: AppBar(title: Text('Terms and Conditions',style: TextStyle(color: Colors.black),)),
       body: SingleChildScrollView(
         child: Center(child: Text('''Welcome to HomeStage! By using our app, you agree to comply with and be bound by the following Terms and Conditions. Please read them carefully.
@@ -448,6 +451,7 @@ class TermsConditionsScreen extends StatelessWidget {
     By using HomeStage, you agree to abide by these Terms and Conditions.'''
         )),
       ),
+
     );
   }
 }

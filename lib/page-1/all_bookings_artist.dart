@@ -514,7 +514,7 @@ class _AllBookingsState extends State<AllBookings> {
           padding: const EdgeInsets.fromLTRB(0, 0, 8, 0),
           child: Center(
             child: Text(
-              'Booking Requests',
+              'Bookings',
               style: TextStyle(
                 fontSize: 20 ,
                 fontWeight: FontWeight.w400,

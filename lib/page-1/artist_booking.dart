@@ -530,7 +530,7 @@ print('soundsystem is $hasSoundSystem');
     return Scaffold(
       appBar: AppBar(
         title: Text('Booking Details',style: SafeGoogleFont('Be Vietnam Pro',color: Colors.black,
-        fontWeight: FontWeight.w500,fontSize: 22*fem),
+        fontWeight: FontWeight.w500,fontSize: 21*fem),
         ),
         leading: IconButton(color: Colors.black,
           icon: Icon(Icons.arrow_back_ios_new_rounded),
@@ -882,6 +882,24 @@ print('soundsystem is $hasSoundSystem');
                                       final TimeOfDay? pickedTime = await showTimePicker(
                                         context: context,
                                         initialTime: TimeOfDay.now(),
+                                        builder: (context, child) {
+                                          return Theme(
+                                            data: Theme.of(context).copyWith(
+                                              colorScheme: ColorScheme.light(
+                                                primary: Color(0xffe5195e), // Change primary color (clock hands and header)
+                                                onPrimary: Colors.white, // Change text color on the primary color (header text)
+                                                surface: Colors.white, // Change the clock background color
+                                                onSurface: Colors.black, // Change the numbers color (clock text)
+                                              ),
+                                              textButtonTheme: TextButtonThemeData(
+                                                style: TextButton.styleFrom(
+                                                  foregroundColor: Color(0xffe5195e), // Change the button text color (OK/Cancel)
+                                                ),
+                                              ),
+                                            ),
+                                            child: child!,
+                                          );
+                                        },
                                       );
 
                                       if (pickedTime != null) {
@@ -920,6 +938,24 @@ print('soundsystem is $hasSoundSystem');
                                       final TimeOfDay? pickedTime = await showTimePicker(
                                         context: context,
                                         initialTime: TimeOfDay.now(),
+                                        builder: (context, child) {
+                                          return Theme(
+                                            data: Theme.of(context).copyWith(
+                                              colorScheme: ColorScheme.light(
+                                                primary: Color(0xffe5195e), // Change primary color (clock hands and header)
+                                                onPrimary: Colors.white, // Change text color on the primary color (header text)
+                                                surface: Colors.white, // Change the clock background color
+                                                onSurface: Colors.black, // Change the numbers color (clock text)
+                                              ),
+                                              textButtonTheme: TextButtonThemeData(
+                                                style: TextButton.styleFrom(
+                                                  foregroundColor: Color(0xffe5195e), // Change the button text color (OK/Cancel)
+                                                ),
+                                              ),
+                                            ),
+                                            child: child!,
+                                          );
+                                        },
                                       );
 
                                       if (pickedTime != null) {
@@ -1481,19 +1517,6 @@ print('soundsystem is $hasSoundSystem');
       String razorpayPaymentId = response.paymentId!;
       String razorpayOrderId = response.orderId!;
       String razorpaySignature = response.signature!;
-
-      // Retrieve the artist ID from secure storage
-      // Future<String?> _getArtistId() async {
-      //   return await storage.read(key: 'artist_id');
-      // }
-      //
-      // String artistId = (await _getArtistId()) ?? '';  // Fallback to an empty string if artistId is null
-      //
-      // if (artistId.isEmpty) {
-      //   throw Exception('Failed to retrieve artist ID');
-      // }
-
-      // Save booking information and handle potential error
       String? bookingId;
       _saveUserInformation();
       try {

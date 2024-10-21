@@ -54,7 +54,7 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
       'name': 'Make your little one’s birthday magical.',
       'type': 'video',
       'url': 'assets/page-1/images/mehandi.mov',
-      'nav':'Comedian'
+      'nav':'Comedian, Dancer'
 
     },
   ];
@@ -123,7 +123,7 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
               'id': item['id'],
               'name': item['name'],
               'image': '${item['profile_photo']}',
-              'skill': item['skills'],
+              'skill': item['skill_category'],
               'average_rating': item['average_rating'],
             });
           }
@@ -256,7 +256,7 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
       'name': 'Enhance Your Mehndi Event with Exquisite Talent and Elegant Performances',
       'type': 'video',
       'url': 'assets/page-1/images/mehandi.mov',
-      'nav':'Dancer'
+      'nav':'Comedian, Dancer'
 
     },
   ];
@@ -269,12 +269,13 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
     return await storage.read(key: 'longitude');
   }
 
+
   Future<List<Map<String, dynamic>>> searchArtists(String searchTerm) async {
     String? latitude = await _getLatitude();
     String? longitude = await _getLongitude();
 
     final String apiUrl1 = '${Config().apiDomain}/artist/search';
-    final String apiUrl2 = '${Config().apiDomain}/team/search'; // Second API endpoint
+    final String apiUrl2 = '${Config().apiDomain}/team/search';
 
     final Uri uri1 = Uri.parse(apiUrl1).replace(queryParameters: {
       'skill': searchTerm,
@@ -283,13 +284,12 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
     });
 
     final Uri uri2 = Uri.parse(apiUrl2).replace(queryParameters: {
-      'skill': searchTerm, // Modify query parameters as needed for the second endpoint
+      'skill': searchTerm,
       'lat': latitude,
       'lng': longitude,
     });
 
     try {
-      // Call both API endpoints simultaneously
       final responses = await Future.wait([
         http.get(uri1, headers: {
           'Content-Type': 'application/vnd.api+json',
@@ -298,36 +298,31 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
         http.get(uri2, headers: {
           'Content-Type': 'application/vnd.api+json',
           'Accept': 'application/vnd.api+json',
-        })
+        }),
       ]);
 
       final response1 = responses[0];
       final response2 = responses[1];
 
       if (response1.statusCode == 200 && response2.statusCode == 200) {
-        // Parse both responses
         List<dynamic> data1 = jsonDecode(response1.body);
         List<dynamic> data2 = jsonDecode(response2.body);
 
-        // Merge the data
         List<Map<String, dynamic>> mergedData = [
-          ...List<Map<String, dynamic>>.from(data1.map((artist) {
-            artist['profile_photo'] = artist['profile_photo'];
-            artist['isTeam'] = 'false';
-            return artist;
-          })),
-          ...List<Map<String, dynamic>>.from(data2.map((artist) {
-            artist['profile_photo'] = artist['profile_photo'];
-            artist['isTeam'] = 'true';
-            return artist;
-          })),
+          ...data1.map((artist) => {
+            ...artist,
+            'profile_photo': artist['profile_photo'],
+            'isTeam': 'false',
+          }),
+          ...data2.map((artist) => {
+            ...artist,
+            'profile_photo': artist['profile_photo'],
+            'isTeam': 'true',
+          }),
         ];
-        // print(mergedData);
         return mergedData;
       } else {
         print('Failed to load artists');
-        // print(response1.body);
-        // print(response2.body);
         return [];
       }
     } catch (e) {
@@ -570,8 +565,18 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
                                         margin: EdgeInsets.symmetric(horizontal: 6*fem),
                                         child: GestureDetector(
                                           onTap: () async {
-                                            List<Map<String, dynamic>> filteredData =
-                                            await searchArtists(artist['nav']);
+                                            // Parse the 'nav' field and ensure it's a List<String>.
+                                            List<String> skills = (artist['nav'] as String)
+                                                .split(',')
+                                                .map((s) => s.trim())
+                                                .toList()
+                                                .cast<String>();  // Ensure type safety.
+
+// Join the skills back into a comma-separated string for the API call.
+                                            String skillQuery = skills.join(',');
+
+// Fetch the filtered artist data.
+                                            List<Map<String, dynamic>> filteredData = await searchArtists(skillQuery);
                                             // Navigate to a new page on tap, passing the category data if needed
                                             Navigator.push(
                                               context,

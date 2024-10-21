@@ -158,6 +158,15 @@ class _UserBookingsState extends State<UserBookings> with AutomaticKeepAliveClie
         .size
         .width / baseWidth;
     double ffem = fem * 0.97;
+    Widget _buildStatusText(String status) {
+      return Text(
+        status,
+        style: GoogleFonts.epilogue(
+          fontSize: 14,
+          color: Colors.white,
+        ),
+      );
+    }
 
     final booking = bookings[index];
     final status = booking['status']; // Get the status from the booking object
@@ -187,17 +196,18 @@ class _UserBookingsState extends State<UserBookings> with AutomaticKeepAliveClie
       child: Stack(
         children: [
           Card(
-            color: Color(0xFF292938),
-            margin: EdgeInsets.fromLTRB(5, 0, 5, 20),
+            color: const Color(0xFF292938),
+            margin: const EdgeInsets.fromLTRB(5, 0, 5, 20),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(14),
             ),
             elevation: 0,
             child: Padding(
-              padding: EdgeInsets.fromLTRB(23, 16, 25, 16),
+              padding: const EdgeInsets.fromLTRB(23, 16, 25, 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Booking Category
                   Text(
                     'Booking for $Category',
                     style: GoogleFonts.epilogue(
@@ -207,116 +217,92 @@ class _UserBookingsState extends State<UserBookings> with AutomaticKeepAliveClie
                       color: Colors.white,
                     ),
                   ),
-                  SizedBox(height: 8),
-                  Text('At:  $Time',
+                  const SizedBox(height: 8),
+
+                  // Booking Time
+                  Text(
+                    'At: $Time',
                     style: GoogleFonts.epilogue(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 16,
-                        height: 1.5,
-                        color: Color(0xFFB4B4DF)
+                      fontWeight: FontWeight.w500,
+                      fontSize: 16,
+                      height: 1.5,
+                      color: const Color(0xFFB4B4DF),
                     ),
                   ),
-                  SizedBox(height: 5),
-                  Text('On Date:  $booking_date,',
+                  const SizedBox(height: 5),
+
+                  // Booking Date
+                  Text(
+                    'On Date: $booking_date',
                     style: GoogleFonts.epilogue(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 16,
-                        height: 1.5,
-                        color: Color(0xFFB4B4DF)
+                      fontWeight: FontWeight.w500,
+                      fontSize: 16,
+                      height: 1.5,
+                      color: const Color(0xFFB4B4DF),
                     ),
                   ),
-                  SizedBox(height: 16),
-                  Stack(
-                    children: [
-                      LinearProgressIndicator(
-                        value: progress,
-                        backgroundColor: Colors.grey[800],
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                            Color(0xffe5195e)),
-                        minHeight: 8,
-                      ),
-                      Positioned(
-                        left: MediaQuery
-                            .of(context)
-                            .size
-                            .width * progress - 30,
-                        top: -4,
-                        child: CircleAvatar(
-                          radius: 6,
-                          backgroundColor: Colors.black,
-                          child: CircleAvatar(
-                            radius: 4,
-                            backgroundColor: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ],
+                  const SizedBox(height: 16),
+
+                  // Progress Indicator
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(3), // Rounds the corners
+                    child: LinearProgressIndicator(
+                      value: progress,
+                      backgroundColor: Colors.grey[800],
+                      valueColor: const AlwaysStoppedAnimation<Color>(Color(0xffe5195e)),
+                      minHeight: 8,
+                    ),
                   ),
-                  SizedBox(height: 8),
+
+                  // Progress Indicator Marker
+                  Positioned(
+                    left: MediaQuery.of(context).size.width * progress - 60,
+                    top: 0,
+                    child: CircleAvatar(
+                      radius: 4,
+                      backgroundColor: Colors.black,
+                      child: CircleAvatar(
+                        radius: 4,
+                        backgroundColor: Colors.white,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Status Row
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        'Initiated',
-                        style: GoogleFonts.epilogue(
-                          fontSize: 14,
-                          color: Colors.white,
-                        ),
-                      ),
-                      Text(
-                        'Artist Response',
-                        style: GoogleFonts.epilogue(
-                          fontSize: 14,
-                          color: Colors.white,
-                        ),
-                      ),
-                      Text(
-                        'Completion',
-                        style: GoogleFonts.epilogue(
-                          fontSize: 14,
-                          color: Colors.white,
-                        ),
-                      ),
+                      _buildStatusText('Initiated'),
+                      _buildStatusText('Artist Response'),
+                      _buildStatusText('Completion'),
                     ],
                   ),
-                  SizedBox(height: 16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 3, right: 3),
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            bool wait = await fetchArtistBooking(artist_id);
-                            if (wait) {
-                              _makePhoneCall(phoneNumber ?? '');
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12 * fem),
-                            ),
-                            padding: EdgeInsets.symmetric(
-                              vertical: 6.5 * fem,
-                            ),
-                          ),
-                          child: Center(
-                            child: Text(
-                              'Call Artist',
-                              style: SafeGoogleFont(
-                                'Be Vietnam Pro',
-                                fontSize: 16 * ffem,
-                                fontWeight: FontWeight.w700,
-                                height: 1.5 * ffem / fem,
-                                letterSpacing: 0.2399999946 * fem,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ),
+                  const SizedBox(height: 16),
+
+                  // Call to Action Button
+                  Center(
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        bool wait = await fetchArtistBooking(artist_id);
+                        if (wait) _makePhoneCall(phoneNumber ?? '');
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 6.5),
+                      ),
+                      child: Text(
+                        'Call Artist',
+                        style: GoogleFonts.epilogue(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black,
                         ),
                       ),
-                    ],
+                    ),
                   ),
                 ],
               ),
@@ -354,24 +340,55 @@ class _UserBookingsState extends State<UserBookings> with AutomaticKeepAliveClie
         automaticallyImplyLeading: false,
         title: const Center(
           child: Text(
-            'Booking Requests',
+            'Bookings',
             style: TextStyle(
-                fontSize: 22, fontWeight: FontWeight.w400, color: Colors.white),
+// <<<<<<< HEAD
+//                 fontSize: 22, fontWeight: FontWeight.w400, color: Colors.white),
+// =======
+              fontSize: 22,
+              fontWeight: FontWeight.w500,
+              color: Colors.white,
+            ),
+// >>>>>>> c29e89df1aac051be8cea2d6749ef204c90acc8e
           ),
         ),
         backgroundColor: const Color(0xFF121217),
       ),
-      body: isLoading
-          ? const Center(
-        child: CircularProgressIndicator(),
-      )
-          : bookings.isEmpty
-          ? const Center(
-        child: Text(
-          'No bookings done yet',
-          style: TextStyle(color: Colors.white, fontSize: 20),
-        ),
-      )
+// <<<<<<< HEAD
+//       body: isLoading
+//           ? const Center(
+//         child: CircularProgressIndicator(),
+//       )
+//           : bookings.isEmpty
+//           ? const Center(
+//         child: Text(
+//           'No bookings done yet',
+//           style: TextStyle(color: Colors.white, fontSize: 20),
+//         ),
+//       )
+// =======
+      body: bookings.isEmpty
+          ? Center(
+          child: isLoading
+        ? CircularProgressIndicator()
+        : Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset(
+                'assets/page-1/images/booking.png', // Replace with your image path
+                height: 220, // Adjust height as needed
+              ),
+              SizedBox(height: 10), // Add spacing between the image and text
+              Text(
+                'You haven’t made any bookings yet',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                ),
+              ),
+            ],
+          ),)
+// >>>>>>> c29e89df1aac051be8cea2d6749ef204c90acc8e
           : ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: bookings.length,

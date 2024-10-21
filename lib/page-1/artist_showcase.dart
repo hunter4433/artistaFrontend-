@@ -426,7 +426,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
                             ),
                             Container(
                               margin: EdgeInsets.fromLTRB(20*fem,0*fem, 0*fem, 10*fem),
-                              padding: EdgeInsets.fromLTRB(0*fem, 20*fem, 0*fem, 0*fem),
+                              padding: EdgeInsets.fromLTRB(0*fem, 10*fem, 0*fem, 0*fem),
                               // depth4frame1YUo (15:2131)
                               width:220*fem,
                               height: 150*fem,
@@ -437,7 +437,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
                                     artistName ?? teamName ?? '', // Use the artistName variable directly
                                     style: TextStyle(
                                       fontSize: 20 * ffem,
-                                      fontWeight: FontWeight.w400,
+                                      fontWeight: FontWeight.w500,
                                       color: Colors.black,
                                     ),
                                   ),
@@ -448,22 +448,22 @@ class _ArtistProfileState extends State<ArtistProfile> {
                                      teamRole ?? '', // Use the artistRole variable directly
                                     style: TextStyle(
                                       fontSize: 17 * ffem,
-                                      fontWeight: FontWeight.w400,
+                                      fontWeight: FontWeight.w500,
                                       color: Color(0xff964f66),
                                     ),
                                   ),
                                   SizedBox(
-                                    height: 4,
+                                    height: 4*fem,
                                   ),
 
                                   // FutureBuilder to fetch and display ratings
                                   Row(
                                     children: [
                                       Text(
-                                        'Rating: $avg/5', // Static text
+                                        'Rating:  $avg/5', // Static text
                                         style: TextStyle(
                                           fontSize: 17 * ffem,
-                                          fontWeight: FontWeight.w400,
+                                          fontWeight: FontWeight.w500,
                                           color: Colors.black,
                                         ),
                                       ),
@@ -471,7 +471,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
                                         artistRatings ?? '', // Use the artistRatings variable directly
                                         style: TextStyle(
                                           fontSize: 17 * ffem,
-                                          fontWeight: FontWeight.w500,
+                                          fontWeight: FontWeight.w400,
                                           color: Colors.black,
                                         ),
                                       ),
@@ -489,7 +489,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
                                         'Price Per Hour: ₹ ', // Static text
                                         style: TextStyle(
                                           fontSize: 17 * ffem,
-                                          fontWeight: FontWeight.w400,
+                                          fontWeight: FontWeight.w500,
                                           color: Colors.black,
                                         ),
                                       ),
@@ -502,6 +502,14 @@ class _ArtistProfileState extends State<ArtistProfile> {
                                         ),
                                       ),
                                     ],
+                                  ),
+                                  Text(
+                                    '(Inclusive of all taxes)', // Static text
+                                    style: TextStyle(
+                                      fontSize: 15 * ffem,
+                                      fontWeight: FontWeight.w400,
+                                      color: Colors.black,
+                                    ),
                                   ),
 
 
@@ -540,35 +548,55 @@ class _ArtistProfileState extends State<ArtistProfile> {
                         padding: const EdgeInsets.only(left: 4, right: 15, bottom: 25),
                         child: ElevatedButton(
                           onPressed: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (context)=>booking_artist(artist_id : widget.artist_id, isteam: widget.isteam )));
-                            // Handle button press
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => booking_artist(
+                                    artist_id: widget.artist_id,
+                                    isteam: widget.isteam
+                                ),
+                              ),
+                            );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xffe5195e),
+                            padding: EdgeInsets.zero,  // Remove default padding to apply gradient correctly
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(9 * fem),
                             ),
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 16 * fem,
-                              vertical: 12 * fem,
-                            ),
-                            minimumSize: Size(double.infinity, 14 * fem),
                           ),
-                          child: Center(
-                            child: Text(
-                              'Book Artist',
-                              style: SafeGoogleFont(
-                                'Be Vietnam Pro',
-                                fontSize: 17 * ffem,
-                                fontWeight: FontWeight.w500,
-                                height: 1.5 * ffem / fem,
-                                letterSpacing: 0.2399999946 * fem,
-                                color: Color(0xffffffff),
+                          child: Ink(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [Color(0xffe5195e), Color(0xffd11b4f)],  // Adjusted the darker color to be lighter
+                                begin: Alignment.centerLeft,  // Start from the left side
+                                end: Alignment.centerRight,   // End at the right side
+                              ),
+                              borderRadius: BorderRadius.circular(9 * fem),
+                            ),
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 16 * fem,
+                                vertical: 12 * fem,
+                              ),
+                              constraints: BoxConstraints(minWidth: double.infinity, minHeight: 14 * fem),
+                              child: Center(
+                                child: Text(
+                                  'Book Artist',
+                                  style: SafeGoogleFont(
+                                    'Be Vietnam Pro',
+                                    fontSize: 17 * ffem,
+                                    fontWeight: FontWeight.w500,
+                                    height: 1.5 * ffem / fem,
+                                    letterSpacing: 0.2399999946 * fem,
+                                    color: Color(0xffffffff),
+                                  ),
+                                ),
                               ),
                             ),
                           ),
                         ),
                       ),
+
                       if (widget.isteam =='true')
                       // Team members section
                         Padding(
@@ -579,8 +607,8 @@ class _ArtistProfileState extends State<ArtistProfile> {
                               Text(
                                 'Team Members:',
                                 style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w600,
                                   color: Color(0xff1c0c11),
                                 ),
                               ),
@@ -698,7 +726,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
                                       ),
                                       child: Text(
                                         skill,
-                                        style: TextStyle(fontSize: 15.0,fontWeight: FontWeight.w500),
+                                        style: TextStyle(fontSize: 18.0,fontWeight: FontWeight.w500),
                                       ),
                                     );
                                   }).toList(),
@@ -706,7 +734,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
                               ),
                             ],
                           ),
-                          SizedBox(height: 8.0),
+                          SizedBox(height: 10.0*fem),
 
                           // Row for Experience
                           Row(
@@ -714,10 +742,10 @@ class _ArtistProfileState extends State<ArtistProfile> {
                             children: [
                               // Subheading for Experience
                               Text(
-                                'Experience: ',
+                                'Experience : ',
                                 style: TextStyle(
-                                  fontSize: 16.0,
-                                  fontWeight: FontWeight.w500,
+                                  fontSize: 18.0 * fem,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                               SizedBox(width: 8.0),
@@ -730,7 +758,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
                               ),
                             ],
                           ),
-                          SizedBox(height: 5.0),
+                          SizedBox(height: 10.0*fem),
 
                           // Row for Sound System
                           Row(
@@ -740,16 +768,16 @@ class _ArtistProfileState extends State<ArtistProfile> {
                               Text(
                                 'Has Sound System?:',
                                 style: TextStyle(
-                                  fontSize: 16.0,
-                                  fontWeight: FontWeight.w500,
+                                  fontSize: 18.0*fem,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                               SizedBox(width: 8.0*fem),
                               // Display Yes/No for Sound System
                               Text(
                                 hasSoundSystem != null && hasSoundSystem! ? 'Yes' : 'Will be arranged by\nHomestage',
-                                style: TextStyle(fontWeight: FontWeight.w400,
-                                  fontSize: 16.0,
+                                style: TextStyle(fontWeight: FontWeight.w500,
+                                  fontSize: 18.0*fem,
                                   color: hasSoundSystem != null ? Colors.green : Colors.pink,
                                 ),
                               ),
@@ -792,17 +820,20 @@ class _ArtistProfileState extends State<ArtistProfile> {
 
 
                 Container(
-                  margin: EdgeInsets.fromLTRB(15 * fem, 15, 16 * fem, 0),
+                  margin: EdgeInsets.fromLTRB(7 * fem, 15, 0 * fem, 0),
                   width: double.infinity,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Gallery',
-                        style: TextStyle(
-                          fontSize: 22 * ffem,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black,
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(8.0 * fem ,0,0,0),
+                        child: Text(
+                          'Gallery',
+                          style: TextStyle(
+                            fontSize: 22 * ffem,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black,
+                          ),
                         ),
                       ),
                       SizedBox(height: 12 * fem),
@@ -829,7 +860,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
                                 );
                               },
                               child: Container(
-                                width: 150 * fem, // Set width of each item in the carousel
+                                width: 160 * fem, // Set width of each item in the carousel
                                 margin: EdgeInsets.symmetric(horizontal: 5.5 * fem), // Add margin between items
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(9 * fem), // Example border radius
@@ -859,17 +890,20 @@ class _ArtistProfileState extends State<ArtistProfile> {
                 ),
                 //VideoPathsFromBackend.length
             Container(
-              margin: EdgeInsets.fromLTRB(15 * fem, 25*fem, 16 * fem, 0),
+              margin: EdgeInsets.fromLTRB(7 * fem, 25*fem, 0 * fem, 0),
               width: double.infinity,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Video Samples',
-                    style: TextStyle(
-                      fontSize: 22 * ffem,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black,
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(8.0 * fem ,0,0,0),
+                    child: Text(
+                      'Video Samples',
+                      style: TextStyle(
+                        fontSize: 22 * ffem,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black,
+                      ),
                     ),
                   ),
                   SizedBox(height: 12 * fem),
@@ -895,7 +929,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
                           );
                         },
                         child: Container(
-                          width: 150 * fem, // Set width of each item in the carousel
+                          width: 170 * fem, // Set width of each item in the carousel
                           margin: EdgeInsets.symmetric(horizontal: 5.0 * fem), // Add margin between items
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(9 * fem), // Example border radius
@@ -906,7 +940,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
                     } else {
                       // Placeholder when index exceeds the video list
                       return Container(
-                        width: 150 * fem, // Placeholder width
+                        width: 160 * fem, // Placeholder width
                         margin: EdgeInsets.symmetric(horizontal: 5.5 * fem), // Placeholder margin
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(9 * fem), // Example border radius
@@ -1011,40 +1045,60 @@ class _ArtistProfileState extends State<ArtistProfile> {
                         artist_id: widget.artist_id,
                       ),
 
-                Padding(
-                  padding: EdgeInsets.only(left: 5*fem,top: 20*fem, right: 5*fem, bottom: 45*fem),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context)=>booking_artist(artist_id: widget.artist_id, isteam: widget.isteam )));
-                      // Handle button press
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xffe5195e),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12 * fem),
-                      ),
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 16 * fem,
-                        vertical: 12 * fem,
-                      ),
-                      minimumSize: Size(double.infinity, 14 * fem),
-                    ),
-                    child: Center(
-                      child: Text(
-                        'Book Artist',
-                        style: SafeGoogleFont(
-                          'Be Vietnam Pro',
-                          fontSize: 16 * ffem,
-                          fontWeight: FontWeight.w700,
-                          height: 1.5 * ffem / fem,
-                          letterSpacing: 0.2399999946 * fem,
-                          color: Color(0xffffffff),
+                      Padding(
+                        padding: EdgeInsets.only(left: 5 * fem, top: 20 * fem, right: 5 * fem, bottom: 45 * fem),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => booking_artist(
+                                  artist_id: widget.artist_id,
+                                  isteam: widget.isteam,
+                                ),
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.zero, // Removed default padding to apply gradient correctly
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12 * fem),
+                            ),
+                          ),
+                          child: Ink(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [Color(0xffe5195e), Color(0xffd11b4f)], // Gradient from light to slightly darker
+                                begin: Alignment.centerLeft,
+                                end: Alignment.centerRight,
+                              ),
+                              borderRadius: BorderRadius.circular(12 * fem),
+                            ),
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 16 * fem,
+                                vertical: 12 * fem,
+                              ),
+                              constraints: BoxConstraints(minWidth: double.infinity, minHeight: 14 * fem),
+                              child: Center(
+                                child: Text(
+                                  'Book Artist',
+                                  style: SafeGoogleFont(
+                                    'Be Vietnam Pro',
+                                    fontSize: 16 * ffem,
+                                    fontWeight: FontWeight.w700,
+                                    height: 1.5 * ffem / fem,
+                                    letterSpacing: 0.2399999946 * fem,
+                                    color: Color(0xffffffff),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                ),
-              ],
+
+                    ],
             ),
           ),
         ],),
