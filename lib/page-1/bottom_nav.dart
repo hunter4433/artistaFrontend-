@@ -6,20 +6,18 @@ import 'package:test1/page-1/settings.dart';
 import 'package:test1/page-1/user_bookings.dart';
 
 class BottomNav extends StatefulWidget {
-
-  // final Map<String, dynamic> data;
   final int initialPageIndex;
   final String? newBookingTitle;
   final String? newBookingDateTime;
   String? isteam;
 
   BottomNav({
-    // required this.data,
     this.isteam,
     this.initialPageIndex = 0,
     this.newBookingTitle,
     this.newBookingDateTime,
   });
+
   @override
   State<BottomNav> createState() => _BottomNavState();
 }
@@ -33,57 +31,63 @@ class _BottomNavState extends State<BottomNav> {
   void initState() {
     super.initState();
     _currentIndex = widget.initialPageIndex;
-    _pages=[
+    _pages = [
       Home_user(),
-    Search(),
+      Search(key: null,),
       UserBookings(isteam: widget.isteam),
-    setting(),
+      setting(),
     ];
+  }
+
+  Future<bool> _onWillPop() async {
+    // Return false to prevent back navigation
+    return false;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Color(0xFF292938),
-      body: _pages[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Color(0xFF9E9EB8),
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-        type: BottomNavigationBarType.fixed,
-        backgroundColor:Colors.black, // Set your desired background color here
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_filled),
-            activeIcon: Icon(Icons.home_filled),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search_outlined),
-            activeIcon: Icon(Icons.search),
-            label: 'Search',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_month_outlined),
-            activeIcon: Icon(Icons.calendar_month),
-            label: 'Bookings',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_circle_outlined),
-            activeIcon: Icon(Icons.account_circle),
-            label: 'Profile',
-          ),
-        ],
+    return WillPopScope(
+      onWillPop: _onWillPop, // Intercept back navigation
+      child: Scaffold(
+        backgroundColor: Color(0xFF292938),
+        body: _pages[_currentIndex],
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+          selectedItemColor: Colors.white,
+          unselectedItemColor: Color(0xFF9E9EB8),
+          showSelectedLabels: true,
+          showUnselectedLabels: true,
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: Colors.black,
+          items: [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home_filled),
+              activeIcon: Icon(Icons.home_filled),
+              label: 'Home',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.search_outlined),
+              activeIcon: Icon(Icons.search),
+              label: 'Search',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.calendar_month_outlined),
+              activeIcon: Icon(Icons.calendar_month),
+              label: 'Bookings',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.account_circle_outlined),
+              activeIcon: Icon(Icons.account_circle),
+              label: 'Profile',
+            ),
+          ],
+        ),
       ),
     );
   }
 }
-
-

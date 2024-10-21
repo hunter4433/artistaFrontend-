@@ -37,7 +37,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
   String? teamName;
   String? artistRole;
   String? teamRole;
-  int? hasSoundSystem;
+  bool? hasSoundSystem;
   String? artistPrice;
   String? artistRatings;
   String? artistAboutText;
@@ -141,7 +141,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
             artistSpecialMessage = artistData['special_message'] ?? '';
             profilePhoto = artistData['profile_photo'] ?? '';
 
-            hasSoundSystem = artistData['sound_system'] ?? false;
+            hasSoundSystem=artistData['sound_system'] == 1 ? true: false ;
 
             // Image and video URLs
             image1 = artistData['image1'];
@@ -190,16 +190,23 @@ class _ArtistProfileState extends State<ArtistProfile> {
 
       if (response.statusCode == 200) {
         Map<String, dynamic> responseData = json.decode(response.body);
+
+
+        // Ensure count is not zero before dividing, to prevent division by zero.
+        double safeDivide(int numerator, int denominator) {
+          return denominator != 0 ? (numerator / denominator).toDouble() : 0.0;
+        }
+
      setState(() {
           _isLoading = false;
 
-         avg = responseData['average_rating'];
+          avg = (responseData['average_rating']).toDouble();
          count= responseData['total_ratings'];
-         four= responseData['four_star_ratings']/count;
-         five= responseData['five_star_ratings']/count;
-          three= responseData['three_star_ratings']/count;
-          two= responseData['two_star_ratings']/count;
-          one= responseData['one_star_ratings']/count;
+          four = safeDivide(responseData['four_star_ratings'], count!);
+          five = safeDivide(responseData['five_star_ratings'], count!);
+          three = safeDivide(responseData['three_star_ratings'], count!);
+          two = safeDivide(responseData['two_star_ratings'], count!);
+          one = safeDivide(responseData['one_star_ratings'], count!);
 
       });
 
@@ -405,7 +412,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
                             ),
                             Container(
                               margin: EdgeInsets.fromLTRB(20*fem,0*fem, 0*fem, 10*fem),
-                              padding: EdgeInsets.fromLTRB(0*fem, 20*fem, 0*fem, 0*fem),
+                              padding: EdgeInsets.fromLTRB(0*fem, 10*fem, 0*fem, 0*fem),
                               // depth4frame1YUo (15:2131)
                               width:220*fem,
                               height: 150*fem,
@@ -416,7 +423,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
                                     artistName ?? teamName ?? '', // Use the artistName variable directly
                                     style: TextStyle(
                                       fontSize: 20 * ffem,
-                                      fontWeight: FontWeight.w400,
+                                      fontWeight: FontWeight.w500,
                                       color: Colors.black,
                                     ),
                                   ),
@@ -427,22 +434,22 @@ class _ArtistProfileState extends State<ArtistProfile> {
                                     artistRole ?? teamRole ?? '', // Use the artistRole variable directly
                                     style: TextStyle(
                                       fontSize: 17 * ffem,
-                                      fontWeight: FontWeight.w400,
+                                      fontWeight: FontWeight.w500,
                                       color: Color(0xff964f66),
                                     ),
                                   ),
                                   SizedBox(
-                                    height: 4,
+                                    height: 4*fem,
                                   ),
 
                                   // FutureBuilder to fetch and display ratings
                                   Row(
                                     children: [
                                       Text(
-                                        'Rating: 4.57/5', // Static text
+                                        'Rating:  $avg/5', // Static text
                                         style: TextStyle(
                                           fontSize: 17 * ffem,
-                                          fontWeight: FontWeight.w400,
+                                          fontWeight: FontWeight.w500,
                                           color: Colors.black,
                                         ),
                                       ),
@@ -450,7 +457,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
                                         artistRatings ?? '', // Use the artistRatings variable directly
                                         style: TextStyle(
                                           fontSize: 17 * ffem,
-                                          fontWeight: FontWeight.w500,
+                                          fontWeight: FontWeight.w400,
                                           color: Colors.black,
                                         ),
                                       ),
@@ -468,7 +475,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
                                         'Price Per Hour: ₹ ', // Static text
                                         style: TextStyle(
                                           fontSize: 17 * ffem,
-                                          fontWeight: FontWeight.w400,
+                                          fontWeight: FontWeight.w500,
                                           color: Colors.black,
                                         ),
                                       ),
@@ -481,6 +488,14 @@ class _ArtistProfileState extends State<ArtistProfile> {
                                         ),
                                       ),
                                     ],
+                                  ),
+                                  Text(
+                                    '(Inclusive of all taxes)', // Static text
+                                    style: TextStyle(
+                                      fontSize: 15 * ffem,
+                                      fontWeight: FontWeight.w400,
+                                      color: Colors.black,
+                                    ),
                                   ),
 
 
@@ -519,35 +534,55 @@ class _ArtistProfileState extends State<ArtistProfile> {
                         padding: const EdgeInsets.only(left: 4, right: 15, bottom: 25),
                         child: ElevatedButton(
                           onPressed: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (context)=>booking_artist(artist_id : widget.artist_id, isteam: widget.isteam )));
-                            // Handle button press
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => booking_artist(
+                                    artist_id: widget.artist_id,
+                                    isteam: widget.isteam
+                                ),
+                              ),
+                            );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xffe5195e),
+                            padding: EdgeInsets.zero,  // Remove default padding to apply gradient correctly
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(9 * fem),
                             ),
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 16 * fem,
-                              vertical: 12 * fem,
-                            ),
-                            minimumSize: Size(double.infinity, 14 * fem),
                           ),
-                          child: Center(
-                            child: Text(
-                              'Book Artist',
-                              style: SafeGoogleFont(
-                                'Be Vietnam Pro',
-                                fontSize: 17 * ffem,
-                                fontWeight: FontWeight.w500,
-                                height: 1.5 * ffem / fem,
-                                letterSpacing: 0.2399999946 * fem,
-                                color: Color(0xffffffff),
+                          child: Ink(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [Color(0xffe5195e), Color(0xffd11b4f)],  // Adjusted the darker color to be lighter
+                                begin: Alignment.centerLeft,  // Start from the left side
+                                end: Alignment.centerRight,   // End at the right side
+                              ),
+                              borderRadius: BorderRadius.circular(9 * fem),
+                            ),
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 16 * fem,
+                                vertical: 12 * fem,
+                              ),
+                              constraints: BoxConstraints(minWidth: double.infinity, minHeight: 14 * fem),
+                              child: Center(
+                                child: Text(
+                                  'Book Artist',
+                                  style: SafeGoogleFont(
+                                    'Be Vietnam Pro',
+                                    fontSize: 17 * ffem,
+                                    fontWeight: FontWeight.w500,
+                                    height: 1.5 * ffem / fem,
+                                    letterSpacing: 0.2399999946 * fem,
+                                    color: Color(0xffffffff),
+                                  ),
+                                ),
                               ),
                             ),
                           ),
                         ),
                       ),
+
                       if (widget.isteam =='true')
                       // Team members section
                         Padding(
@@ -558,8 +593,8 @@ class _ArtistProfileState extends State<ArtistProfile> {
                               Text(
                                 'Team Members:',
                                 style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w600,
                                   color: Color(0xff1c0c11),
                                 ),
                               ),
@@ -677,7 +712,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
                                       ),
                                       child: Text(
                                         skill,
-                                        style: TextStyle(fontSize: 15.0,fontWeight: FontWeight.w500),
+                                        style: TextStyle(fontSize: 18.0,fontWeight: FontWeight.w500),
                                       ),
                                     );
                                   }).toList(),
@@ -685,7 +720,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
                               ),
                             ],
                           ),
-                          SizedBox(height: 8.0),
+                          SizedBox(height: 10.0*fem),
 
                           // Row for Experience
                           Row(
@@ -693,10 +728,10 @@ class _ArtistProfileState extends State<ArtistProfile> {
                             children: [
                               // Subheading for Experience
                               Text(
-                                'Experience: ',
+                                'Experience : ',
                                 style: TextStyle(
-                                  fontSize: 16.0,
-                                  fontWeight: FontWeight.w500,
+                                  fontSize: 18.0 * fem,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                               SizedBox(width: 8.0),
@@ -709,7 +744,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
                               ),
                             ],
                           ),
-                          SizedBox(height: 5.0),
+                          SizedBox(height: 10.0*fem),
 
                           // Row for Sound System
                           Row(
@@ -719,16 +754,16 @@ class _ArtistProfileState extends State<ArtistProfile> {
                               Text(
                                 'Has Sound System?:',
                                 style: TextStyle(
-                                  fontSize: 16.0,
-                                  fontWeight: FontWeight.w500,
+                                  fontSize: 18.0*fem,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                               SizedBox(width: 8.0*fem),
                               // Display Yes/No for Sound System
                               Text(
-                                hasSoundSystem != null ? 'Yes' :'Will be arranged by\n Homestage',
-                                style: TextStyle(fontWeight: FontWeight.w400,
-                                  fontSize: 16.0,
+                                hasSoundSystem != null && hasSoundSystem! ? 'Yes' : 'Will be arranged by\nHomestage',
+                                style: TextStyle(fontWeight: FontWeight.w500,
+                                  fontSize: 18.0*fem,
                                   color: hasSoundSystem != null ? Colors.green : Colors.pink,
                                 ),
                               ),
@@ -771,17 +806,20 @@ class _ArtistProfileState extends State<ArtistProfile> {
 
 
                 Container(
-                  margin: EdgeInsets.fromLTRB(15 * fem, 15, 16 * fem, 0),
+                  margin: EdgeInsets.fromLTRB(7 * fem, 15, 0 * fem, 0),
                   width: double.infinity,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Gallery',
-                        style: TextStyle(
-                          fontSize: 22 * ffem,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black,
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(8.0 * fem ,0,0,0),
+                        child: Text(
+                          'Gallery',
+                          style: TextStyle(
+                            fontSize: 22 * ffem,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black,
+                          ),
                         ),
                       ),
                       SizedBox(height: 12 * fem),
@@ -808,7 +846,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
                                 );
                               },
                               child: Container(
-                                width: 150 * fem, // Set width of each item in the carousel
+                                width: 160 * fem, // Set width of each item in the carousel
                                 margin: EdgeInsets.symmetric(horizontal: 5.5 * fem), // Add margin between items
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(9 * fem), // Example border radius
@@ -838,17 +876,20 @@ class _ArtistProfileState extends State<ArtistProfile> {
                 ),
                 //VideoPathsFromBackend.length
             Container(
-              margin: EdgeInsets.fromLTRB(15 * fem, 25*fem, 16 * fem, 0),
+              margin: EdgeInsets.fromLTRB(7 * fem, 25*fem, 0 * fem, 0),
               width: double.infinity,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Video Samples',
-                    style: TextStyle(
-                      fontSize: 22 * ffem,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black,
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(8.0 * fem ,0,0,0),
+                    child: Text(
+                      'Video Samples',
+                      style: TextStyle(
+                        fontSize: 22 * ffem,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black,
+                      ),
                     ),
                   ),
                   SizedBox(height: 12 * fem),
@@ -874,7 +915,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
                           );
                         },
                         child: Container(
-                          width: 150 * fem, // Set width of each item in the carousel
+                          width: 170 * fem, // Set width of each item in the carousel
                           margin: EdgeInsets.symmetric(horizontal: 5.0 * fem), // Add margin between items
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(9 * fem), // Example border radius
@@ -885,7 +926,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
                     } else {
                       // Placeholder when index exceeds the video list
                       return Container(
-                        width: 150 * fem, // Placeholder width
+                        width: 160 * fem, // Placeholder width
                         margin: EdgeInsets.symmetric(horizontal: 5.5 * fem), // Placeholder margin
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(9 * fem), // Example border radius
@@ -978,51 +1019,72 @@ class _ArtistProfileState extends State<ArtistProfile> {
                         child: CircularProgressIndicator(), // Show loader while fetching data
                       )
                       :ReviewsSection(
-                        averageRating: avg!, // Replace with dynamic data
+                        averageRating: avg!.toDouble(), // Replace with dynamic data
                         totalReviews: count!, // Replace with dynamic data
                         ratingDistribution: {
-                          5: five!,  // 70% of reviews are 5 stars
-                          4: four!,  // 20% of reviews are 4 stars
-                          3: three!, // 5% of reviews are 3 stars
-                          2: two!, // 3% of reviews are 2 stars
-                          1: one!, // 2% of reviews are 1 star
+                          5: five!.toDouble(),  // Convert num to double
+                          4: four!.toDouble(),  // Convert num to double
+                          3: three!.toDouble(), // Convert num to double
+                          2: two!.toDouble(),   // Convert num to double
+                          1: one!.toDouble(),   // Convert num to double
                         },
+                        artist_id: widget.artist_id,
                       ),
 
-                Padding(
-                  padding: EdgeInsets.only(left: 5*fem,top: 20*fem, right: 5*fem, bottom: 45*fem),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context)=>booking_artist(artist_id: widget.artist_id, isteam: widget.isteam )));
-                      // Handle button press
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xffe5195e),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12 * fem),
-                      ),
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 16 * fem,
-                        vertical: 12 * fem,
-                      ),
-                      minimumSize: Size(double.infinity, 14 * fem),
-                    ),
-                    child: Center(
-                      child: Text(
-                        'Book Artist',
-                        style: SafeGoogleFont(
-                          'Be Vietnam Pro',
-                          fontSize: 16 * ffem,
-                          fontWeight: FontWeight.w700,
-                          height: 1.5 * ffem / fem,
-                          letterSpacing: 0.2399999946 * fem,
-                          color: Color(0xffffffff),
+                      Padding(
+                        padding: EdgeInsets.only(left: 5 * fem, top: 20 * fem, right: 5 * fem, bottom: 45 * fem),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => booking_artist(
+                                  artist_id: widget.artist_id,
+                                  isteam: widget.isteam,
+                                ),
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.zero, // Removed default padding to apply gradient correctly
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12 * fem),
+                            ),
+                          ),
+                          child: Ink(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [Color(0xffe5195e), Color(0xffd11b4f)], // Gradient from light to slightly darker
+                                begin: Alignment.centerLeft,
+                                end: Alignment.centerRight,
+                              ),
+                              borderRadius: BorderRadius.circular(12 * fem),
+                            ),
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 16 * fem,
+                                vertical: 12 * fem,
+                              ),
+                              constraints: BoxConstraints(minWidth: double.infinity, minHeight: 14 * fem),
+                              child: Center(
+                                child: Text(
+                                  'Book Artist',
+                                  style: SafeGoogleFont(
+                                    'Be Vietnam Pro',
+                                    fontSize: 16 * ffem,
+                                    fontWeight: FontWeight.w700,
+                                    height: 1.5 * ffem / fem,
+                                    letterSpacing: 0.2399999946 * fem,
+                                    color: Color(0xffffffff),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                ),
-              ],
+
+                    ],
             ),
           ),
         ],),
@@ -1160,7 +1222,8 @@ class FullScreenVideoView extends StatelessWidget {
 
 
 class ReviewsSection extends StatelessWidget {
-  final double averageRating;
+  late String artist_id;
+  final num averageRating;
   final int totalReviews;
   final Map<int, double> ratingDistribution; // Star rating and its percentage
 
@@ -1168,6 +1231,7 @@ class ReviewsSection extends StatelessWidget {
     required this.averageRating,
     required this.totalReviews,
     required this.ratingDistribution,
+    required this.artist_id
   });
 
   @override
@@ -1219,7 +1283,7 @@ class ReviewsSection extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => AllReviewsPage(),
+                  builder: (context) => AllReviewsPage(artist_id : artist_id),
                 ),
               );
             },
@@ -1273,6 +1337,9 @@ class ReviewsSection extends StatelessWidget {
   }}
 
   class AllReviewsPage extends StatefulWidget {
+
+     late String  artist_id;
+    AllReviewsPage( { required this.artist_id} );
     // Simulating reviews fetched from backend
     @override
     _AllReviewsPageState createState() => _AllReviewsPageState();
@@ -1310,11 +1377,66 @@ class _AllReviewsPageState extends State<AllReviewsPage>{
 
   }
 
+    Future<void> sendUserIdsAndFetchNames(List<Map<String, dynamic>> reviews) async {
+      // Collect user IDs from reviews
+      List<int?> userIds = reviews
+          .map((review) => review['user_id'] as int?)
+          .where((id) => id != null) // Filter out null user_ids
+          .toList();
 
-Future<void> rating() async {
-      String apiUrl = '${Config().apiDomain}/review/';
+      // API URL for sending user IDs and fetching names
+      final String apiUrl = '${Config().apiDomain}/review/usernames';
+
+      // Create the request body
+      Map<String, dynamic> body = {
+        'user_ids': userIds,
+      };
+
+      try {
+        // Make the POST request with a timeout to fetch user names
+        final response = await http
+            .post(
+          Uri.parse(apiUrl),
+          headers: {
+            'Content-Type': 'application/vnd.api+json',
+            'Accept': 'application/vnd.api+json',
+          },
+          body: jsonEncode(body),
+        )
+            .timeout(const Duration(seconds: 10)); // 10 seconds timeout
+
+        // Check for success
+        if (response.statusCode == 200) {
+          var responseData = jsonDecode(response.body);
+
+          // Get the list of user names
+          List<dynamic> userNames = responseData['names'] ?? [];
+
+          // Add names to reviews, ensuring fallback for null names
+          for (int i = 0; i < reviews.length; i++) {
+            reviews[i]['user_name'] = (i < userNames.length && userNames[i] != null)
+                ? userNames[i].toString()
+                : 'Unknown User'; // Fallback if name is null
+          }
+
+          print('Names fetched successfully: $userNames');
+        } else {
+          print('Failed to fetch user names. Status code: ${response.body}');
+        }
+      } catch (e) {
+        print('Error fetching names: $e');
+      }
+    }
+
+    bool isLoading = true; // Add a loading flag
+
+    Future<void> rating() async {
+      setState(() {
+        isLoading = true; // Set loading to true when the function starts
+      });
+
+      String apiUrl = '${Config().apiDomain}/review/${widget.artist_id}';
       print(apiUrl);
-
 
       try {
         var response = await http.get(
@@ -1326,33 +1448,33 @@ Future<void> rating() async {
         );
 
         if (response.statusCode == 200) {
-           // List<Map<String, dynamic>> reviews = json.decode(response.body);
-           List<dynamic> rawReviews = json.decode(response.body);
-           setState(() {
-             // Decode the response as a List<dynamic>
+          // Decode the raw JSON response
+          List<dynamic> rawReviews = json.decode(response.body);
 
+          // Convert the dynamic list to a List<Map<String, dynamic>>
+          reviews = List<Map<String, dynamic>>.from(rawReviews);
 
-             // Cast each item in the list to Map<String, dynamic>
-              reviews = rawReviews.cast<Map<String, dynamic>>();
+          try {
+            await sendUserIdsAndFetchNames(reviews);
+          } catch (e) {
+            print('Error while sending user IDs and fetching names: $e');
+          }
 
-             // Now you can work with `reviews` as a List of maps
-           });
-           
-           // String user_id=reviews['user_id'].toString() ;
-
-            print(reviews);
-
-
-          print(reviews);
-
-
+          setState(() {
+            reviews = rawReviews.cast<Map<String, dynamic>>();
+            isLoading = false; // Stop loading after successful data fetching
+          });
         } else {
-          print('Failed to fetch data. Status code: ${response.statusCode}');
-          // return 'Error fetching availability status';
+          print('Failed to fetch data. Status code: ${response.body}');
+          setState(() {
+            isLoading = false; // Stop loading even in failure case
+          });
         }
       } catch (e) {
         print('Error fetching data: $e');
-        // return 'Error fetching availability status';
+        setState(() {
+          isLoading = false; // Stop loading even in case of exception
+        });
       }
     }
 
@@ -1373,92 +1495,167 @@ Future<void> rating() async {
     );
   }
 
-  // Single review item widget
-  Widget buildReviewItem(Map<String, dynamic> review, double fem, double ffem) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 15 * fem, horizontal: 16 * fem),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Circular profile picture
-          // Circular profile picture or default grey icon
-          CircleAvatar(
-            radius: 26 * fem,
-            backgroundColor: Colors.grey[200], // Grey background
-            child: ClipOval(
-              child: review['photo'] != null && review['photo'].isNotEmpty
-                  ? Image.network(
-                review['photo'],
-                width: 52 * fem, // Size should match the radius
-                height: 52 * fem,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  // Fallback to default icon if image fails to load
-                  return Icon(
-                    Icons.account_circle,
-                    size: 52 * fem,
-                    color: Colors.grey[400],
-                  );
-                },
-              )
-                  : Icon(
-                Icons.account_circle,
-                size: 52 * fem, // Matching size
-                color: Colors.grey[400],
-              ),
-            ),
-          ),
+    // Single review item widget
+    Widget buildReviewItem(Map<String, dynamic> review, double fem, double ffem, BuildContext context) {
+      String reviewText = review['review_text'] ?? '';
+      List<String> words = reviewText.split(' '); // Split by spaces
 
-          SizedBox(width: 12 * fem),
+      String heading = words.isNotEmpty ? words[0] : '';
+      String description = words.length > 1 ? words.sublist(1).join(' ') : ''; // Join the rest of the words
 
-          // Review content
-          Expanded(
-            child: Column(
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 15 * fem, horizontal: 16 * fem),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Name and rating
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      review['rating'].toString(),
-                      style: TextStyle(
-                        fontSize: 17 * ffem,
-                        fontWeight: FontWeight.bold,
-                      ),
+                // Circular profile picture or default grey icon
+                CircleAvatar(
+                  radius: 26 * fem,
+                  backgroundColor: Colors.grey[200], // Grey background
+                  child: ClipOval(
+                    child: review['profile'] != null && review['profile'].isNotEmpty
+                        ? Image.network(
+                      review['profile'],
+                      width: 52 * fem, // Size should match the radius
+                      height: 52 * fem,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        // Fallback to default icon if image fails to load
+                        return Icon(
+                          Icons.account_circle,
+                          size: 52 * fem,
+                          color: Colors.grey[400],
+                        );
+                      },
+                    )
+                        : Icon(
+                      Icons.account_circle,
+                      size: 52 * fem, // Matching size
+                      color: Colors.grey[400],
                     ),
-                    buildStarRating(review['rating']),
-                  ],
-                ),
-                SizedBox(height: 4 * fem),
-
-                // Heading
-                Text(
-                  review['rating'].toString(),
-                  style: TextStyle(
-                    fontSize: 15 * ffem,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black,
                   ),
                 ),
-                SizedBox(height: 4 * fem),
+                SizedBox(width: 12 * fem),
 
-                // Review text
-                Text(
-                  review['review_text'],
-                  style: TextStyle(
-                    fontSize: 15 * ffem,
-                    color: Colors.grey[600],
+                // Review content
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Name and rating
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // User's name from fetched data
+                          Text(
+                            review['user_name'] ?? 'Anonymous',
+                            style: TextStyle(
+                              fontSize: 17 * ffem,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          buildStarRating(review['rating']),
+                        ],
+                      ),
+                      SizedBox(height: 4 * fem),
+
+                      // Heading
+                      Text(
+                        heading,
+                        style: TextStyle(
+                          fontSize: 15 * ffem,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black,
+                        ),
+                      ),
+                      SizedBox(height: 4 * fem),
+
+                      // Review text
+                      Text(
+                        description,
+                        style: TextStyle(
+                          fontSize: 15 * ffem,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-          ),
 
-        ],
+            SizedBox(height: 10 * fem),
+
+            // Review photo and video section (center-aligned)
+            Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center, // Center-aligns the content horizontally
+                children: [
+                  // Review photo section (display only if available)
+                  if (review['photo'] != null && review['photo'].isNotEmpty)
+                    GestureDetector(
+                      onTap: () {
+                        showMediaFullScreen(context, review['photo'], true);
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: Image.network(
+                          review['photo'],
+                          width: 100, // Adjust as needed
+                          height: 100, // Adjust as needed
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            // Handle error while loading review photo
+                            return SizedBox(
+                              height: 100,
+                              width: 100,
+                              child: Center(child: Text('Image not available')),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+
+                  // Review video section (display only if available)
+                  if (review['photo'] != null && review['photo'].isNotEmpty)
+                    GestureDetector(
+                      onTap: () {
+                        showMediaFullScreen(context, review['photo'], false);
+                      },
+                      child: Container(
+                        width: 100, // Adjust size as needed
+                        height: 100, // Adjust size as needed
+                        decoration: BoxDecoration(
+                          color: Colors.black,
+                          image: DecorationImage(
+                            image: NetworkImage(review['photo']), // Thumbnail for video
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        child: Icon(Icons.play_circle_filled, color: Colors.white, size: 40), // Play icon over video thumbnail
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+// Function to show the media (photo/video) in fullscreen
+  void showMediaFullScreen(BuildContext context, String mediaUrl, bool isPhoto) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FullScreenMediaPage(mediaUrl: mediaUrl, isPhoto: isPhoto),
       ),
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -1484,64 +1681,53 @@ Future<void> rating() async {
           },
         ),
       ),
-      body: reviews.isEmpty
+      body: isLoading
           ? Center(child: CircularProgressIndicator()) // Show a loader if reviews are not yet fetched
           : ListView.builder(
         itemCount: reviews.length, // Number of reviews from the backend
         itemBuilder: (context, index) {
-          return buildReviewItem(reviews[index], fem, ffem);
+          return buildReviewItem(reviews[index], fem, ffem,context);
         },
       ),
     );
 
 
-    // // Function to build each review item
-    // Widget buildReviewItem(Map<String, dynamic> review, double fem, double ffem) {
-    //   return Card(
-    //     margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-    //     child: Padding(
-    //       padding: EdgeInsets.all(16.0),
-    //       child: Column(
-    //         crossAxisAlignment: CrossAxisAlignment.start,
-    //         children: [
-    //           Row(
-    //             children: [
-    //               CircleAvatar(
-    //                 backgroundImage: NetworkImage(review['profilePicture']),
-    //               ),
-    //               SizedBox(width: 10),
-    //               Text(
-    //                 review['name'],
-    //                 style: TextStyle(
-    //                   fontSize: 16 * ffem,
-    //                   fontWeight: FontWeight.bold,
-    //                 ),
-    //               ),
-    //             ],
-    //           ),
-    //           SizedBox(height: 10),
-    //           Row(
-    //             children: [
-    //               Icon(Icons.star, color: Colors.yellow, size: 16 * fem),
-    //               SizedBox(width: 4),
-    //               Text('${review['rating']} stars'),
-    //             ],
-    //           ),
-    //           SizedBox(height: 10),
-    //           Text(
-    //             review['heading'],
-    //             style: TextStyle(
-    //               fontSize: 14 * ffem,
-    //               fontWeight: FontWeight.bold,
-    //             ),
-    //           ),
-    //           SizedBox(height: 8),
-    //           Text(review['review']),
-    //         ],
-    //       ),
-    //     ),
-    //   );
+
   }
 
 
+}
+
+// Full screen media page (either photo or video)
+class FullScreenMediaPage extends StatelessWidget {
+  final String mediaUrl;
+  final bool isPhoto;
+
+  const FullScreenMediaPage({Key? key, required this.mediaUrl, required this.isPhoto}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: IconThemeData(color: Colors.white),
+      ),
+      body: Center(
+        child: isPhoto
+            ? Image.network(
+          mediaUrl,
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) {
+            return Text('Image not available', style: TextStyle(color: Colors.white));
+          },
+        )
+            : AspectRatio(
+          aspectRatio: 16 / 9,
+          child: VideoPlayerWidget(url: mediaUrl), // Assuming you have a VideoPlayerWidget
+        ),
+      ),
+    );
+  }
 }

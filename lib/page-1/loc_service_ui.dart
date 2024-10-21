@@ -67,7 +67,7 @@ class _ServiceCheckerPageState extends State<ServiceCheckerPage> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Service not available in your region.'),
+          content: Text('Service not available in your regions.'),
         ));
       }
     } catch (error) {

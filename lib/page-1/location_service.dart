@@ -1,3 +1,4 @@
+import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -29,6 +30,57 @@ class LocationService {
 
     return await Geolocator.getCurrentPosition();
   }
+
+  Future<Map<String, dynamic>> getCurrentLocationAndAddress() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Check if location services are enabled
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return Future.error('Location services are disabled.');
+    }
+
+    // Check location permissions
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error('Location permissions are denied');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      return Future.error('Location permissions are permanently denied.');
+    }
+
+    // Get current position (latitude and longitude)
+    Position position = await Geolocator.getCurrentPosition();
+
+    // Get the address from the coordinates
+    List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
+
+    String currentAddress = 'No address available';
+    if (placemarks.isNotEmpty) {
+      Placemark place = placemarks[0];
+
+      // Construct the address
+      currentAddress =
+      '${place.street}, ${place.locality}, ${place.administrativeArea} ${place.postalCode}, ${place.country}';
+    }
+
+    // Return latitude, longitude, and the current address
+    return {
+      'latitude': position.latitude,
+      'longitude': position.longitude,
+      'address': currentAddress,
+    };
+  }
+
+
+
+
+
 
   Future<Position> getLocationFromAddress(String address) async {
     final response = await http.get(Uri.parse('https://nominatim.openstreetmap.org/search?q=$address&format=json&limit=1'));

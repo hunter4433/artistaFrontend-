@@ -52,7 +52,7 @@ android {
 
     defaultConfig {
         applicationId "com.HomeStage.artista"
-        minSdkVersion 23 // Replace flutter.minSdkVersion with actual version number
+        minSdkVersion 24 // Replace flutter.minSdkVersion with actual version number
         targetSdkVersion flutter.targetSdkVersion // Replace flutter.targetSdkVersion with actual version number
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName

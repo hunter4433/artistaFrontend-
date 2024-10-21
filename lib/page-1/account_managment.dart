@@ -257,53 +257,53 @@ class account_managment extends StatelessWidget {
                         ),
                       ),
                     ),
-                  // Edit Work Samples (based on conditions)
-                  if (isSoloArtist || isTeam)
-                    InkWell(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => ArtistCredentials44()),
-                        );
-                      },
-                      child: Container(
-                        padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 6 * fem, 10 * fem),
-                        width: double.infinity,
-                        height: 56 * fem,
-                        decoration: BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(
-                              color: Colors.grey,
-                              width: 0.2,
-                            ),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Container(
-                                child: Text(
-                                  'Edit Work Samples',
-                                  style: TextStyle(
-                                    fontSize: 17 * ffem,
-                                    fontWeight: FontWeight.w400,
-                                    height: 1.5 * ffem / fem,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Container(
-                              width: 64 * fem,
-                              height: 44 * fem,
-                              child: Icon(
-                                Icons.arrow_forward_ios_rounded,color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+                  // // Edit Work Samples (based on conditions)
+                  // if (isSoloArtist || isTeam)
+                  //   InkWell(
+                  //     onTap: () {
+                  //       Navigator.push(
+                  //         context,
+                  //         MaterialPageRoute(builder: (context) => ArtistCredentials44()),
+                  //       );
+                  //     },
+                  //     child: Container(
+                  //       padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 6 * fem, 10 * fem),
+                  //       width: double.infinity,
+                  //       height: 56 * fem,
+                  //       decoration: BoxDecoration(
+                  //         border: Border(
+                  //           bottom: BorderSide(
+                  //             color: Colors.grey,
+                  //             width: 0.2,
+                  //           ),
+                  //         ),
+                  //       ),
+                  //       child: Row(
+                  //         children: [
+                  //           // Expanded(
+                  //           //   child: Container(
+                  //           //     child: Text(
+                  //           //       'Edit Work Samples',
+                  //           //       style: TextStyle(
+                  //           //         fontSize: 17 * ffem,
+                  //           //         fontWeight: FontWeight.w400,
+                  //           //         height: 1.5 * ffem / fem,
+                  //           //         color: Colors.white,
+                  //           //       ),
+                  //           //     ),
+                  //           //   ),
+                  //           // ),
+                  //           // Container(
+                  //           //   width: 64 * fem,
+                  //           //   height: 44 * fem,
+                  //           //   child: Icon(
+                  //           //     Icons.arrow_forward_ios_rounded,color: Colors.white,
+                  //           //   ),
+                  //           // ),
+                  //         ],
+                  //       ),
+                  //     ),
+                  //   ),
                   // Report a Problem
                   InkWell(
                     onTap: () {

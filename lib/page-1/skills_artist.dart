@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:io';
+// import 'package:ffmpeg_kit_flutter/return_code.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -9,6 +11,8 @@ import 'bottomNav_artist.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
+// import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 
 
@@ -51,8 +55,9 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
   // Selected options in the sub-skill dropdown
   List<String> _selectedSubSkills = [];
   bool _isLoading = false;
-
-
+  bool _isCompressing = false;
+  // double _progress = 0.0;
+  StreamSubscription? _subscription;
 
   Future<String?> _getFCMToken() async {
     return await storage.read(key: 'fCMToken'); // Assuming you stored the token with key 'token'
@@ -84,168 +89,273 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
   Future<String?> _getToken() async {
     return await storage.read(key: 'token'); // Assuming you stored the token with key 'token'
   }
+  Future<void> storeBankDetails() async {
+    final url = Uri.parse('${Config().apiDomain}/artist-bank-details');
+    String? artist_id= await storage.read(key: 'artist_id');
+
+    // Collect data from controllers
+    final Map<String, dynamic> bankData = {
+      'UPI_id': _upiController.text,
+      'account_number': _accountNumberController.text,
+      'IFSC_code':  _ifscController.text,
+      'account_holder_name': _accountHolderNameController.text,
+      'artist_id': artist_id ?? '',
+      // 'team_id': int.tryParse(_teamIdController.text) ?? null,
+    };
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body:jsonEncode(bankData),
+      );
+
+      if (response.statusCode == 201) {
+        // Success
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Bank details saved successfully!')),
+        );
+      } else {
+        // Failure
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to save bank details.')),
+        );
+      }
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: $error')),
+      );
+    }
+  }
+
+
+  Future<bool> _onFinishButtonClicked() async {
+    try {
+      // Send data to the backend and get the ID
+      bool dataSent = await _sendDataToBackend();
+         await  storeBankDetails();
+      // if (!dataSent) {
+      //   print('Failed to send data to backend. mohit ');
+      //   return false;
+      // }
+
+      // Retrieve the stored ID
+      String? id = await storage.read(key: 'artist_id');
+      if (id == null) {
+        print('Failed to retrieve ID from storage.');
+        return false;
+      }
+
+      List<File?> imageFiles = [_image1, _image2, _image3, widget.profilePhoto];
+      List<File?> videoFiles = [_video1, _video2, _video3, _video4];
+
+      // Run upload functions in parallel with ID
+      final results = await Future.wait([
+        uploadImages(imageFiles, id),      // Upload images with ID
+        uploadVideos(videoFiles, id)         // Upload videos with ID
+      ]);
+
+      bool imagesUploaded = results[0] as bool; // Result from _uploadImages
+      bool videosUploaded = results[1] as bool; // Result from uploadVideo
+
+      // Handle the results
+     if (imagesUploaded && videosUploaded) {
+    //   if (imagesUploaded){
+        print('All operations completed successfully.');
+        return true;
+      } else {
+        print('Some operations failed.');
+      }
+    } catch (e) {
+      // Handle any errors that occur during the process
+      print('An error occurred: $e');
+    }
+    return false;
+  }
+
 
   Future<bool> _sendDataToBackend() async {
     String? profilePhotoPath = widget.profilePhoto?.path;
+    String? phoneNumber = await _getPhoneNumber();
 
-    print(profilePhotoPath);
-    String? phone_number = await _getPhoneNumber();
     try {
       // Get shared preferences data
       Map<String, dynamic?> sharedPreferencesData = await getAllSharedPreferences();
       Map<String, String?> profilePreferencesData = await profileSharedPreferences();
 
-      // var profilePhoto=profilePreferencesData['profile_photo'];
-      File profilePhotoFile = File(profilePhotoPath!);
-      // print(profilePhotoFile);
-      // print(_image1);
-      // print(_image2);
-
-      // print(profile_photo);
-
-      // Get authentication token
+      // Get authentication token and FCM token
       String? token = await _getToken();
+      String? fCMToken = await _getFCMToken();
 
-      String? fCMToken= await _getFCMToken();
+      // Prepare data to send to the backend
+      Map<String, String> artistData = {
+        'phone_number': phoneNumber!,
+        'skills': _selectedSubSkill,
+        'about_yourself': _experienceController.text,
+        'price_per_hour': _hourlyPriceController.text,
+        'skill_category': _selectedSkill,
+        'special_message': _messageController.text,
+        'fcm_token': fCMToken!,
+        'sound_system':'0',
+      };
 
+      // Merge sharedPreferencesData with artistData
+      Map<String, String?> mergedData = {...sharedPreferencesData, ...artistData};
 
-        // Select images from gallery
-        List<File?> imageFiles = [_image1, _image2, _image3, _image4,profilePhotoFile];
-        List<File?> videoFiles = [_video1, _video2, _video3, _video4];
+      // Ensure that the images and videos were successfully uploaded
+      // if (profilePhotoPath != null) {
+      //   mergedData['profile_photo'] = profilePhotoPath;
+      // }
 
+      // Convert data to JSON format
+      String jsonData = json.encode(mergedData);
+      print(jsonData);
 
+      // Example URL, replace with your actual API endpoint
+      String apiUrl = '${Config().apiDomain}/artist/info';
 
-          // Prepare data to send to the backend
-          Map<String, String> artistData = {
-            'phone_number': phone_number!,
-            'skills': _selectedSubSkill,
-            'about_yourself': _experienceController.text,
-            'price_per_hour': _hourlyPriceController.text,
-            'skill_category': _selectedSkill,
-            'special_message': _messageController.text,
-            'fcm_token':fCMToken!,
-          };
+      // Make POST request to the API
+      var response = await http.post(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/vnd.api+json',
+          'Accept': 'application/vnd.api+json',
+          // 'Authorization': 'Bearer $token', // Include the token in the header
+        },
+        body: jsonData,
+      );
 
-          // Merge sharedPreferencesData with artistData
-          Map<String, String?> mergedData = {...sharedPreferencesData, ...artistData};
-          // Upload images and store paths
-          print(imageFiles.length);
-          List<String> imagePaths = await _uploadImages(imageFiles);
-          List<String> videoPaths = await uploadVideo(videoFiles);
-           print(videoPaths);
+      // Check if the request was successful (status code 201)
+      if (response.statusCode == 201) {
+        // Data sent successfully, handle response if needed
+        print('Data sent successfully');
+        print('Response: ${response.body}');
 
-           if(videoPaths.length == videoFiles.length){
-             for(int i=0; i < videoFiles.length; i++){
-               mergedData['video${i+1}']= videoPaths[i];
-             }
+        Map<String, dynamic> responseData = jsonDecode(response.body);
+        String id = responseData['data']['id'];
+        await storage.write(key: 'artist_id', value: id);
 
+        String skill = responseData['data']['attributes']['skill_category'];
+        print(id);
+        print(skill);
 
-           }
-          //
-          // Ensure imagePaths contains the profile photo path
-          if (imagePaths.length == imageFiles.length) {
-            // If it does, proceed to merge data
-            for (int i = 0; i < imageFiles.length; i++) {
-              if (i == imageFiles.length - 1) {
-                // Last item (profile photo)
-                mergedData['profile_photo'] = imagePaths[i];
-              } else {
-                // Other image files
-                mergedData['image${i + 1}'] = imagePaths[i];
-              }
-            }
-
-
-          // Convert data to JSON format
-          String jsonData = json.encode(mergedData);
-          print(jsonData);
-
-          // Example URL, replace with your actual API endpoint
-          String apiUrl = '${Config().apiDomain}/artist/info';
-          // await Future.delayed(Duration(seconds: 3));
-
-          // Make POST request to the API
-          var response = await http.post(
-            Uri.parse(apiUrl),
-            headers: <String, String>{
-              'Content-Type': 'application/vnd.api+json',
-              'Accept': 'application/vnd.api+json',
-              // 'Authorization': 'Bearer $token', // Include the token in the header
-            },
-            body: jsonData,
-          );
-
-          // Check if request was successful (status code 200)
-          if (response.statusCode == 201) {
-            // Data sent successfully, handle response if needed
-            print('Data sent successfully');
-            // Example response handling
-            print('Response: ${response.body}');
-
-            Map<String, dynamic> responseData = jsonDecode(response.body);
-            String id = responseData['data']['id'];
-            await storage.write(key: 'id', value: id);
-
-            String skill = responseData['data']['skill_category'];
-            print(id);
-            print(skill);
-            return true ;
-          } else {
-            // Request failed, handle error
-            print('Failed to send data. Status code: ${response.statusCode}');
-            // Example error handling
-            print('Error response: ${response.body}');
-          }
-        } else {
-          print('No images selected');
-        }
-
+        return true;
+      } else {
+        // Request failed, handle error
+        print('Failed to send data. Status code: ${response.statusCode}');
+        print('Error response: ${response.body}');
+      }
     } catch (e) {
       // Handle network errors
       print('Error sending data: $e');
     }
+
     return false;
   }
 
-  Future<List<String>> uploadVideo(List<File?> videoFiles) async {
-    final uri = Uri.parse('${Config().apiDomain}/upload-video');
-    List<String> videoPaths = [];
 
+
+
+  Future<bool> uploadVideos(List<File?> videoFiles, String id) async {
     try {
       for (File? videoFile in videoFiles) {
         if (videoFile != null) {
-          var request = http.MultipartRequest('POST', uri);
+          // Trim the video if it is longer than 15 seconds
+          // File trimmedVideo = await trimVideoIfNeeded(videoFile);
+          bool uploadSuccess = await uploadVideo(videoFile, id);
 
-          var videoStream = http.ByteStream(videoFile.openRead());
-          var videoLength = await videoFile.length();
-
-          var multipartFile = http.MultipartFile(
-            'video',
-            videoStream,
-            videoLength,
-            filename: videoFile.path.split('/').last,
-          );
-
-          request.files.add(multipartFile);
-
-          var response = await request.send();
-
-          if (response.statusCode == 201) {
-            var d = await response.stream.bytesToString();
-            String path = json.decode(d)['videoPath'];
-            print(path);
-            videoPaths.add(path); // Correctly add the path to the list
-          } else {
-            print('Video upload failed for ${videoFile.path} with status: ${response.statusCode}');
+          if (!uploadSuccess) {
+            print('Failed to upload video: ${videoFile.path}');
+            return false; // If any video fails to upload, return false
           }
         }
       }
+      return true; // All videos uploaded successfully
     } catch (e) {
-      print('An error occurred during video upload: $e');
+      print('Error uploading videos: $e');
+      return false;
     }
-
-    return videoPaths; // Return the list of uploaded video paths
   }
+
+  // Future<File> trimVideoIfNeeded(File videoFile) async {
+  //   String inputPath = videoFile.path;
+  //   String outputPath =
+  //       '${(await getTemporaryDirectory()).path}/trimmed_${videoFile.path.split('/').last}';
+  //
+  //   try {
+  //     // FFmpeg command to retrieve video duration in seconds.
+  //     String durationCommand = '-i $inputPath -v error -select_streams v:0 -show_entries stream=duration -of default=noprint_wrappers=1:nokey=1';
+  //
+  //     // Execute the FFmpeg command.
+  //     var session = await FFmpegKit.execute(durationCommand);
+  //
+  //     // Check the result of the session.
+  //     final returnCode = await session.getReturnCode();
+  //
+  //     if (ReturnCode.isSuccess(returnCode)) {
+  //       // Extract the output from FFmpeg session.
+  //       final output = await session.getOutput();
+  //       double duration = double.tryParse(output!.trim()) ?? 0.0;
+  //
+  //       print('Video duration is $duration seconds.');
+  //
+  //       if (duration > 20) {
+  //         print('Trimming video to 20 seconds...');
+  //
+  //         // FFmpeg command to trim the video to 20 seconds.
+  //         String trimCommand = '-i $inputPath -t 20 -c copy $outputPath';
+  //         await FFmpegKit.execute(trimCommand);
+  //
+  //         print('Video trimmed to 20 seconds: $outputPath');
+  //         return File(outputPath);
+  //       } else {
+  //         print('No trimming needed.');
+  //         return videoFile; // Return original video if no trimming is required.
+  //       }
+  //     } else {
+  //       print('Failed to get video information. FFmpeg return code: $returnCode');
+  //       return videoFile;
+  //     }
+  //   } catch (e) {
+  //     print('Error while processing video: $e');
+  //     return videoFile;
+  //   }
+  // }
+
+  Future<bool> uploadVideo(File videoFile, String id) async {
+    try {
+      var uploadUrl = Uri.parse('${Config().apiDomain}/upload-video/$id');
+
+      var request = http.MultipartRequest('POST', uploadUrl);
+
+      var videoStream = http.ByteStream(videoFile.openRead());
+      var videoLength = await videoFile.length();
+
+      var multipartFile = http.MultipartFile(
+        'video',
+        videoStream,
+        videoLength,
+        filename: videoFile.path.split('/').last,
+      );
+
+      request.files.add(multipartFile);
+
+      var streamedResponse = await request.send();
+
+      if (streamedResponse.statusCode == 201) {
+        var response = await streamedResponse.stream.bytesToString();
+        print(response);
+        return true;
+      } else {
+        print('Video upload failed with status: ${streamedResponse.statusCode}');
+        return false;
+      }
+    } catch (e) {
+      print('Error uploading video: $e');
+      return false;
+    }
+  }
+
 
 
 
@@ -443,6 +553,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
       print(_video4);
     }
   }
+
 
 
   @override
@@ -678,6 +789,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                                   setState(() {
                                     selectedOption = newValue; // Update selected option
                                   });
+                                  print('soun dystem : $selectedOption');
                                 },
                               ),
                             )
@@ -786,10 +898,9 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
 
 
                       const Padding(
-                        padding: EdgeInsets.fromLTRB(0,30,0,0),
+                        padding: EdgeInsets.fromLTRB(0, 30, 0, 0),
                         child: SizedBox(
-                          height: 40,
-
+                          height: 20,
                           child: Text(
                             'Upload Your Videos Here',
                             textAlign: TextAlign.left,
@@ -802,6 +913,22 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                           ),
                         ),
                       ),
+
+// Description to indicate the duration limit
+                      const Padding(
+                        padding: EdgeInsets.fromLTRB(0, 5, 0, 20),
+                        child: Text(
+                          'Keep the video duration maximum to 15 seconds.',
+                          textAlign: TextAlign.left,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            color: Colors.red,
+                            fontFamily: 'Be Vietnam Pro',
+                          ),
+                        ),
+                      ),
+
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: Row(
@@ -810,16 +937,16 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                             GestureDetector(
                               onTap: _pickVideo1,
                               child: Container(
-                                width: 150 * fem,  // Set your desired width
-                                height: 170 * fem, // Set your desired height
-                                margin: EdgeInsets.only(right: 16.0), // Spacing between boxes
+                                width: 150 * fem,
+                                height: 170 * fem,
+                                margin: EdgeInsets.only(right: 16.0),
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(10 * fem),
                                   border: Border.all(color: Colors.grey),
                                 ),
                                 child: _controller1 != null
                                     ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(10 * fem), // Rounded corners for the video
+                                  borderRadius: BorderRadius.circular(10 * fem),
                                   child: VideoPlayer(_controller1!),
                                 )
                                     : Icon(Icons.add, color: Colors.white),
@@ -1199,12 +1326,8 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                 minimumSize: Size(double.infinity, 14),
               ),
               child: Center(
-                child: _isLoading
-                    ? CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                )
-                    : Text(
-                  'Finish',
+                child : Text(
+                  _isLoading ? 'loading...' : 'finish',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w500,
@@ -1232,74 +1355,110 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
     setState(() {
       _isLoading = true;
     });
+    // double _progress = 0.0;
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Prevents dismissing the dialog by tapping outside
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              backgroundColor: Color(0xfff5f5f5),
+              content: SizedBox(
+                height: 150,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xffe5195e)),
+                    ),
+                    SizedBox(height: 20),
+                    Text(
+                      'Your profile is generating...'
+                          'It may take upto few minutes',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xff333333),
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    // Percentage text
+                    // Text(
+                    //   '${_progress.toInt()}%', // Display the percentage
+                    //   style: TextStyle(
+                    //     fontSize: 16,
+                    //     fontWeight: FontWeight.w600,
+                    //     color: Color(0xff333333),
+                    //   ),
+                    // ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
 
-    getAllSharedPreferences();
-    bool wait = await _sendDataToBackend();
+    // // Simulate the process and update the percentage
+    // for (int i = 0; i <= 100; i++) {
+    //   await Future.delayed(Duration(milliseconds: 50)); // Adjust the speed
+    //   setState(() {
+    //     _progress = i.toDouble();
+    //   });
+    // }
+    bool wait = await _onFinishButtonClicked();
+    // Close the dialog once the process is complete
+    Navigator.of(context).pop();
+
+    // bool wait = await _onFinishButtonClicked();
 
     setState(() {
       _isLoading = false;
     });
-
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => BottomNavart(data: {},)),
-      );
-
+if (wait) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(builder: (context) => BottomNavart(data: {})),
+  );
+}
   }
 
-  Future<List<String>> _uploadImages( imageFiles) async {
-    List<String> imagePaths = [];
-    // print(imageFiles.length);
-    for (int i = 0; i < imageFiles.length; i++) {
-      if (imageFiles[i] != null) {
-        // Upload the image and store its path
-        String paths = await uploadImagesAndStorePaths(imageFiles[i]);
-        // for (String imagePath in paths) {
-          imagePaths.add(paths);
 
-      }
-    }
-    return imagePaths;
-  }
-
-  Future<String> uploadImagesAndStorePaths(File? imageFile) async {
-    if (imageFile == null) {
-      throw ArgumentError('Image file cannot be null');
-    }
-
-    String imagePath = '';
-
+  Future<bool> uploadImages(List<File?> imageFiles, String id) async {
     try {
-      // Your image upload API endpoint
-      var uploadUrl = Uri.parse('${Config().apiDomain}/upload-image');
-
-      // Create a multipart request
+      var uploadUrl = Uri.parse('${Config().apiDomain}/upload-images/$id');
       var request = http.MultipartRequest('POST', uploadUrl);
 
-      // Add the image file to the request
-      var image = await http.MultipartFile.fromPath('image', imageFile.path);
-      request.files.add(image);
+      for (int i = 0; i < imageFiles.length; i++) {
+        var imageFile = imageFiles[i];
+        if (imageFile != null) {
+          // Use 'profile_photo' for the last image, otherwise use 'image{i + 1}'
+          String fieldName = (i == imageFiles.length - 1) ? 'profile_photo' : 'image${i + 1}';
+          var image = await http.MultipartFile.fromPath(fieldName, imageFile.path);
+          request.files.add(image);
+        }
+      }
 
-      // Send the request to upload the image
       var streamedResponse = await request.send();
-      print(streamedResponse);
 
-      // Check if the image upload was successful
       if (streamedResponse.statusCode == 200) {
-        // Parse the response to get the image URL or file path
         var response = await streamedResponse.stream.bytesToString();
-        imagePath = json.decode(response)['imagePath'];
+        print('Upload successful: $response');
+        return true;
       } else {
-        throw Exception('Failed to upload image. Status code: ${streamedResponse.statusCode}');
+        print('Upload failed with status: ${streamedResponse.statusCode}');
+        return false;
       }
     } catch (e) {
-      // Handle errors if needed
-      print('Error uploading image: $e');
-      throw Exception('Error uploading image: $e');
+      print('Error uploading images: $e');
+      return false;
     }
-
-    return imagePath;
   }
 
 

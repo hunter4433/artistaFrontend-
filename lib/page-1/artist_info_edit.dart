@@ -89,7 +89,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           _phoneController.text = userData['data']['attributes']['phone_number'] ?? '';
           _ageController.text = userData['data']['attributes']['age']?.toString() ?? '';
           _addressController.text = userData['data']['attributes']['address'] ?? '';
-          _altPhoneController.text=userData['data']['attributes']['alt_phone_number'];
+          _altPhoneController.text=userData['data']['attributes']['alt_phone_number'] ?? '';
           _imageUrl=userData['data']['attributes']['profile_photo'];
           // _sController.text = userData['data']['attributes']['state'] ?? '';
           // _pinCodeController.text = userData['data']['attributes']['pin'] ?? '';
@@ -402,34 +402,47 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     if (kind == 'solo_artist') {
       apiUrl = '${Config().apiDomain}/artist/upload_image/$id';
     } else if (kind == 'team') {
-      apiUrl = '${Config().apiDomain}/artist/upload_image/$team_id';
+      apiUrl = '${Config().apiDomain}/team/upload_image/$team_id';
     } else {
       return;
     }
 
-    // Create multipart request for the image upload
-    var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
+    try {
+      // Read the image file and encode it as Base64
+      List<int> imageBytes = await imageFile.readAsBytes();
+      String base64Image = base64Encode(imageBytes);
 
-    // Add the image file to the request
-    request.files.add(await http.MultipartFile.fromPath(
-      'profile_photo', // The key expected by the backend
-      imageFile.path,  // Path of the image
-      contentType: MediaType('image', 'jpeg'), // Adjust the content type if necessary
-    ));
+      // Create the request body
+      var body = jsonEncode({
+        'profile_photo': base64Image,
+      });
 
-    // Add headers, including the Authorization token
-    request.headers['Authorization'] = 'Bearer $token';
-    request.headers['Accept'] = 'application/vnd.api+json';
+      // Send the POST request with headers and body
+      var response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+          'Accept': 'application/vnd.api+json',
+        },
+        body: body,
+      );
 
-    // Send the request
-    var response = await request.send();
-
-    if (response.statusCode == 200) {
-      print('Image uploaded successfully');
-    } else {
-      print('Failed to upload image. Status code: ${response.statusCode}');
+      // Process the response
+      if (response.statusCode == 200) {
+        print('Image uploaded successfully');
+        print('Response: ${response.body}');
+      } else {
+        print('Failed to upload image. Status: ${response.statusCode}');
+        print('Response: ${response.body}');
+      }
+    } catch (e) {
+      print('Error uploading image: $e');
     }
   }
+
+
+
 
 
 }

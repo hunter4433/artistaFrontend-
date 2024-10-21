@@ -228,17 +228,19 @@ class _UserBookingsState extends State<UserBookings> with AutomaticKeepAliveClie
                     SizedBox(height: 16),
                     Stack(
                       children: [
-                        LinearProgressIndicator(
-                          value: progress,
-                          backgroundColor: Colors.grey[800],
-                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xffe5195e)),
-                          minHeight: 8,
+                        ClipRRect(   borderRadius: BorderRadius.circular(3), // Rounds the corners
+                          child: LinearProgressIndicator(
+                            value: progress,
+                            backgroundColor: Colors.grey[800],
+                            valueColor: AlwaysStoppedAnimation<Color>(Color(0xffe5195e)),
+                            minHeight: 8,
+                          ),
                         ),
                         Positioned(
-                          left: MediaQuery.of(context).size.width * progress - 30,
-                          top: -4,
+                          left: MediaQuery.of(context).size.width * progress -60,
+                          top: 0,
                           child: CircleAvatar(
-                            radius: 6,
+                            radius: 4,
                             backgroundColor: Colors.black,
                             child: CircleAvatar(
                               radius: 4,
@@ -349,10 +351,10 @@ class _UserBookingsState extends State<UserBookings> with AutomaticKeepAliveClie
         automaticallyImplyLeading: false,
         title: Center(
           child: Text(
-            'Booking Requests',
+            'Bookings',
             style: TextStyle(
               fontSize: 22,
-              fontWeight: FontWeight.w400,
+              fontWeight: FontWeight.w500,
               color: Colors.white,
             ),
           ),
@@ -361,16 +363,25 @@ class _UserBookingsState extends State<UserBookings> with AutomaticKeepAliveClie
       ),
       body: bookings.isEmpty
           ? Center(
-        child: isLoading
-            ? CircularProgressIndicator()
-            : Text(
-          'No bookings done yet',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-          ),
-        ),
-      )
+          child: isLoading
+        ? CircularProgressIndicator()
+        : Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset(
+                'assets/page-1/images/booking.png', // Replace with your image path
+                height: 220, // Adjust height as needed
+              ),
+              SizedBox(height: 10), // Add spacing between the image and text
+              Text(
+                'You haven’t made any bookings yet',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                ),
+              ),
+            ],
+          ),)
           : ListView.builder(
         padding: EdgeInsets.all(16),
         itemCount: bookings.length,

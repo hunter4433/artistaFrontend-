@@ -23,7 +23,6 @@ class BottomNavart extends StatefulWidget {
 
 class _BottomNavState extends State<BottomNavart> {
   late int _currentIndex;
-
   late final List<Widget> _pages;
 
   @override
@@ -32,7 +31,7 @@ class _BottomNavState extends State<BottomNavart> {
     _currentIndex = widget.initialPageIndex;
     _pages = [
       artist_home(),
-      artist_inbox(),
+      // artist_inbox(),
       AllBookings(
         data: widget.data,
         newBookingTitle: widget.newBookingTitle,
@@ -42,50 +41,56 @@ class _BottomNavState extends State<BottomNavart> {
     ];
   }
 
+  Future<bool> _onWillPop() async {
+    // Return false to prevent back navigation
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Color(0xFF292938),
-      body: _pages[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        backgroundColor: Color(0xFF292938),
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Color(0xFF9E9EB8),
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-        type: BottomNavigationBarType.fixed,
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home_filled),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.mail_outline_outlined),
-            activeIcon: Icon(Icons.mail_outline_outlined),
-            label: 'Inbox',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_month_outlined),
-            activeIcon: Icon(Icons.calendar_month),
-            label: 'Bookings',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_circle_outlined),
-            activeIcon: Icon(Icons.account_circle),
-            label: 'Profile',
-          ),
-        ],
-      ),
+    return
+      WillPopScope(
+        onWillPop: _onWillPop,
+        child :Scaffold(
+          backgroundColor: Color(0xFF292938),
+        body: _pages[_currentIndex],
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+          backgroundColor: Color(0xFF292938),
+          selectedItemColor: Colors.white,
+          unselectedItemColor: Color(0xFF9E9EB8),
+          showSelectedLabels: true,
+          showUnselectedLabels: true,
+          type: BottomNavigationBarType.fixed,
+          items: [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home_outlined),
+              activeIcon: Icon(Icons.home_filled),
+              label: 'Home',
+            ),
+            // BottomNavigationBarItem(
+            //   icon: Icon(Icons.mail_outline_outlined),
+            //   activeIcon: Icon(Icons.mail_outline_outlined),
+            //   label: 'Inbox',
+            // ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.calendar_month_outlined),
+              activeIcon: Icon(Icons.calendar_month),
+              label: 'Bookings',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.account_circle_outlined),
+              activeIcon: Icon(Icons.account_circle),
+              label: 'Profile',
+            ),
+          ],
+        ),
+        ),
     );
   }
 }
-
-
-

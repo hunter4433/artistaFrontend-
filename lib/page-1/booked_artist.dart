@@ -2,6 +2,7 @@ import 'dart:ffi';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:test1/page-1/user_bookings.dart';
 import '../config.dart';
@@ -29,7 +30,7 @@ class _BookedState extends State<Booked> {
   // Fetched text from backend
 
   String? name;
-  double? price;
+  String? price;
   String? image;
   String? phone_number;
    String? dateText ;
@@ -96,15 +97,15 @@ String? totalprice;
   //   }
   // }
 
-  Future<String> calculateTotalAmount (double pricePerHour, int hours, int minutes)  async {
+  Future<String> calculateTotalAmount (String pricePerHour, int hours, int minutes)  async {
     // Convert total time to hours
     double totalTimeInHours = hours + (minutes / 60.0);
 
     // Convert pricePerHour to double
-    // double pricePerHourDouble = double.parse(pricePerHour );
+    double pricePerHourDouble = double.parse(pricePerHour );
 
     // Calculate the total amount
-    double totalAmount = (totalTimeInHours * pricePerHour) ;
+    double totalAmount = (totalTimeInHours * pricePerHourDouble) ;
     // print(totalAmount);
     String amount= totalAmount.toString();
 
@@ -222,7 +223,7 @@ String? totalprice;
             // setState(() {
             // teamName=
             name = userData['name'] ?? userData['team_name'] ?? '';
-            price = userData['price_per_hour'] ;
+            price = (userData['price_per_hour']).toString() ;
             image = '${userData['profile_photo']}' ;
             phone_number=userData['phone_number'] ?? '';
             fcm_token=userData['fcm_token']??'';
@@ -618,17 +619,19 @@ print(formData);
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Container(
-                            width: 249 * fem,
-                            height: 24 * fem,
-                            child: Text(
-                              'Total Price',
-                              style: SafeGoogleFont(
-                                'Be Vietnam Pro',
-                                fontSize: 19 * ffem,
-                                fontWeight: FontWeight.w500,
-                                height: 1.5 * ffem / fem,
-                                color: Colors.black,
+                          Expanded(
+                            child: Container(
+                              width: 249 * fem,
+                              height: 24 * fem,
+                              child: Text(
+                                'Total Price',
+                                style: SafeGoogleFont(
+                                  'Be Vietnam Pro',
+                                  fontSize: 19 * ffem,
+                                  fontWeight: FontWeight.w500,
+                                  height: 1.5 * ffem / fem,
+                                  color: Colors.black,
+                                ),
                               ),
                             ),
                           ),
@@ -646,17 +649,19 @@ print(formData);
                                 return Text('Error calculating price');
                               } else if (snapshot.hasData) {
                                 // Once the data is ready, display the total price
-                                return Container(
-                                  width: 249 * fem,
-                                  height: 24 * fem,
-                                  child: Text(
-                                    snapshot.data ?? 'Price not available', // Use the calculated price
-                                    style: SafeGoogleFont(
-                                      'Be Vietnam Pro',
-                                      fontSize: 17 * ffem,
-                                      fontWeight: FontWeight.w400,
-                                      height: 1.5 * ffem / fem,
-                                      color: Color(0xff876370),
+                                return Expanded(
+                                  child: Container(
+                                    width: 249 * fem,
+                                    height: 24 * fem,
+                                    child: Text(
+                                      snapshot.data ?? 'Price not available', // Use the calculated price
+                                      style: SafeGoogleFont(
+                                        'Be Vietnam Pro',
+                                        fontSize: 17 * ffem,
+                                        fontWeight: FontWeight.w400,
+                                        height: 1.5 * ffem / fem,
+                                        color: Color(0xff876370),
+                                      ),
                                     ),
                                   ),
                                 );
@@ -675,7 +680,7 @@ print(formData);
                       padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 16 * fem,
                           1 * fem),
                       width: double.infinity,
-                      height: 80 * fem,
+                      height: 150 * fem,
                       decoration: BoxDecoration(
                         color: Color(0xFFFFFFFF),
                       ),
@@ -683,8 +688,8 @@ print(formData);
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Container(
-                            width: 249 * fem,
-                            height: 24 * fem,
+                            width: 349 * fem,
+                            height: 34 * fem,
                             child: Text(
                               'Location:',
                               style: SafeGoogleFont(
@@ -697,22 +702,26 @@ print(formData);
                             ),
                           ),
                           SizedBox(height: 10 * fem,),
-                          Container(
-                            width: 249 * fem,
-                            height: 24 * fem,
-                            child: TextField(
-                              controller: _locationController,
-                              style: SafeGoogleFont(
-                                'Be Vietnam Pro',
-                                fontSize: 17 * ffem,
-                                fontWeight: FontWeight.w400,
-                                height: 1.5 * ffem / fem,
-                                color: _isEditing ? Colors.blue : Color(
-                                    0xff876370),
-                              ),
-                              enabled: _isEditing,
-                              decoration: InputDecoration(
-                                border: InputBorder.none,
+                          Expanded(
+                            child: Container(
+                              width: 349 * fem,
+                              child: SingleChildScrollView(
+                                child: TextField(
+                                  controller: _locationController,
+                                  style: SafeGoogleFont(
+                                    'Be Vietnam Pro',
+                                    fontSize: 17 * ffem,
+                                    fontWeight: FontWeight.w400,
+                                    height: 1.5 * ffem / fem,
+                                    color: _isEditing ? Colors.blue : Color(0xff876370),
+                                  ),
+                                  enabled: _isEditing,
+                                  maxLines: null, // Allow unlimited lines with scroll
+                                  decoration: InputDecoration(
+                                    border: InputBorder.none,
+                                  ),
+                                  textAlignVertical: TextAlignVertical.top,
+                                ),
                               ),
                             ),
                           ),

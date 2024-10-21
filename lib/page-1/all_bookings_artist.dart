@@ -45,14 +45,25 @@ class _AllBookingsState extends State<AllBookings> {
   }
 
   void _makePhoneCall(String phoneNumber) async {
+    // Remove any spaces and special characters
+    phoneNumber = phoneNumber.replaceAll(RegExp(r'[^0-9]'), '');
+
+    // Remove country code (91) if it exists
+    if (phoneNumber.startsWith('91')) {
+      phoneNumber = phoneNumber.substring(2); // Remove the first two characters
+    }
+
     final Uri launchUri = Uri(
       scheme: 'tel',
       path: phoneNumber,
     );
+
+    print('Attempting to launch: $launchUri'); // Log the actual URI
+
     if (await canLaunchUrl(launchUri)) {
       await launchUrl(launchUri);
     } else {
-      throw 'Could not launch $phoneNumber';
+      throw 'Could not launch $launchUri'; // Log the actual URI
     }
   }
 
@@ -503,7 +514,7 @@ class _AllBookingsState extends State<AllBookings> {
           padding: const EdgeInsets.fromLTRB(0, 0, 8, 0),
           child: Center(
             child: Text(
-              'Booking Requests',
+              'Bookings',
               style: TextStyle(
                 fontSize: 20 ,
                 fontWeight: FontWeight.w400,
@@ -533,13 +544,14 @@ class _AllBookingsState extends State<AllBookings> {
         itemCount: bookings.length,
         itemBuilder: (context, index) {
           final booking = bookings[index];
+          final idToUse = booking['artist_id'] ?? booking['team_id'];
           return _buildRequestCard(
             booking['category'],
             booking['booking_date'],
             booking['booked_from'],
             booking['id'],
             booking['user_id'],
-            booking['artist_id'],
+            idToUse,
             booking['duration'],
             index,
           );

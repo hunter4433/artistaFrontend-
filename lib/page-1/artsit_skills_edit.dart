@@ -101,7 +101,7 @@ class _ArtistCredentials33State extends State<ArtistCredentials33> {
         // Update text controllers with fetched data
         setState(() {
           _experienceController.text = userData['data']['attributes']['about_yourself'] ?? '';
-          _hourlyPriceController.text = userData['data']['attributes']['price_per_hour'] ?? '';
+          _hourlyPriceController.text = (userData['data']['attributes']['price_per_hour']).toString() ?? '';
           _messageController.text = userData['data']['attributes']['special_message'] ?? '';
           _selectedSkill = userData['data']['attributes']['skill_category'] ?? '';
           _selectedSubSkill= userData['data']['attributes']['skills'] ?? '';

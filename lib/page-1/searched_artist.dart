@@ -27,7 +27,7 @@ class SearchedArtist extends StatelessWidget {
               style: TextStyle(
                 color: Colors.black,
                 fontSize: 24,
-                fontWeight: FontWeight.w400,
+                fontWeight: FontWeight.w500,
 
               ),
             ),
@@ -94,15 +94,10 @@ class SearchedArtist extends StatelessWidget {
                               topLeft: Radius.circular(14 * fem),
                               topRight: Radius.circular(14 * fem),
                             ),
-// <<<<<<< HEAD
                             child: (filteredArtistData[index]['profile_photo'] != null &&
                                 filteredArtistData[index]['profile_photo'].isNotEmpty)
                                 ? Image.network(
                               filteredArtistData[index]['profile_photo'],
-// =======
-//                             child: Image.network(
-//                               filteredArtistData[index]['profile_photo'] ?? '',
-// >>>>>>> 7843d0fd9f9f56e19be3ee78285dd0192d2cb138
                               fit: BoxFit.cover,
                               width: double.infinity,
                               height: double.infinity,
@@ -127,56 +122,51 @@ class SearchedArtist extends StatelessWidget {
                         ),
 
                         Padding(
-
                           padding: EdgeInsets.fromLTRB(16 * fem, 25 * fem, 16 * fem, 25 * fem),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              Text(
+                                filteredArtistData[index]['name'] ?? filteredArtistData[index]['team_name'] ?? '',
+                                style: TextStyle(
+                                  fontSize: 22 * ffem,
+                                  fontWeight: FontWeight.w400,
+                                  height: 1.25 * ffem / fem,
+                                  letterSpacing: 0.703 * fem,
+                                  color: Colors.black,
+                                ),
+                              ),
+                              SizedBox(height: 8 * fem),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,  // Space between skill and rating
                                 children: [
-// <<<<<<< HEAD
+                                  // Skill text
                                   Text(
-                                    filteredArtistData[index]['name'] ?? filteredArtistData[index]['team_name'] ?? '',
+                                    'Skill: ${filteredArtistData[index]['skills']}',
                                     style: TextStyle(
-                                      fontSize: 22 * ffem,
+                                      fontSize: 17 * ffem,
                                       fontWeight: FontWeight.w400,
-                                      height: 1.25 * ffem / fem,
-                                      letterSpacing: 0.703 * fem,
-                                      color: Colors.black,
+                                      height: 1.5 * ffem / fem,
+                                      color: Color(0xFF8E8EAA),
                                     ),
-
                                   ),
-                                  SizedBox(height: 8 * fem),
-                                  Row(
-                                    children: [
-                                      Text(
-                                        'Skill: ${filteredArtistData[index]['skills']}',
-                                        style: TextStyle(
-                                          fontSize: 17 * ffem,
-                                          fontWeight: FontWeight.w400,
-                                          height: 1.5 * ffem / fem,
-                                          color: Color(0xFF8E8EAA),
-                                        ),
-                                      ),
-                                      SizedBox(width: 50 * fem),
-                                      Text(
-                                        'Rating: ${filteredArtistData[index]['rating']}/5',
-                                        style: TextStyle(
-                                          fontSize: 17 * ffem,
-                                          fontWeight: FontWeight.w400,
-                                          height: 1.5 * ffem / fem,
-                                          color: Color(0xFF8E8EAA),
-                                        ),
-                                      ),
-                                    ],
+                                  // Rating text aligned to the right
+                                  Text(
+                                    'Rating: ${filteredArtistData[index]['rating']}/5',
+                                    style: TextStyle(
+                                      fontSize: 17 * ffem,
+                                      fontWeight: FontWeight.w400,
+                                      height: 1.5 * ffem / fem,
+                                      color: Color(0xFF8E8EAA),
+                                    ),
                                   ),
                                 ],
                               ),
                             ],
                           ),
                         ),
+
+
                       ],
                     ),
                   ),

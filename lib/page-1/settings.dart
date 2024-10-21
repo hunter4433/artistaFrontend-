@@ -5,6 +5,8 @@ import 'package:test1/page-1/artist_info_edit.dart';
 import 'package:test1/page-1/customer_support.dart';
 
 import 'package:test1/page-1/edit_team_members.dart';
+import 'package:test1/page-1/edit_user_info.dart';
+import 'package:test1/page-1/legal.dart';
 import 'package:test1/page-1/phone_varification.dart';
 import 'package:test1/page-1/review.dart';
 
@@ -110,6 +112,7 @@ class setting extends StatelessWidget {
     return false;
 
   }
+  String userName = "John Doe"; // Demo data for testing
 
 
 
@@ -131,7 +134,7 @@ class setting extends StatelessWidget {
                 children: <Widget>[
                   Text(
                     'Are you sure you want to log out?',
-                    style: TextStyle(color: Colors.white), // Change color of dialog content text
+                    style: TextStyle(color: Colors.white,fontSize: 16), // Change color of dialog content text
                   ),
                 ],
               ),
@@ -143,7 +146,7 @@ class setting extends StatelessWidget {
                 },
                 child: Text(
                   'Cancel',
-                  style: TextStyle(color: Colors.greenAccent), // Change color of "Cancel" button text
+                  style: TextStyle(color: Colors.white,fontSize: 17), // Change color of "Cancel" button text
                 ),
               ),
               TextButton(
@@ -163,7 +166,7 @@ class setting extends StatelessWidget {
                 },
                 child: Text(
                   'Yes',
-                  style: TextStyle(color: Colors.red), // Change color of "Yes" button text
+                  style: TextStyle(color: Color(0xffe5195e),fontSize: 17), // Change color of "Yes" button text
                 ),
               ),
             ],
@@ -213,7 +216,7 @@ class setting extends StatelessWidget {
                         style: SafeGoogleFont (
                           'Be Vietnam Pro',
                           fontSize: 22*ffem,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w500,
                           height: 1.25*ffem/fem,
                           letterSpacing: -0.2700000107*fem,
                           color: Colors.white,
@@ -222,7 +225,94 @@ class setting extends StatelessWidget {
                     ),
                   ),
                 ),
-                InkWell(
+
+
+
+            InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => UserInformation()),
+                );
+              },
+              child: Container(
+                padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 6 * fem, 0 * fem),
+                width: double.infinity,
+                height: 136 * fem,
+                decoration: const BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: Colors.grey,
+                      width: 0.15,
+                    ),
+                  ),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center, // Aligns Row content vertically
+                  children: [
+                    // Profile icon container
+                    Container(
+                      width: 74 * fem, // Adjust the size as needed
+                      height: 74 * fem,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.grey[500], // Gray color for the profile icon
+                      ),
+                      child: Icon(
+                        Icons.person, // Person icon for the profile picture
+                        color: Colors.white, // White color for the icon
+                        size: 28 * fem, // Adjust size as per theme
+                      ),
+                    ),
+                    SizedBox(width: 12 * fem), // Space between icon and text
+
+                    // Expanded widget for the text
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center, // Center-align the text vertically
+                        crossAxisAlignment: CrossAxisAlignment.start, // Align text to the start
+                        children: [
+                          Text(
+                            userName.isNotEmpty ? userName : 'Complete Profile', // Display demo data or "Complete Profile"
+                            style: SafeGoogleFont(
+                              'Be Vietnam Pro',
+                              fontSize: 18 * ffem,
+                              fontWeight: FontWeight.w400,
+                              height: 1.5 * ffem / fem,
+                              color: Colors.white,
+                            ),
+                          ),
+                          SizedBox(height: 4 * fem), // Small space between the two text lines
+                          Text(
+                            "Name, mobile no, and more",
+                            style: SafeGoogleFont(
+                              'Be Vietnam Pro',
+                              fontSize: 14 * ffem,
+                              fontWeight: FontWeight.w300,
+                              height: 1.2 * ffem / fem,
+                              color: Colors.white70, // Slightly lighter text color for details
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Arrow icon for navigation
+                    Container(
+                      width: 64 * fem,
+                      height: 44 * fem,
+                      child: Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+
+            InkWell(
                   onTap: () {
                     Navigator.push(
                       context,
@@ -274,66 +364,13 @@ class setting extends StatelessWidget {
                 ),
 
 
-                InkWell(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => SupportScreen()),
-                );
-              },
-              child: Container(
-                // depth1frame5N8P (16:2494)
-                padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 6 * fem, 10 * fem),
-                width: double.infinity,
-                height: 56 * fem,
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(
-                      color: Colors.grey, // Specify the border color here
-                      width: 0.25, // Specify the border width here
-                    ),),
-                  // Add decoration as needed
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Container(
 
-                        // depth3frame02ij (16:2496)
-                        child: Text(
-                          'Legal',
-                          style: SafeGoogleFont(
-                            'Be Vietnam Pro',
-                            fontSize: 17 * ffem,
-                            fontWeight: FontWeight.w400,
-                            height: 1.5 * ffem / fem,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                    Container(
-
-                      // depth2frame1MPD (19:2920)
-                      width: 64 * fem,
-                      height: 44 * fem,
-                      child: Icon(
-                        Icons.arrow_forward_ios_rounded, color: Colors.white
-                        , // Different icon
-                        // Color of the icon
-                        // Size of the icon
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
 
                 InkWell(
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => AnimatedSearchBox()),
+                      MaterialPageRoute(builder: (context) =>AccountManagementPage1()),
                     );
                   },
                   child: Container(
@@ -341,7 +378,7 @@ class setting extends StatelessWidget {
                     padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 6 * fem, 10 * fem),
                     width: double.infinity,
                     height: 56 * fem,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       border: Border(
                         bottom: BorderSide(
                           color: Colors.grey, // Specify the border color here
@@ -352,18 +389,14 @@ class setting extends StatelessWidget {
                     child: Row(
                       children: [
                         Expanded(
-                          child: Container(
-
-                            // depth3frame02ij (16:2496)
-                            child: Text(
-                              'Notification',
-                              style: SafeGoogleFont(
-                                'Be Vietnam Pro',
-                                fontSize: 17 * ffem,
-                                fontWeight: FontWeight.w400,
-                                height: 1.5 * ffem / fem,
-                                color: Colors.white,
-                              ),
+                          child: Text(
+                            'Legal',
+                            style: SafeGoogleFont(
+                              'Be Vietnam Pro',
+                              fontSize: 17 * ffem,
+                              fontWeight: FontWeight.w400,
+                              height: 1.5 * ffem / fem,
+                              color: Colors.white,
                             ),
                           ),
                         ),
@@ -373,7 +406,8 @@ class setting extends StatelessWidget {
                           width: 64 * fem,
                           height: 44 * fem,
                           child: Icon(
-                            Icons.arrow_forward_ios_rounded,color: Colors.white, // Different icon
+                            Icons.arrow_forward_ios_rounded, color: Colors.white
+                            ,// Different icon
                             // Color of the icon
                             // Size of the icon
                           ),
@@ -383,59 +417,6 @@ class setting extends StatelessWidget {
                   ),
                 ),
 
-                InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => ReviewPage()),
-                    );
-                  },
-                  child: Container(
-                    // depth1frame5N8P (16:2494)
-                    padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 6 * fem, 10 * fem),
-                    width: double.infinity,
-                    height: 56 * fem,
-                    decoration: BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(
-                        color: Colors.grey, // Specify the border color here
-                        width: 0.25, // Specify the border width here
-                      ),),
-                      // Add decoration as needed
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Container(
-
-                            // depth3frame02ij (16:2496)
-                            child: Text(
-                              'Share App',
-                              style: SafeGoogleFont(
-                                'Be Vietnam Pro',
-                                fontSize: 17 * ffem,
-                                fontWeight: FontWeight.w400,
-                                height: 1.5 * ffem / fem,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                        Container(
-
-                          // depth2frame1MPD (19:2920)
-                          width: 64 * fem,
-                          height: 44 * fem,
-                          child: Icon(
-                            Icons.arrow_forward_ios_rounded,color: Colors.white, // Different icon
-                            // Color of the icon
-                            // Size of the icon
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
 
                 InkWell(
                   onTap: () {
@@ -492,12 +473,7 @@ class setting extends StatelessWidget {
                   ),
                 ),
                 InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => SupportScreen()),
-                    );
-                  },
+
                   child: Container(
                     // depth1frame5N8P (16:2494)
                     padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 6 * fem, 10 * fem),
@@ -536,7 +512,7 @@ class setting extends StatelessWidget {
                           // depth2frame1MPD (19:2920)
 
                           child:Center(
-                            child: const Text('1.0.2',
+                            child: const Text('1.0.0',
                               style: TextStyle(color: Colors.white,
                                 fontSize: 19,
                                 fontWeight: FontWeight.w300,
@@ -582,7 +558,7 @@ class setting extends StatelessWidget {
                       fontSize: 17,
                       fontWeight: FontWeight.w400,
                       height: 1.5,
-                      color: Colors.red,
+                      color: Color(0xffe5195e),
 
 
                     ),
