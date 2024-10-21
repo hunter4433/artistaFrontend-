@@ -2,8 +2,11 @@ import 'dart:ffi';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+import 'package:test1/page-1/review.dart';
 import 'package:test1/page-1/user_bookings.dart';
 import '../config.dart';
 import '../utils.dart';
@@ -39,7 +42,7 @@ class _BookedState extends State<Booked> {
  String? priceText;
 String? locationText ;
 int? hour;
-String? rating;
+double? ratings;
 int? minute;
 String? fcm_token;
 String? totalprice;
@@ -47,10 +50,11 @@ String? totalprice;
  String? skill;
   String? teamName;
   String? fcmToken;
+  String? _durationText;
    TextEditingController _locationController= TextEditingController();
    TextEditingController _dateTextController= TextEditingController();
    TextEditingController _timeTextController= TextEditingController();
-   TextEditingController _durationTextController= TextEditingController();
+   // TextEditingController _durationTextController= TextEditingController();
 
 
 
@@ -74,42 +78,84 @@ String? totalprice;
   @override
   void initState() {
     super.initState();
-    fetchBookingDetails(widget.BookingId);
-    fetchArtistBooking(widget.artistId);
-    _locationController = TextEditingController(text: locationText);
-    _dateTextController = TextEditingController(text: locationText);
+    _initializeBookingAndArtistDetails();
 
-    // // Set the initial value of the "From" controller to selectedFromTime if it's not null
-    // fromTimeController.text = selectedFromTime ?? '';
-    // // Set the initial value of the "To" controller to selectedToTime if it's not null
-    // toTimeController.text = selectedToTime ?? '';
+  }
+  Future<void> _initializeBookingAndArtistDetails() async {
+    try {
+      await Future.wait([
+        fetchBookingDetails(widget.BookingId),
+        fetchArtistBooking(widget.artistId),
+        rating()
+      ]);
+
+      // If needed, update state after fetching details
+
+
+    } catch (error) {
+      // Handle errors gracefully
+      print('Error fetching details: $error');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to fetch booking details'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+  Future<void> rating() async {
+    String apiUrl = '${Config().apiDomain}/artist/${widget.artistId}/average-rating';
+    print(apiUrl);
+    print('artist_id is ${widget.artistId}');
+
+    try {
+      var response = await http.get(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/vnd.api+json',
+          'Accept': 'application/vnd.api+json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        Map<String, dynamic> responseData = json.decode(response.body);
+
+
+        // Ensure count is not zero before dividing, to prevent division by zero.
+        double safeDivide(int numerator, int denominator) {
+          return denominator != 0 ? (numerator / denominator).toDouble() : 0.0;
+        }
+
+        setState(() {
+          ratings = (responseData['average_rating']).toDouble();
+        });
+
+
+      } else {
+        print('Failed to fetch data. Status code: ${response.statusCode}');
+        // return 'Error fetching availability status';
+      }
+    } catch (e) {
+      print('Error fetching data: $e');
+      // return 'Error fetching availability status';
+    }
   }
 
-  // void _makePhoneCall(String phoneNumber) async {
-  //   final Uri launchUri = Uri(
-  //     scheme: 'tel',
-  //     path: phoneNumber,
-  //   );
-  //   if (await canLaunchUrl(launchUri)) {
-  //     await launchUrl(launchUri);
-  //   } else {
-  //     throw 'Could not launch $phoneNumber';
-  //   }
-  // }
 
-  Future<String> calculateTotalAmount (String pricePerHour, int hours, int minutes)  async {
+  Future<String> calculateTotalAmount(String pricePerHour, int hours, int minutes) async {
     // Convert total time to hours
     double totalTimeInHours = hours + (minutes / 60.0);
 
     // Convert pricePerHour to double
-    double pricePerHourDouble = double.parse(pricePerHour );
+    double pricePerHourDouble = double.tryParse(pricePerHour) ?? 0.0;
 
     // Calculate the total amount
-    double totalAmount = (totalTimeInHours * pricePerHourDouble) ;
-    // print(totalAmount);
-    String amount= totalAmount.toString();
+    double totalAmount = totalTimeInHours * pricePerHourDouble;
 
-    return amount;
+    // Format the amount to two decimal places
+    String formattedAmount = totalAmount.toStringAsFixed(2);
+
+    return formattedAmount;
   }
 
 
@@ -140,7 +186,7 @@ String? totalprice;
       // Check if] the widget is mounted before calling setState
 
       setState(() {
-        _durationTextController.text = userData['duration'] ?? '';
+        _durationText = userData['duration'] ?? '';
         _locationController.text = userData['location'] ?? '';
         _dateTextController.text = userData['booking_date'] ?? '';
         _timeTextController.text = userData['booked_from'] ?? '';
@@ -149,7 +195,7 @@ String? totalprice;
       });
       print(status);
       // Split the string by spaces
-      List<String>? parts = _durationTextController.text?.split(' ');
+      List<String>? parts = _durationText?.split(' ');
 
       // // Initialize hour and minute variables
       // int hours = 0;
@@ -223,7 +269,7 @@ String? totalprice;
             // setState(() {
             // teamName=
             name = userData['name'] ?? userData['team_name'] ?? '';
-            price = (userData['price_per_hour']).toString() ;
+            price = (userData['price_per_hour']).toString() ?? '' ;
             image = '${userData['profile_photo']}' ;
             phone_number=userData['phone_number'] ?? '';
             fcm_token=userData['fcm_token']??'';
@@ -240,40 +286,60 @@ String? totalprice;
     }
   }
 
-  Future<void> _saveBookingDetails() async {
-print('savebooking is working');
+  Future<bool> _saveBookingDetails() async {
+    print('saveBooking is working');
 
     String apiUrl = '${Config().apiDomain}/booking/${widget.BookingId}';
-Map<String, dynamic> formData={ 'booking_date': _dateTextController.text,
+    Map<String, dynamic> formData = {
+      'booking_date': _dateTextController.text,
       'booked_from': _timeTextController.text,
-      'location':_locationController.text,
-      'duration': _durationTextController.text,
+      'location': _locationController.text,
     };
-print(formData);
+
+    print(formData);
+
     try {
       var response = await http.patch(
         Uri.parse(apiUrl),
         headers: <String, String>{
           'Content-Type': 'application/vnd.api+json',
           'Accept': 'application/vnd.api+json',
-
         },
         body: jsonEncode(formData),
       );
+
       if (response.statusCode == 200) {
         print(response.body);
         setState(() {
           _isEditing = false; // Exit editing mode
         });
 
-        // You can show a success message here
+        // Optionally show a success SnackBar
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Booking details saved successfully')),
+        );
+
+        return true; // Indicate success
       } else {
-        // Handle error
-        print('error:$response.body');
+        print('Error: ${response.body}');
+        _showErrorSnackBar('Failed to save booking details'); // Error message
+        return false; // Indicate failure
       }
     } catch (e) {
       print('Error saving booking details: $e');
+      _showErrorSnackBar('Error saving booking details'); // Error message
+      return false; // Indicate failure
     }
+  }
+
+// Helper function to show an error SnackBar
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
   }
 
   // @override
@@ -289,7 +355,20 @@ print(formData);
     double baseWidth = 390;
     double fem = MediaQuery.of(context).size.width / baseWidth;
     double ffem = fem * 0.97;
+    bool _isValidDateFormat(String input) {
+      final RegExp dateRegex = RegExp(r'^\d{4}-\d{2}-\d{2}$');  // yyyy-MM-dd
+      return dateRegex.hasMatch(input);
+    }
 
+    // Function to format date safely (optional use)
+    String? _formatDate(String input) {
+      try {
+        final parsedDate = DateFormat('yyyy-MM-dd').parseStrict(input);
+        return DateFormat('yyyy-MM-dd').format(parsedDate);
+      } catch (e) {
+        return null;  // Return null if formatting fails
+      }
+    }
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -415,7 +494,7 @@ print(formData);
                                       SizedBox(height: 7 * fem),
 
                                       Text(
-                                        'Rating: ${rating ?? 'null/5'}',
+                                        'Rating: ${ratings ?? 'null/5'}',
                                         style: SafeGoogleFont(
                                           'Be Vietnam Pro',
                                           fontSize: 16 * ffem,
@@ -458,11 +537,11 @@ print(formData);
                       decoration: BoxDecoration(
                         color: Color(0xFFFFFFFF),
                       ),
+
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Container(
-                            // depth4frame05h1 (9:1718)
                             width: 249 * fem,
                             height: 24 * fem,
                             child: Text(
@@ -476,7 +555,7 @@ print(formData);
                               ),
                             ),
                           ),
-                          SizedBox(height: 10 * fem,),
+                          SizedBox(height: 10 * fem),
                           Container(
                             width: 249 * fem,
                             height: 24 * fem,
@@ -487,15 +566,25 @@ print(formData);
                                 fontSize: 17 * ffem,
                                 fontWeight: FontWeight.w400,
                                 height: 1.5 * ffem / fem,
-                                color: _isEditing ? Colors.blue : Color(
-                                    0xff876370),
+                                color: _isEditing ? Colors.blue : Color(0xff876370),
                               ),
                               enabled: _isEditing,
+                              keyboardType: TextInputType.datetime,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(RegExp(r'\d|[-]')),  // Allow only digits and '-'
+                                LengthLimitingTextInputFormatter(10),  // Limit input to 'yyyy-MM-dd'
+                              ],
                               decoration: InputDecoration(
                                 border: InputBorder.none,
+                                hintText: 'yyyy-MM-dd',  // Placeholder to indicate the required format
                               ),
+                              onChanged: (value) {
+                                if (_isEditing && !_isValidDateFormat(value)) {
+                                  // Optionally provide feedback or reset the field
+                                  print('Invalid date format. Use yyyy-MM-dd.');
+                                }
+                              },
                             ),
-
                           ),
                         ],
                       ),
@@ -586,20 +675,20 @@ print(formData);
                             width: 249 * fem,
                             height: 24 * fem,
 
-                            child: TextField(
-                              controller: _durationTextController,
+                            child: Text(
+                              _durationText ?? '',
                               style: SafeGoogleFont(
                                 'Be Vietnam Pro',
                                 fontSize: 17 * ffem,
                                 fontWeight: FontWeight.w400,
                                 height: 1.5 * ffem / fem,
-                                color: _isEditing ? Colors.blue : Color(
+                                color:  Color(
                                     0xff876370),
                               ),
-                              enabled: _isEditing,
-                              decoration: InputDecoration(
-                                border: InputBorder.none,
-                              ),
+                              // enabled: _isEditing,
+                              // decoration: InputDecoration(
+                              //   border: InputBorder.none,
+                              // ),
                             ),
                           ),
                         ],
@@ -638,7 +727,7 @@ print(formData);
                           SizedBox(height: 10 * fem,),
                           // Use FutureBuilder to handle async calculation
                           FutureBuilder<String>(
-                            future: calculateTotalAmount( price!, hour as int , minute as int ), // Call the async function
+                            future: calculateTotalAmount(price! , hour!, minute!), // Call the async function
                             builder: (context, snapshot) {
                               // Check for different states
                               if (snapshot.connectionState == ConnectionState.waiting) {
@@ -729,141 +818,195 @@ print(formData);
                       ),
                     ),
 
-                    Container(color: Colors.white,
-                      // autogroupmzqsqvP (JkRoFj6v1J7WT1Tj1JMZQs)
-                      padding: EdgeInsets.fromLTRB(16 * fem, 20 * fem, 16 * fem,
-                          12 * fem),
-                      width: double.infinity,
-                      height: 190 * fem,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(left: 25, right: 25),
-                            child: OutlinedButton(
-                              onPressed: () {
-                                setState(() {
-                                  _isEditing = !_isEditing;
-                                  if (!_isEditing) {
-                                    // Call your function here
-                                    _saveBookingDetails();
-                                    sendNotifications(
-                                        context, fcm_token!, false);
-                                  }
-                                });
-                              },
-                              style: OutlinedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10 * fem),
-                                ),
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 16 * fem,
-                                  vertical: 8 * fem,
-                                ),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  _isEditing ? 'Save Changes' : 'Edit Booking',
-                                  style: SafeGoogleFont(
-                                    'Be Vietnam Pro',
-                                    fontSize: 16 * ffem,
-                                    fontWeight: FontWeight.w700,
-                                    height: 1.5 * ffem / fem,
-                                    letterSpacing: 0.2399999946 * fem,
-                                    color: Color(0xff171111),
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                          ),
-
-                          Padding(
-                            padding: const EdgeInsets.only(left: 25, right: 25),
-                            child: (status ==
-                                3) // Check the status from the backend
-                                ? Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Booking Canceled, You can still change your decision',
-                                  style: GoogleFonts.epilogue(
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 16,
-                                    height: 1.5,
-                                    color: Color(0xffe5195e),
-                                  ),
-                                ),
-                                SizedBox(height: 4),
-                                OutlinedButton(
+                        Container(
+                          color: Colors.white,
+                          padding: EdgeInsets.fromLTRB(16 * fem, 20 * fem, 16 * fem, 12 * fem),
+                          width: double.infinity,
+                          height: 220 * fem,  // Adjust height to accommodate the new button
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              // Write Review Button
+                              Padding(
+                                padding: const EdgeInsets.only(left: 25, right: 25, bottom: 8),
+                                child: OutlinedButton(
                                   onPressed: () {
-                                    setState(() {
-                                      status = 0;
-                                    });
-                                    cancelBooking(
-                                        context, widget.BookingId, '0');
-                                    fetchArtist(
-                                        context, widget.artistId, false);
+                                    // Navigate to review page or show review dialog
+                                    Navigator.push(
+                                           context,
+                                           MaterialPageRoute(builder: (context) => ReviewPage(artistId: widget.artistId, isteam: widget.isteam)),
+                                         );
+
                                   },
                                   style: OutlinedButton.styleFrom(
                                     backgroundColor: Colors.white,
                                     shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
+                                      borderRadius: BorderRadius.circular(10 * fem),
                                     ),
                                     padding: EdgeInsets.symmetric(
-                                        vertical: 8.5),
+                                      horizontal: 16 * fem,
+                                      vertical: 8 * fem,
+                                    ),
                                   ),
                                   child: Center(
                                     child: Text(
-                                      'Undo',
-                                      style: GoogleFonts.epilogue(
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 16,
-                                        height: 1.5,
-                                        color: Colors.black,
+                                      'Write Review',
+                                      style: SafeGoogleFont(
+                                        'Be Vietnam Pro',
+                                        fontSize: 16 * ffem,
+                                        fontWeight: FontWeight.w700,
+                                        height: 1.5 * ffem / fem,
+                                        letterSpacing: 0.2399999946 * fem,
+                                        color: Color(0xff171111),
                                       ),
                                     ),
                                   ),
                                 ),
-                              ],
-                            )
-                                : OutlinedButton(
-                              onPressed: () {
-                                setState(() {
-                                  status = 3; // Mark as canceled
-                                  _showCancelConfirmationDialog(
-                                      context, widget.BookingId,
-                                      widget.artistId);
-                                });
-                              },
-                              style: OutlinedButton.styleFrom(
-                                backgroundColor: Colors.black,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                padding: EdgeInsets.symmetric(vertical: 9.5),
                               ),
-                              child: Center(
-                                child: Text(
-                                  'Cancel Booking',
-                                  style: GoogleFonts.epilogue(
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 16,
-                                    height: 1.5,
-                                    color: Colors.white,
+
+                              // Edit Booking Button
+                              Padding(
+                                padding: const EdgeInsets.only(left: 25, right: 25),
+                                child: OutlinedButton(
+                                  onPressed: () async {
+                                    setState(() async {
+                                      _isEditing = !_isEditing;
+                                      if (!_isEditing) {
+                                        final inputDate = _dateTextController.text;
+                                        final formattedDate = _formatDate(inputDate);
+
+                                        if (formattedDate == null) {
+                                          // Show SnackBar if date format is invalid
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text('Invalid date format. Please use yyyy-MM-dd.'),
+                                              backgroundColor: Colors.red,
+                                              duration: Duration(seconds: 2),
+                                            ),
+                                          );
+                                        } else {
+                                          _dateTextController.text = formattedDate;
+                                          bool success = await _saveBookingDetails();
+                                          if (success) {
+                                            sendNotifications(context, fcm_token!, false);
+                                          } else {
+                                            print('Failed to update booking details');
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(
+                                                content: Text('Retry, Failed to update booking details'),
+                                                backgroundColor: Colors.green,
+                                              ),
+                                            );
+                                          }
+                                        }
+                                      }
+                                    });
+                                  },
+                                  style: OutlinedButton.styleFrom(
+                                    backgroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10 * fem),
+                                    ),
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 16 * fem,
+                                      vertical: 8 * fem,
+                                    ),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      _isEditing ? 'Save Changes' : 'Edit Booking',
+                                      style: SafeGoogleFont(
+                                        'Be Vietnam Pro',
+                                        fontSize: 16 * ffem,
+                                        fontWeight: FontWeight.w700,
+                                        height: 1.5 * ffem / fem,
+                                        letterSpacing: 0.2399999946 * fem,
+                                        color: Color(0xff171111),
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ),
-                          SizedBox(
-                              height: 8 * fem
-                          ),
 
-                        ],
-                      ),
-                    ),
+                              SizedBox(height: 8 * fem),
+
+                              // Cancel Booking Button Logic
+                              Padding(
+                                padding: const EdgeInsets.only(left: 25, right: 25),
+                                child: (status == 3)
+                                    ? Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Booking Canceled, You can still change your decision',
+                                      style: GoogleFonts.epilogue(
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 16,
+                                        height: 1.5,
+                                        color: Color(0xffe5195e),
+                                      ),
+                                    ),
+                                    SizedBox(height: 4),
+                                    OutlinedButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          status = 0;
+                                        });
+                                        cancelBooking(context, widget.BookingId, '0');
+                                        fetchArtist(context, widget.artistId, false);
+                                      },
+                                      style: OutlinedButton.styleFrom(
+                                        backgroundColor: Colors.white,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        padding: EdgeInsets.symmetric(vertical: 8.5),
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          'Undo',
+                                          style: GoogleFonts.epilogue(
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 16,
+                                            height: 1.5,
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                )
+                                    : OutlinedButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      status = 3;
+                                      _showCancelConfirmationDialog(
+                                          context, widget.BookingId, widget.artistId);
+                                    });
+                                  },
+                                  style: OutlinedButton.styleFrom(
+                                    backgroundColor: Colors.black,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    padding: EdgeInsets.symmetric(vertical: 9.5),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      'Cancel Booking',
+                                      style: GoogleFonts.epilogue(
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 16,
+                                        height: 1.5,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
 
                   ],
                 ),

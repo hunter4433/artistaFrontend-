@@ -29,7 +29,7 @@ class ArtistProfile extends StatefulWidget {
 }
 
 class _ArtistProfileState extends State<ArtistProfile> {
-  final List<String> demoSkills = ['Guitar', 'Singing', 'Piano']; // replace with backend data
+  final List<String> demoSkills = []; // replace with backend data
    String? experience ; // replace with backend data (can be '3 months', '2 years', etc.)
   // final bool hasSoundSystem = true; // replace with backend data
   final storage = FlutterSecureStorage();
@@ -37,6 +37,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
   String? teamName;
   String? artistRole;
   String? teamRole;
+  String? skills;
   bool? hasSoundSystem;
   String? artistPrice;
   String? artistRatings;
@@ -135,6 +136,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
             teamName = artistData['team_name'] ;
             artistRole = artistData['skills'] ;
             teamRole = artistData['skill_category'] ;
+            // skills = artistData['skills'];
             artistPrice = artistData['price_per_hour']?.toString() ?? '';
             artistAboutText = artistData['about_yourself'] ;
             teamAbout = artistData['about_team'] ;
@@ -166,6 +168,18 @@ class _ArtistProfileState extends State<ArtistProfile> {
             if (video4 != null) VideoPathsFromBackend.add(video4!);
           });
         }
+        List<String> parsedBackendSkills = artistRole!.split(', ').map((skill) => skill.trim()).toList();
+        // Combine both lists and remove duplicates
+        // Add backend skills to demoSkills, avoiding duplicates
+        for (String skill in parsedBackendSkills) {
+          if (!demoSkills.contains(skill)) {
+            demoSkills.add(skill);
+          }
+        }
+        print(demoSkills);
+        print('skills is $skills');
+        print('skill category is $teamRole');
+        print('special message $artistSpecialMessage');
       } else {
         print('Failed to fetch artist information. Status code: ${response.statusCode}');
       }
@@ -311,7 +325,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
     Widget buildAvailabilityText(String status) {
       Color lightColor;
       switch (status) {
-        case 'Available for Booking':
+        case 'Available for Bookings':
           lightColor = Colors.green;
           break;
         case 'Booked For Today':
@@ -431,7 +445,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
 
                                   // FutureBuilder to fetch and display role (e.g., Artist)
                                   Text(
-                                    artistRole ?? teamRole ?? '', // Use the artistRole variable directly
+                                     teamRole ?? '', // Use the artistRole variable directly
                                     style: TextStyle(
                                       fontSize: 17 * ffem,
                                       fontWeight: FontWeight.w400,
@@ -709,7 +723,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
                               SizedBox(width: 8.0),
                               // Display Experience from backend
                               Text(
-                                experience ?? teamAbout ?? '',
+                                artistAboutText ?? teamAbout ?? '',
                                 style: TextStyle(fontWeight: FontWeight.w400,
                                   fontSize: 16.0,
                                 ),
@@ -911,56 +925,56 @@ class _ArtistProfileState extends State<ArtistProfile> {
 
 
 
+          Container(
+            padding: EdgeInsets.fromLTRB(16, 30, 16, 11.5),
+            width: double.infinity,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Container(
-                  padding: EdgeInsets.fromLTRB(16*fem, 30*fem, 16*fem, 11.5*fem),
+                  margin: EdgeInsets.only(bottom: 23.5),
+                  child: Text(
+                    'Message for the Host',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w600,
+                      height: 1.25,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+                Container(
+                  margin: EdgeInsets.only(bottom: 32),
                   width: double.infinity,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 23.5 * fem),
-                        child: Text(
-                          'Message for the Host',
-                          style: SafeGoogleFont(
-                            'Be Vietnam Pro',
-                            fontSize: 22 * ffem,
-                            fontWeight: FontWeight.w600,
-                            height: 1.25 * ffem / fem,
-                            letterSpacing: -0.3300000131 * fem,
-                            color: Colors.black,
-                          ),
-                        ),
+                  height: 38,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Color(0xffe8d1d6)),
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: artistSpecialMessage != null
+                      ? Padding(
+                    padding: EdgeInsets.all(5),
+                    child: Text(
+                      artistSpecialMessage!,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.black,
                       ),
-                      Container(
-                        margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 32 * fem),
-                        width: double.infinity,
-                        height: 38 * fem,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Color(0xffe8d1d6)),
-                          color: Color(0xffffffff),
-                          borderRadius: BorderRadius.circular(12 * fem),
-                        ),
-                        child: artistSpecialMessage != null
-                            ? Padding(
-                          padding: EdgeInsets.all(16 * fem),
-                          child: Text(
-                            artistSpecialMessage!,
-                            style: TextStyle(
-                              fontSize: 16 * ffem,
-                              fontWeight: FontWeight.w400,
-                              color: Color(0xff964f66),
-                            ),
-                          ),
-                        )
-                            : Text(
-                          'Error fetching special message',
-                          style: TextStyle(
-                            fontSize: 16 * ffem,
-                            fontWeight: FontWeight.w400,
-                            color: Colors.red,
-                          ),
-                        ),
+                    ),
+                  )
+                      : Center(
+                    child: Text(
+                      'Error fetching special message',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.red,
                       ),
+                    ),
+                  ),
+                ),
 
 // Reviews section heading
                       Text(

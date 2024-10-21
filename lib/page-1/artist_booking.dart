@@ -54,6 +54,7 @@ double? soundSystemPrice=0.0;
   bool hasSoundSystem = false ;
   double? totalAmount=0.0;
   String? selectedAudienceSize;
+  // bool remove = true;
   // Place this outside the build method in your widget tree
 
   // ValueNotifier<String?> selectedAudienceSize = ValueNotifier<String?>(null);
@@ -107,8 +108,9 @@ print('minute is $minutes');
             // Extract the total amount and sound system price from the result
             setState(() {
               totalAmount = result.toDouble();
+
               // soundSystemPrice = result.toDouble();
-              netAmount = totalAmount! ; // Calculate the net amount
+              netAmount = totalAmount! +  soundSystemPrice! ; // Calculate the net amount
             });
 
             // Print the results or update the UI accordingly
@@ -351,7 +353,7 @@ print(userDataList );
           setState(() {
             team_name = userData['team_name'] ;
             name = userData['name'] ; // Assign String to name
-            price = userData['price_per_hour'] ?? ''; // Assign String to price
+            price = (userData['price_per_hour']).toString() ?? ''; // Assign String to price
             image = '${userData['profile_photo']}' ;
             fcm_token=userData['fcm_token'] ?? '';
             hasSoundSystem=userData['sound_system'] == 1 ? true: false ;
@@ -469,10 +471,10 @@ print('soundsystem is $hasSoundSystem');
     setState(() {
       if (hasSoundSystem) {
         // If sound system is already added, subtract its price
-        netAmount = netAmount! - soundSystemPrice!;
+        netAmount = netAmount!  - soundSystemPrice!;
       } else {
         // If sound system is not added, add its price
-        netAmount = netAmount! + soundSystemPrice!;
+        netAmount = netAmount! ;
       }
       // Toggle the hasSoundSystem state
       hasSoundSystem = !hasSoundSystem;
@@ -1172,40 +1174,44 @@ print('soundsystem is $hasSoundSystem');
                                       SizedBox(height: 10.0),
 
 
-                                    if (hasSoundSystem) // Show sound system price only if added
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    if (!hasSoundSystem) // Show only if `hasSoundSystem` is false
+                                      Column(
                                         children: [
-                                          Text(
-                                            'Sound system price:',
-                                            style: TextStyle(fontSize: 17.0),
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(
+                                                'Sound system price:',
+                                                style: TextStyle(fontSize: 17.0),
+                                              ),
+                                              Text(
+                                                '₹${soundSystemPrice}',
+                                                style: TextStyle(fontSize: 17.0),
+                                              ),
+                                            ],
                                           ),
-                                          Text(
-                                            '₹${soundSystemPrice}',
-                                            style: TextStyle(fontSize: 17.0),
+                                          SizedBox(height: 5.0),
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(
+                                                'Have your own sound system?',
+                                                style: TextStyle(fontSize: 16.0, fontStyle: FontStyle.italic),
+                                              ),
+                                              TextButton(
+                                                onPressed: toggleSoundSystem,
+                                                child: Text(
+                                                  hasSoundSystem ? 'Remove' : 'Add',
+                                                  style: TextStyle(
+                                                    color: hasSoundSystem ? Colors.red : Colors.green,
+                                                    fontSize: 16,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ],
                                       ),
-                                    SizedBox(height: 5.0),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          'Have your own sound system?',
-                                          style: TextStyle(fontSize: 16.0, fontStyle: FontStyle.italic),
-                                        ),
-                                        TextButton(
-                                          onPressed: toggleSoundSystem,
-                                          child: Text(
-                                            hasSoundSystem ? 'Remove' : 'Add',
-                                            style: TextStyle(
-                                              color: hasSoundSystem ? Colors.red : Colors.green,
-                                              fontSize: 16,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
                                      SizedBox(height: 5.0),
 
 

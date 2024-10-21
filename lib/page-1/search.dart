@@ -10,26 +10,28 @@ import 'package:video_player/video_player.dart';
 import '../config.dart';
 
 class Search extends StatefulWidget {
-  Search({Key? key}) : super(key: key);
+  // Search({Key? key}) : super(key: key);
+  final VideoPlayerController controller; // Receive video controller
 
+  Search({required this.controller});
   @override
   _SearchState createState() => _SearchState();
 }
 
 class _SearchState extends State<Search> with WidgetsBindingObserver {
-  late VideoPlayerController _controller;
+  // late VideoPlayerController controller;
   final FocusNode _searchFocusNode = FocusNode();
   bool _isSearchBarSelected = false;
 
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.asset('assets/page-1/images/search.mp4')
-      ..initialize().then((_) {
-        setState(() {});
-      });
-    _controller.setVolume(0);
-    _controller.setLooping(true);
+    // _controller = VideoPlayerController.asset('assets/page-1/images/search.mp4')
+    //   ..initialize().then((_) {
+    //     setState(() {});
+    //   });
+    // _controller.setVolume(0);
+    // _controller.setLooping(true);
 
     _searchFocusNode.addListener(_onSearchFocusChange);
     WidgetsBinding.instance.addObserver(this);
@@ -39,7 +41,7 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
   void dispose() {
     _searchFocusNode.removeListener(_onSearchFocusChange);
     _searchFocusNode.dispose();
-    _controller.dispose();
+    // widget.controller.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -61,14 +63,14 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
 
   // Public methods to control video playback
   void playVideo() {
-    if (_controller.value.isInitialized) {
-      _controller.play();
+    if (widget.controller.value.isInitialized) {
+      widget.controller.play();
     }
   }
 
   void pauseVideo() {
-    if (_controller.value.isInitialized) {
-      _controller.pause();
+    if (widget.controller.value.isInitialized) {
+      widget.controller.pause();
     }
   }
   Future<String?> _getLatitude() async {
@@ -79,27 +81,45 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
     return await storage.read(key: 'longitude');
   }
 
+  // Mapping function to convert user-friendly terms into skill keywords.
+  String mapSearchTermToSkill(String searchTerm) {
+    final Map<String, String> skillMap = {
+      'dance artist': 'dancer',
+      'singer artist': 'singer',
+      'music artist': 'musician',
+      'comedy artist': 'comedian',
+      'guitar artist': 'guitarist',
+    };
+
+    // Normalize input and return mapped skill or original term if not found.
+    String normalizedTerm = searchTerm.toLowerCase().trim();
+    return skillMap[normalizedTerm] ?? normalizedTerm;
+  }
+
   Future<List<Map<String, dynamic>>> searchArtists(String searchTerm) async {
     String? latitude = await _getLatitude();
     String? longitude = await _getLongitude();
+
+    // Preprocess searchTerm to get the appropriate skill.
+    String skill = mapSearchTermToSkill(searchTerm);
 
     final String apiUrl1 = '${Config().apiDomain}/artist/search';
     final String apiUrl2 = '${Config().apiDomain}/team/search'; // Second API endpoint
 
     final Uri uri1 = Uri.parse(apiUrl1).replace(queryParameters: {
-      'skill': searchTerm,
+      'skill': skill,
       'lat': latitude,
       'lng': longitude,
     });
 
     final Uri uri2 = Uri.parse(apiUrl2).replace(queryParameters: {
-      'skill': searchTerm, // Modify query parameters as needed for the second endpoint
+      'skill': skill,
       'lat': latitude,
       'lng': longitude,
     });
 
     try {
-      // Call both API endpoints simultaneously
+      // Call both API endpoints simultaneously.
       final responses = await Future.wait([
         http.get(uri1, headers: {
           'Content-Type': 'application/vnd.api+json',
@@ -115,11 +135,11 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
       final response2 = responses[1];
 
       if (response1.statusCode == 200 && response2.statusCode == 200) {
-        // Parse both responses
+        // Parse both responses.
         List<dynamic> data1 = jsonDecode(response1.body);
         List<dynamic> data2 = jsonDecode(response2.body);
 
-        // Merge the data
+        // Merge the data.
         List<Map<String, dynamic>> mergedData = [
           ...List<Map<String, dynamic>>.from(data1.map((artist) {
             artist['profile_photo'] = artist['profile_photo'];
@@ -132,7 +152,7 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
             return artist;
           })),
         ];
-       print(mergedData);
+        print(mergedData);
         return mergedData;
       } else {
         print('Failed to load artists');
@@ -146,12 +166,11 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
     }
   }
 
-
   void searchBySkill(String skill) async {
     List<Map<String, dynamic>> filteredData = await searchArtists(skill);
 
     // Pause the video when navigating to another page
-    _controller.pause();
+    widget.controller.pause();
 
     final returnedValue = await Navigator.push(
       context,
@@ -167,7 +186,7 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
     }
 
     // Reinitialize the video when returning to this page
-    _controller.play();
+    widget.controller.play();
   }
 
 
@@ -200,9 +219,9 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
             child: FittedBox(
               fit: BoxFit.cover,
               child: SizedBox(
-                width: _controller.value.size?.width ?? 0,
-                height: _controller.value.size?.height ?? 0,
-                child: VideoPlayer(_controller),
+                width: widget.controller.value.size?.width ?? 0,
+                height: widget.controller.value.size?.height ?? 0,
+                child: VideoPlayer(widget.controller),
               ),
             ),
           ),
@@ -262,7 +281,7 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
                           await searchArtists(value);
 
                           // Dispose the video when navigating to another page
-                          _controller.pause();
+                          widget.controller.pause();
                           // Navigate to your search results screen
                           Navigator.push(
                             context,
@@ -271,7 +290,7 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
                                     SearchedArtist(filteredArtistData: filteredData)),
                           ).then((value) {
                             // Reinitialize the video when returning to this page
-                            _controller.play();
+                            widget.controller.play();
                           });
                         },
                       ),
@@ -341,10 +360,10 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
                     GestureDetector(
                       onTap: () async {
                         List<Map<String, dynamic>> filteredData =
-                            await searchArtists('Comedian');
+                        await searchArtists('Comedian');
 
                         // Dispose the video when navigating to another page
-                        _controller.pause();
+                        widget.controller.pause();
                         // Navigate to your search results screen
                         Navigator.push(
                           context,
@@ -353,7 +372,7 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
                                   SearchedArtist(filteredArtistData: filteredData)),
                         ).then((value) {
                           // Reinitialize the video when returning to this page
-                          _controller.play();
+                          widget.controller.play();
                         });
                       },
                       child: Text(
@@ -368,10 +387,10 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
                     GestureDetector(
                       onTap: ()  async {
                         List<Map<String, dynamic>> filteredData =
-                            await searchArtists('Comedian');
+                        await searchArtists('Comedian');
 
                         // Dispose the video when navigating to another page
-                        _controller.pause();
+                        widget.controller.pause();
                         // Navigate to your search results screen
                         Navigator.push(
                           context,
@@ -380,7 +399,7 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
                                   SearchedArtist(filteredArtistData: filteredData)),
                         ).then((value) {
                           // Reinitialize the video when returning to this page
-                          _controller.play();
+                          widget.controller.play();
                         });
                       },
                       child: Text(
@@ -395,10 +414,10 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
                     GestureDetector(
                       onTap: () async {
                         List<Map<String, dynamic>> filteredData =
-                            await searchArtists('Comedian');
+                        await searchArtists('Comedian');
 
                         // Dispose the video when navigating to another page
-                        _controller.pause();
+                        widget.controller.pause();
                         // Navigate to your search results screen
                         Navigator.push(
                           context,
@@ -407,7 +426,7 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
                                   SearchedArtist(filteredArtistData: filteredData)),
                         ).then((value) {
                           // Reinitialize the video when returning to this page
-                          _controller.play();
+                          widget.controller.play();
                         });
                       },
                       child: Text(
@@ -474,10 +493,10 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
                     GestureDetector(
                       onTap: () async {
                         List<Map<String, dynamic>> filteredData =
-                            await searchArtists('Comedian');
+                        await searchArtists('Comedian');
 
                         // Dispose the video when navigating to another page
-                        _controller.pause();
+                        widget.controller.pause();
                         // Navigate to your search results screen
                         Navigator.push(
                           context,
@@ -486,7 +505,7 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
                                   SearchedArtist(filteredArtistData: filteredData)),
                         ).then((value) {
                           // Reinitialize the video when returning to this page
-                          _controller.play();
+                          widget.controller.play();
                         });
                       },
                       child: Text(
@@ -501,10 +520,10 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
                     GestureDetector(
                       onTap: () async {
                         List<Map<String, dynamic>> filteredData =
-                            await searchArtists('Comedian');
+                        await searchArtists('Comedian');
 
                         // Dispose the video when navigating to another page
-                        _controller.pause();
+                        widget.controller.pause();
                         // Navigate to your search results screen
                         Navigator.push(
                           context,
@@ -513,7 +532,7 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
                                   SearchedArtist(filteredArtistData: filteredData)),
                         ).then((value) {
                           // Reinitialize the video when returning to this page
-                          _controller.play();
+                          widget.controller.play();
                         });
                       },
                       child: Text(

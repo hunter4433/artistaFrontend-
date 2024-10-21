@@ -10,6 +10,9 @@ import 'package:http/http.dart' as http;
 import '../config.dart';
 
 class ReviewPage extends StatefulWidget {
+  final String artistId;
+  String? isteam;
+  ReviewPage ({ required this.artistId , this.isteam});
   @override
   _ReviewPageState createState() => _ReviewPageState();
 }
@@ -31,6 +34,14 @@ class _ReviewPageState extends State<ReviewPage> {
     return await storage.read(key: 'user_id'); // Assuming you stored the token with key 'token'
   }
 
+  @override
+  void initState() {
+    super.initState();
+    print(widget.isteam);
+    print(widget.artistId);
+
+
+  }
 
   // Method to upload image
   Future<void> _uploadImage(int Id) async {
@@ -113,6 +124,9 @@ class _ReviewPageState extends State<ReviewPage> {
     String reviewText = '$selectedPerformance ${reviewController.text}';
     print('reviewtext is $reviewText');
 
+    final String entityIdKey = widget.isteam != 'false' ? 'team_id' : 'artist_id';
+    print('entityIdKey is $entityIdKey');
+
     final response = await http.post(
       Uri.parse(backendUrl),
       headers: <String, String>{
@@ -123,13 +137,14 @@ class _ReviewPageState extends State<ReviewPage> {
         'rating': starRating.toString(),
         'review_text': reviewText,
         'user_id': id,
-        'artist_id': 20,
+        entityIdKey: widget.artistId,
       }),
     );
 
     if (response.statusCode == 201) {
       print('Review submitted successfully');
       Map<String, dynamic> Data = json.decode(response.body);
+      print(Data);
       int id = Data['id'];
       _uploadImage(id);
 
