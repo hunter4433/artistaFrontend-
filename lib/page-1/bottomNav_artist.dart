@@ -37,7 +37,7 @@ class _BottomNavState extends State<BottomNavart> {
         newBookingTitle: widget.newBookingTitle,
         newBookingDateTime: widget.newBookingDateTime,
       ),
-      setting(),
+      Setting(),
     ];
   }
 

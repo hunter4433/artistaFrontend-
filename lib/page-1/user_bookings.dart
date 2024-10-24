@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:test1/page-1/page_0.3_artist_home.dart';
+import 'package:test1/page-1/review.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../config.dart';
 import '../utils.dart';
@@ -57,6 +58,7 @@ class _UserBookingsState extends State<UserBookings> with AutomaticKeepAliveClie
 
       if (response.statusCode == 200) {
         final decodedList = json.decode(response.body) as List<dynamic>;
+        print('bokings are $decodedList ');
 
         setState(() {
           cachedData = {'bookings': decodedList.map((e) => Map<String, dynamic>.from(e)).toList()};
@@ -158,15 +160,6 @@ class _UserBookingsState extends State<UserBookings> with AutomaticKeepAliveClie
         .size
         .width / baseWidth;
     double ffem = fem * 0.97;
-    Widget _buildStatusText(String status) {
-      return Text(
-        status,
-        style: GoogleFonts.epilogue(
-          fontSize: 14,
-          color: Colors.white,
-        ),
-      );
-    }
 
     final booking = bookings[index];
     final status = booking['status']; // Get the status from the booking object
@@ -196,18 +189,17 @@ class _UserBookingsState extends State<UserBookings> with AutomaticKeepAliveClie
       child: Stack(
         children: [
           Card(
-            color: const Color(0xFF292938),
-            margin: const EdgeInsets.fromLTRB(5, 0, 5, 20),
+            color: Color(0xFF292938),
+            margin: EdgeInsets.fromLTRB(5, 0, 5, 20),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(14),
             ),
             elevation: 0,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(23, 16, 25, 16),
+              padding: EdgeInsets.fromLTRB(23, 16, 25, 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Booking Category
                   Text(
                     'Booking for $Category',
                     style: GoogleFonts.epilogue(
@@ -217,93 +209,160 @@ class _UserBookingsState extends State<UserBookings> with AutomaticKeepAliveClie
                       color: Colors.white,
                     ),
                   ),
-                  const SizedBox(height: 8),
-
-                  // Booking Time
-                  Text(
-                    'At: $Time',
+                  SizedBox(height: 8),
+                  Text('At:  $Time',
                     style: GoogleFonts.epilogue(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 16,
-                      height: 1.5,
-                      color: const Color(0xFFB4B4DF),
+                        fontWeight: FontWeight.w500,
+                        fontSize: 16,
+                        height: 1.5,
+                        color: Color(0xFFB4B4DF)
                     ),
                   ),
-                  const SizedBox(height: 5),
-
-                  // Booking Date
-                  Text(
-                    'On Date: $booking_date',
+                  SizedBox(height: 5),
+                  Text('On Date:  $booking_date,',
                     style: GoogleFonts.epilogue(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 16,
-                      height: 1.5,
-                      color: const Color(0xFFB4B4DF),
+                        fontWeight: FontWeight.w500,
+                        fontSize: 16,
+                        height: 1.5,
+                        color: Color(0xFFB4B4DF)
                     ),
                   ),
-                  const SizedBox(height: 16),
-
-                  // Progress Indicator
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(3), // Rounds the corners
-                    child: LinearProgressIndicator(
-                      value: progress,
-                      backgroundColor: Colors.grey[800],
-                      valueColor: const AlwaysStoppedAnimation<Color>(Color(0xffe5195e)),
-                      minHeight: 8,
-                    ),
-                  ),
-
-                  // Progress Indicator Marker
-                  Positioned(
-                    left: MediaQuery.of(context).size.width * progress - 60,
-                    top: 0,
-                    child: CircleAvatar(
-                      radius: 4,
-                      backgroundColor: Colors.black,
-                      child: CircleAvatar(
-                        radius: 4,
-                        backgroundColor: Colors.white,
+                  SizedBox(height: 16),
+                  Stack(
+                    children: [
+                      LinearProgressIndicator(
+                        value: progress,
+                        backgroundColor: Colors.grey[800],
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                            Color(0xffe5195e)),
+                        minHeight: 8,
                       ),
-                    ),
+// <<<<<<< HEAD
+                      Positioned(
+                        left: MediaQuery
+                            .of(context)
+                            .size
+                            .width * progress - 30,
+                        top: -4,
+                        child: CircleAvatar(
+                          radius: 6,
+                          backgroundColor: Colors.black,
+                          child: CircleAvatar(
+                            radius: 4,
+                            backgroundColor: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 16),
-
-                  // Status Row
+                  SizedBox(height: 8),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _buildStatusText('Initiated'),
-                      _buildStatusText('Artist Response'),
-                      _buildStatusText('Completion'),
+                      Text(
+                        'Initiated',
+                        style: GoogleFonts.epilogue(
+                          fontSize: 14,
+                          color: Colors.white,
+                        ),
+                      ),
+                      Text(
+                        'Artist Response',
+                        style: GoogleFonts.epilogue(
+                          fontSize: 14,
+                          color: Colors.white,
+                        ),
+                      ),
+                      Text(
+                        'Completion',
+                        style: GoogleFonts.epilogue(
+                          fontSize: 14,
+                          color: Colors.white,
+                        ),
+                      ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-
-                  // Call to Action Button
-                  Center(
+                  SizedBox(height: 16),
+              status != 1
+                  ? Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(left: 3, right: 3),
                     child: ElevatedButton(
                       onPressed: () async {
                         bool wait = await fetchArtistBooking(artist_id);
-                        if (wait) _makePhoneCall(phoneNumber ?? '');
+                        if (wait) {
+                          _makePhoneCall(phoneNumber ?? '');
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12 * fem),
                         ),
-                        padding: const EdgeInsets.symmetric(vertical: 6.5),
+                        padding: EdgeInsets.symmetric(
+                          vertical: 6.5 * fem,
+                        ),
                       ),
-                      child: Text(
-                        'Call Artist',
-                        style: GoogleFonts.epilogue(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.black,
+                      child: Center(
+                        child: Text(
+                          'Call Artist',
+                          style: SafeGoogleFont(
+                            'Be Vietnam Pro',
+                            fontSize: 16 * ffem,
+                            fontWeight: FontWeight.w700,
+                            height: 1.5 * ffem / fem,
+                            letterSpacing: 0.24 * fem,
+                            color: Colors.black,
+                          ),
                         ),
                       ),
                     ),
                   ),
+                ],
+              )
+                  : Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(left: 3, right: 3),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // Navigate to the review page
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ReviewPage(artistId: artist_id.toString() , isteam: widget.isteam),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12 * fem),
+                        ),
+                        padding: EdgeInsets.symmetric(
+                          vertical: 6.5 * fem,
+                        ),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'Write a Review',
+                          style: SafeGoogleFont(
+                            'Be Vietnam Pro',
+                            fontSize: 16 * ffem,
+                            fontWeight: FontWeight.w700,
+                            height: 1.5 * ffem / fem,
+                            letterSpacing: 0.24 * fem,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
                 ],
               ),
             ),

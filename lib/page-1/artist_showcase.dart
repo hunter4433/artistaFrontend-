@@ -65,6 +65,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
   int? count;
   late Future<List<dynamic>> _teamMembersFuture;
   late Future<String> _availabilityStatusFuture;
+ List<String>?  bookedDates;
 
   bool _isLoading = true;
 
@@ -159,13 +160,13 @@ class _ArtistProfileState extends State<ArtistProfile> {
             if (image1 != null) imagePathsFromBackend.add(image1!);
             if (image2 != null) imagePathsFromBackend.add(image2!);
             if (image3 != null) imagePathsFromBackend.add(image3!);
-            if (image4 != null) imagePathsFromBackend.add(image4!);
+            // if (image4 != null) imagePathsFromBackend.add(image4!);
 
             // Add non-null video URLs to the list
             if (video1 != null) VideoPathsFromBackend.add(video1!);
             if (video2 != null) VideoPathsFromBackend.add(video2!);
             if (video3 != null) VideoPathsFromBackend.add(video3!);
-            if (video4 != null) VideoPathsFromBackend.add(video4!);
+            // if (video4 != null) VideoPathsFromBackend.add(video4!);
           });
         }
         List<String> parsedBackendSkills = artistRole!.split(', ').map((skill) => skill.trim()).toList();
@@ -234,7 +235,44 @@ class _ArtistProfileState extends State<ArtistProfile> {
       // return 'Error fetching availability status';
     }
   }
+  Future<List<String>> callSecondApi(String artistId) async {
+    String apiUrl = '${Config().apiDomain}/artist/booking-date/$artistId';
+    print('Calling second API: $apiUrl');
 
+    try {
+      var response = await http.get(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/vnd.api+json',
+          'Accept': 'application/vnd.api+json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        var responseData = json.decode(response.body);
+
+        // Handle case 1: The response is a plain list
+        if (responseData is List) {
+          return responseData.map((booking) => booking['booking_date'].toString()).toList();
+        }
+        // Handle case 2: The response has a 'data' field containing the list
+        else if (responseData.containsKey('data') && responseData['data'] is List) {
+          List<dynamic> bookings = responseData['data'];
+          print('dtae sarev $bookings');
+          return bookings.map((booking) => booking['booking_date'].toString()).toList();
+        } else {
+          print('Unexpected response structure.');
+          return [];
+        }
+      } else {
+        print('Failed to fetch second API data. Status code: ${response.statusCode}');
+        return [];
+      }
+    } catch (e) {
+      print('Error calling second API: $e');
+      return [];
+    }
+  }
 
   Future<String> fetchAvailabilityStatus() async {
     String apiUrl = '${Config().apiDomain}/artist/info/${widget.artist_id}';
@@ -256,7 +294,14 @@ class _ArtistProfileState extends State<ArtistProfile> {
 
         if (status == 0) {
           return 'Available for Bookings';
-        } else   {
+        } else if (status == 1) {
+          // Call the second API if status is 1
+
+            // If status = 1, call the second API to get booked dates
+            bookedDates = await callSecondApi(widget.artist_id);
+
+          return 'Second API Called';
+        } else {
           return 'Not Available';
         }
       } else {
@@ -322,8 +367,10 @@ class _ArtistProfileState extends State<ArtistProfile> {
     }
 
 
-    Widget buildAvailabilityText(String status) {
+    Widget buildAvailabilityText(String status, {List<String>? bookedDates}) {
       Color lightColor;
+
+      // Determine the lightColor based on the status.
       switch (status) {
         case 'Available for Bookings':
           lightColor = Colors.green;
@@ -335,41 +382,51 @@ class _ArtistProfileState extends State<ArtistProfile> {
           lightColor = Colors.red;
           break;
         default:
-          lightColor = Colors.transparent;
+          lightColor = Colors.yellow;
       }
 
+      // Safely handle bookedDates (null or empty).
+      String statusText = (bookedDates != null && bookedDates.isNotEmpty)
+          ? 'Not Available on: ${bookedDates.join(', ')}'
+          : status;
+
       return Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center, // Center the content horizontally
+        crossAxisAlignment: CrossAxisAlignment.center, // Align content vertically in the center
         children: [
           Container(
-            margin: EdgeInsets.only(right: 8),
-            width: 12*fem,
-            height: 12*fem,
+            margin: EdgeInsets.only(right: 8), // Space between icon and text
+            width: 12 * fem,
+            height: 12 * fem,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: lightColor,
               boxShadow: [
                 BoxShadow(
                   color: lightColor.withOpacity(0.5),
-                  spreadRadius: 3*fem,
-                  blurRadius: 7*fem,
-                  offset: Offset(0, 0), // changes position of shadow
+                  spreadRadius: 3 * fem,
+                  blurRadius: 7 * fem,
+                  offset: Offset(0, 0), // Adjusts shadow position
                 ),
               ],
             ),
           ),
-          Text(
-            status,
-            style: TextStyle(
-              fontSize: 16*fem,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
+          // Use Flexible to prevent overflow and align text properly.
+          Flexible(
+            child: Text(
+              statusText,
+              textAlign: TextAlign.center, // Center the text within its space
+              style: TextStyle(
+                fontSize: 16 * fem,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+              softWrap: true, // Allow text to wrap if necessary
             ),
           ),
         ],
       );
     }
-
 
 
     return Scaffold(
@@ -527,7 +584,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
                         } else if (snapshot.hasData) {
                           return Padding(
                             padding: const EdgeInsets.symmetric(vertical: 0),
-                            child: buildAvailabilityText(snapshot.data!), // Use the fetched availability status
+                            child: buildAvailabilityText(snapshot.data!, bookedDates: bookedDates), // Use the fetched availability status
                           );
                         } else {
                           return Text(

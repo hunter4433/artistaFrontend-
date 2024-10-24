@@ -49,7 +49,7 @@ class _BottomNavState extends State<BottomNav> with WidgetsBindingObserver {
       Home_user(),
       Search(controller: _videoController), // Use the controller in Search
       UserBookings(isteam: widget.isteam),
-      setting(),
+      Setting(),
     ];
   }
 

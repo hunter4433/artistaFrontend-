@@ -305,15 +305,8 @@ print(response.statusCode );
                       onPressed: isChecked
                           ? () async {
                         await storage.write(key: 'phone_number', value: _phoneController.text);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => VerificationCodeInputScreen(
-                              // phoneNumber: phoneNumber,  // Pass phone number to OTP screen
-                            ),
-                          ),
-                        );
-                        // _sendPhoneNumberToBackend(); // Send phone number to backendUrl
+
+                        _sendPhoneNumberToBackend(); // Send phone number to backendUrl
                       }
                           : null, // Disabled when unchecked
                       child: Text(
