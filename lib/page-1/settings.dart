@@ -19,6 +19,7 @@ import '../config.dart';
 import '../utils.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'artist_sign_up.dart';
 import'page1.dart';
 
 class setting extends StatelessWidget {
@@ -383,7 +384,7 @@ class setting extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) =>account_managment()),
+                      MaterialPageRoute(builder: (context) =>artist_cred()),
                     );
                   },
                   child: Container(
