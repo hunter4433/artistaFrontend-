@@ -1,6 +1,7 @@
 import 'dart:ffi';
 import 'package:geolocator/geolocator.dart';
 
+import 'bottom_nav.dart';
 import 'location_service.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -51,7 +52,7 @@ class _BookingArtistState extends State<booking_artist> {
   double? artistPrice=10.0;
   String? crowdSize;
 double? soundSystemPrice=0.0;
-  bool hasSoundSystem = false ;
+  bool hasSoundSystem = true ;
   double? totalAmount=0.0;
   String? selectedAudienceSize;
   // bool remove = true;
@@ -356,7 +357,7 @@ print(userDataList );
             price = (userData['price_per_hour']).toString() ?? ''; // Assign String to price
             image = '${userData['profile_photo']}' ;
             fcm_token=userData['fcm_token'] ?? '';
-            hasSoundSystem=userData['sound_system'] == 1 ? true: false ;
+            // hasSoundSystem=userData['sound_system'] == 1 ? true: false ;
 
           });
 print('soundsystem is $hasSoundSystem');
@@ -474,7 +475,7 @@ print('soundsystem is $hasSoundSystem');
         netAmount = netAmount!  - soundSystemPrice!;
       } else {
         // If sound system is not added, add its price
-        netAmount = netAmount! ;
+        netAmount = netAmount! + soundSystemPrice! ;
       }
       // Toggle the hasSoundSystem state
       hasSoundSystem = !hasSoundSystem;
@@ -1210,9 +1211,10 @@ print('soundsystem is $hasSoundSystem');
                                       SizedBox(height: 10.0),
 
 
-                                    if (!hasSoundSystem) // Show only if `hasSoundSystem` is false
-                                      Column(
-                                        children: [
+                                    Column(
+                                      children: [
+                                        // Row for Sound System Price: Show only if `hasSoundSystem` is false
+                                        if (hasSoundSystem)
                                           Row(
                                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                             children: [
@@ -1226,28 +1228,31 @@ print('soundsystem is $hasSoundSystem');
                                               ),
                                             ],
                                           ),
-                                          SizedBox(height: 5.0),
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Text(
-                                                'Have your own sound system?',
-                                                style: TextStyle(fontSize: 16.0, fontStyle: FontStyle.italic),
-                                              ),
-                                              TextButton(
-                                                onPressed: toggleSoundSystem,
-                                                child: Text(
-                                                  hasSoundSystem ? 'Remove' : 'Add',
-                                                  style: TextStyle(
-                                                    color: hasSoundSystem ? Colors.red : Colors.green,
-                                                    fontSize: 16,
-                                                  ),
+
+                                        SizedBox(height: 5.0),
+
+                                        // Row for toggle button and message
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(
+                                              'Have your own sound system?',
+                                              style: TextStyle(fontSize: 16.0, fontStyle: FontStyle.italic),
+                                            ),
+                                            TextButton(
+                                              onPressed: toggleSoundSystem,
+                                              child: Text(
+                                                hasSoundSystem ? 'Remove' : 'Add',
+                                                style: TextStyle(
+                                                  color: hasSoundSystem ? Colors.red : Colors.green,
+                                                  fontSize: 16,
                                                 ),
                                               ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
                                      SizedBox(height: 5.0),
 
 
@@ -1543,7 +1548,10 @@ print('soundsystem is $hasSoundSystem');
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => Booked(BookingId: bookingId!, artistId: widget.artist_id, isteam: widget.isteam ),
+          builder: (context) => BottomNav(
+            initialPageIndex: 2, // Set the index to 2 for UserBookings
+            isteam: widget.isteam, // Pass any required data if needed
+          ),
         ),
       );
 

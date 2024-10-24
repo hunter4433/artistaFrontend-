@@ -99,7 +99,7 @@ class _VerificationCodeInputScreenState
 
    Future<bool> _verifyTwilioOTP(String phoneNumber, String otpCode) async {
     // Your backend endpoint that verifies the OTP via Twilio
-    final String url = '${Config().apiDomain}/verify/test';
+    final String url = '${Config().apiDomain}/verify';
     String? userType = await _getSelectedValue();
     if (phoneNumber.startsWith('+91')) {
       phoneNumber = phoneNumber.substring(3).trim();

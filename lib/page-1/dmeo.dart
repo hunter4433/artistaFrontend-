@@ -57,6 +57,14 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
       'nav':'Comedian, Dancer'
 
     },
+    {
+      'name': 'Exclusive Haldi Entertainment to Complement Your Traditional Celebration',
+      'type': 'video',
+      'url': 'assets/page-1/images/b6d72c6ab8ae0d23b322e019cab0b565.mp4',
+      'nav':'Dancer'
+
+    },
+
   ];
 
   @override
@@ -241,13 +249,13 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
 
       'name':'Experience Unforgettable Entertainment for Your Grand Wedding',
       'type': 'video',
-      'url': 'assets/page-1/images/newmarraige.mov',
+      'url': 'assets/page-1/images/b6d72c6ab8ae0d23b322e019cab0b565.mp4',
       'nav':'Comedian'
     },
     {
       'name': 'Exclusive Haldi Entertainment to Complement Your Traditional Celebration',
       'type': 'video',
-      'url': 'assets/page-1/images/homestage2.mov',
+      'url': 'assets/page-1/images/b6d72c6ab8ae0d23b322e019cab0b565.mp4',
       'nav':'Dancer'
 
     },
@@ -255,7 +263,7 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
 
       'name': 'Enhance Your Mehndi Event with Exquisite Talent and Elegant Performances',
       'type': 'video',
-      'url': 'assets/page-1/images/mehandi.mov',
+      'url': 'assets/page-1/images/b6d72c6ab8ae0d23b322e019cab0b565.mp4',
       'nav':'Comedian, Dancer'
 
     },
@@ -516,7 +524,6 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
                         ),
 
 
-
                         Stack(
                           children: [
                             // Background image with semi-transparent overlay
@@ -553,11 +560,11 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
                                   height: 575*fem,
                                   margin: EdgeInsets.zero,
                                   child: PageView.builder(
-                                    controller: PageController(viewportFraction: 0.87),
+                                    controller: PageController(viewportFraction: 0.87, keepPage: true),
                                     scrollDirection: Axis.horizontal,
-                                    itemCount: best.length,
+                                    itemCount:  bestArtists.length,
                                     itemBuilder: (context, index) {
-                                      final artist = best[index];
+                                      final artist =  bestArtists[index];
                                       if (artist == null) {
                                         return SizedBox(); // Return an empty SizedBox if the artist is null
                                       }
@@ -645,6 +652,8 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
                             )
                           ],
                         ),
+
+
 
 
 
@@ -752,6 +761,7 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
                             },
                           ),
                         ),
+
 
 
 
@@ -1136,9 +1146,10 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
 
 class CustomVideoPlayer extends StatefulWidget {
   final String source;
-  final bool isAsset; // Set to true for assets, false for URLs
+  final bool isAsset;
 
-  CustomVideoPlayer({required this.source, this.isAsset = false});
+  CustomVideoPlayer({required this.source, this.isAsset = false, Key? key})
+      : super(key: key);
 
   @override
   _CustomVideoPlayerState createState() => _CustomVideoPlayerState();
@@ -1148,7 +1159,8 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> with WidgetsBindi
   late VideoPlayerController _controller;
   bool _isInitialized = false;
   bool _isPlaying = false;
-  bool _isDisposed = false; // Add a flag to track if the widget is disposed
+  bool _isDisposed = false;
+  DateTime? _lastVisibilityChange;
 
   @override
   void initState() {
@@ -1160,31 +1172,53 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> with WidgetsBindi
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _isDisposed = true; // Set the disposed flag
+    _isDisposed = true;
     _controller.dispose();
     super.dispose();
   }
-
   Future<void> _initializeVideo() async {
     try {
       _controller = widget.isAsset
           ? VideoPlayerController.asset(widget.source)
           : VideoPlayerController.networkUrl(Uri.parse(widget.source));
 
+      // Start initializing immediately to prevent delays
       await _controller.initialize();
+      _controller.setLooping(true);
+
       if (mounted) {
         setState(() {
           _isInitialized = true;
         });
       }
-      _controller.setLooping(true);
     } catch (e) {
       print("Error initializing video: $e");
     }
   }
 
-  void _playPauseVideo(bool visible) {
-    if (_isDisposed || !_isInitialized) return; // Don't proceed if disposed or not initialized
+  // Future<void> _initializeVideo() async {
+  //   try {
+  //     _controller = widget.isAsset
+  //         ? VideoPlayerController.asset(widget.source)
+  //         : VideoPlayerController.networkUrl(Uri.parse(widget.source));
+  //
+  //     await _controller.initialize();
+  //     if (mounted) {
+  //       setState(() {
+  //         _isInitialized = true;
+  //       });
+  //     }
+  //     _controller.setLooping(true);
+  //   } catch (e) {
+  //     print("Error initializing video: $e");
+  //   }
+  // }
+
+  void _playPauseVideo(bool visible) async {
+    if (_isDisposed || !_isInitialized) return;
+
+    await Future.delayed(Duration(milliseconds: 100)); // Small delay to stabilize visibility state
+
     if (visible && !_isPlaying) {
       _controller.play();
       setState(() {
@@ -1203,10 +1237,15 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> with WidgetsBindi
     return VisibilityDetector(
       key: Key(widget.source),
       onVisibilityChanged: (visibilityInfo) {
-        var visiblePercentage = visibilityInfo.visibleFraction * 100;
-        if (!_isDisposed) { // Add a check to avoid accessing the controller after it's disposed
-          _playPauseVideo(visiblePercentage > 50);
+        var now = DateTime.now();
+        if (_lastVisibilityChange != null &&
+            now.difference(_lastVisibilityChange!) < Duration(milliseconds: 200)) {
+          return; // Debounce to prevent rapid toggles
         }
+        _lastVisibilityChange = now;
+
+        var visiblePercentage = visibilityInfo.visibleFraction * 100;
+        _playPauseVideo(visiblePercentage > 30);
       },
       child: _isInitialized
           ? AspectRatio(

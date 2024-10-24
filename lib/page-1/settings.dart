@@ -21,8 +21,15 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import'page1.dart';
 
-class setting extends StatelessWidget {
+class Setting extends StatefulWidget {
+  @override
+  _SettingState createState() => _SettingState();
+}
 
+class _SettingState extends State<Setting> {
+   String? userName;
+   String? teamName;
+   late final Future<Map<String, String?>> futureUserData;
   List<TeamMember> TeamMembers = [
     // TeamMember(
     //   name: 'John Doe',
@@ -43,6 +50,13 @@ class setting extends StatelessWidget {
     //   profilePictureUrl: 'https://via.placeholder.com/150', // Dummy profile picture URL
     // ),
   ];
+
+   @override
+   void initState() {
+     super.initState();
+
+
+   }
   //conflict was found here
   final storage = FlutterSecureStorage();
 
@@ -53,6 +67,9 @@ class setting extends StatelessWidget {
   Future<String?> _getid() async {
     return await storage.read(key: 'artist_id'); // Assuming you stored the token with key 'token'
   }
+   Future<String?> _getUserid() async {
+     return await storage.read(key: 'user_id'); // Assuming you stored the token with key 'token'
+   }
   Future<String?> _getTeamid() async {
     return await storage.read(key: 'team_id'); // Assuming you stored the token with key 'token'
   }
@@ -61,59 +78,60 @@ class setting extends StatelessWidget {
   }
 
 
-  Future<void> fetchArtistInformation() async {
+   Future<Map<String, String?>> fetchArtistInformation() async {
+     String? id = await _getid();
+     String? team_id = await _getTeamid();
+     String? kind = await _getKind();
+     String? user=await _getUserid();
 
-    String? id = await _getid();
-    String? team_id = await _getTeamid();
-    String? kind = await _getKind();
-    // print(token);
-    print(id);
-    print(kind);
+     String apiUrl;
+     if (kind == 'solo_artist') {
+       apiUrl = '${Config().apiDomain}/artist/info/$id';
+     } else if (kind == 'team') {
+       apiUrl = '${Config().apiDomain}/artist/team_info/$team_id';
+     } else {
+       apiUrl = '${Config().apiDomain}/info/$user';
+     }
 
-    // Initialize API URLs for different kinds
-    String apiUrl;
-    if (kind == 'solo_artist') {
-      apiUrl = '${Config().apiDomain}/artist/info/$id';
-    } else if (kind == 'team') {
-      apiUrl = '${Config().apiDomain}/artist/team_info/$team_id';
-    } else {
-      // Handle the case where kind is not recognized
-      return;
-    }
+     try {
+       var response = await http.get(
+         Uri.parse(apiUrl),
+         headers: <String, String>{
+           'Content-Type': 'application/vnd.api+json',
+           'Accept': 'application/vnd.api+json',
+         },
+       );
 
-    try {
-      var response = await http.get(
-        Uri.parse(apiUrl),
-        headers: <String, String>{
-          'Content-Type': 'application/vnd.api+json',
-          'Accept': 'application/vnd.api+json',
-          // Include the token in the header
-        },
-      );
-      if (response.statusCode == 200) {
-        // Parse the response JSON
-        Map<String, dynamic> userData = json.decode(response.body);
-        print(userData);
+       if (response.statusCode == 200) {
+         // Parse the response JSON
+         Map<String, dynamic> userData = json.decode(response.body);
+print(' data is $userData');
+         String? userName ;
+         String? teamName ;
+         String? profile_photo;
+         // Extract relevant data
+         if (kind=='hire'){
+           String firstName = userData['first_name'] ?? '';
+           String lastName = userData['last_name'] ?? '';
+           userName = '$firstName $lastName'.trim();
+         }
+         else {
+           userName = userData['data']['attributes']['name'];
+            teamName = userData['data']['attributes']['team_name'];
+            profile_photo = userData['data']['attributes']['profile_photo'];
+         }
 
-        // Update text controllers with fetched data
-        // setState(() {
-          // _nameController.text = userData['data']['attributes']['name'] ?? '';
-          // _teamNameController.text=userData['data']['attributes']['team_name'] ?? '';
-          // _phoneController.text = userData['data']['attributes']['phone_number'] ?? '';
-          // _ageController.text = userData['data']['attributes']['age']?.toString() ?? '';
-          // _addressController.text = userData['data']['attributes']['address'] ?? '';
-          // _altPhoneController.text=userData['data']['attributes']['alt_phone_number'] ?? '';
-          // _imageUrl=userData['data']['attributes']['profile_photo'];
-          // _sController.text = userData['data']['attributes']['state'] ?? '';
-          // _pinCodeController.text = userData['data']['attributes']['pin'] ?? '';
-
-      } else {
-        print('Failed to fetch user information. Status code: ${response.body}');
-      }
-    } catch (e) {
-      print('Error fetching user information: $e');
-    }
-  }
+         // Return as a map
+         return {'userName': userName, 'teamName': teamName, 'profile_photo': profile_photo };
+       } else {
+         print('Failed to fetch user information. Status code: ${response.body}');
+         return {}; // Return empty map on failure
+       }
+     } catch (e) {
+       print('Error fetching user information: $e');
+       return {}; // Return empty map on exception
+     }
+   }
 
 
   Future<bool> logout() async {
@@ -179,7 +197,7 @@ class setting extends StatelessWidget {
     return false;
 
   }
-  String userName = "John Doe"; // Demo data for testing
+   // Demo data for testing
 
 
 
@@ -295,89 +313,121 @@ class setting extends StatelessWidget {
 
 
 
-            InkWell(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => UserInformation()),
-                );
-              },
-              child: Container(
-                padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 6 * fem, 0 * fem),
-                width: double.infinity,
-                height: 136 * fem,
-                decoration: const BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(
-                      color: Colors.grey,
-                      width: 0.15,
+          FutureBuilder<Map<String, String?>>(
+            future: fetchArtistInformation(), // Fetch user data from backend
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator()); // Loading state
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}')); // Error state
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Center(child: Text('No User Data Available')); // No data state
+              }
+
+              // Extract user details from the fetched data
+              final userName = snapshot.data!['userName'];
+              final teamName = snapshot.data!['teamName'];
+              final imageUrl = snapshot.data!['profile_photo']; // Image URL from backend
+
+              return InkWell(
+                onTap: () async {
+                  String? kind = await _getKind();
+                  if (kind=='hire') {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => UserInformation()),
+                    );
+                  }
+                  else {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => EditProfileScreen()),
+                    );
+                  }
+
+                },
+                child: Container(
+                  padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 6 * fem, 0),
+                  width: double.infinity,
+                  height: 136 * fem,
+                  decoration: const BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(color: Colors.grey, width: 0.15),
                     ),
                   ),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center, // Aligns Row content vertically
-                  children: [
-                    // Profile icon container
-                    Container(
-                      width: 74 * fem, // Adjust the size as needed
-                      height: 74 * fem,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.grey[500], // Gray color for the profile icon
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Profile icon or image
+                      Container(
+                        width: 74 * fem,
+                        height: 74 * fem,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.grey[500], // Background color if no image
+                          image: imageUrl != null && imageUrl.isNotEmpty
+                              ? DecorationImage(
+                            image: NetworkImage(imageUrl),
+                            fit: BoxFit.cover, // Fit the image within the circle
+                          )
+                              : null, // If no image, show icon
+                        ),
+                        child: imageUrl == null || imageUrl.isEmpty
+                            ? const Icon(
+                          Icons.person,
+                          color: Colors.white,
+                          size: 28,
+                        )
+                            : null, // Show icon only if imageUrl is empty
                       ),
-                      child: Icon(
-                        Icons.person, // Person icon for the profile picture
-                        color: Colors.white, // White color for the icon
-                        size: 28 * fem, // Adjust size as per theme
-                      ),
-                    ),
-                    SizedBox(width: 12 * fem), // Space between icon and text
+                      SizedBox(width: 12 * fem),
 
-                    // Expanded widget for the text
-                    Expanded(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center, // Center-align the text vertically
-                        crossAxisAlignment: CrossAxisAlignment.start, // Align text to the start
-                        children: [
-                          Text(
-                            userName.isNotEmpty ? userName : 'Complete Profile', // Display demo data or "Complete Profile"
-                            style: SafeGoogleFont(
-                              'Be Vietnam Pro',
-                              fontSize: 18 * ffem,
-                              fontWeight: FontWeight.w400,
-                              height: 1.5 * ffem / fem,
-                              color: Colors.white,
+                      // User information
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              userName ?? teamName ?? 'Complete Profile',
+                              style: TextStyle(
+                                fontSize: 18 * ffem,
+                                fontWeight: FontWeight.w400,
+                                height: 1.5,
+                                color: Colors.white,
+                              ),
                             ),
-                          ),
-                          SizedBox(height: 4 * fem), // Small space between the two text lines
-                          Text(
-                            "Name, mobile no, and more",
-                            style: SafeGoogleFont(
-                              'Be Vietnam Pro',
-                              fontSize: 14 * ffem,
-                              fontWeight: FontWeight.w300,
-                              height: 1.2 * ffem / fem,
-                              color: Colors.white70, // Slightly lighter text color for details
+                            SizedBox(height: 4 * fem),
+                            const Text(
+                              "Name, mobile no, and more",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w300,
+                                height: 1.2,
+                                color: Colors.white70,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
 
-                    // Arrow icon for navigation
-                    Container(
-                      width: 64 * fem,
-                      height: 44 * fem,
-                      child: Icon(
-                        Icons.arrow_forward_ios_rounded,
-                        color: Colors.white,
+                      // Arrow icon for navigation
+                      SizedBox(
+                        width: 64 * fem,
+                        height: 44 * fem,
+                        child: const Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ),
-
+              );
+            },
+          ),
 
             InkWell(
                   onTap: () {

@@ -186,31 +186,31 @@ class _EventDetailsState extends State<EventDetails> {
           ),
         ),
         backgroundColor: Color(0xFF121217),
-        // actions: [
-        //   Padding(
-        //     padding: const EdgeInsets.only(right: 16.0),
-        //     child: ElevatedButton(
-        //       onPressed: () async {
-        //         await generateOtp(context); // Call OTP generation function
-        //         showOtpDialog(context); // Show OTP dialog
-        //       },
-        //       style: ElevatedButton.styleFrom(
-        //         backgroundColor: Colors.blue,
-        //         shape: RoundedRectangleBorder(
-        //           borderRadius: BorderRadius.circular(8.0),
-        //         ),
-        //       ),
-        //       child: Text(
-        //         'Generate OTP',
-        //         style: TextStyle(
-        //           fontSize: 14,
-        //           fontWeight: FontWeight.w600,
-        //           color: Colors.white,
-        //         ),
-        //       ),
-        //     ),
-        //   ),
-        // ],
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: ElevatedButton(
+              onPressed: () async {
+                await generateOtp(context); // Call OTP generation function
+                showOtpDialog(context); // Show OTP dialog
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+              ),
+              child: Text(
+                'Generate OTP',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
       body: FutureBuilder(
         future: fetchFuture,
@@ -313,7 +313,7 @@ class _EventDetailsState extends State<EventDetails> {
 // Function to generate OTP
   Future<void> generateOtp(BuildContext context) async {
     // Your OTP generation logic here
-    final String apiUrl = '${Config().apiDomain}/sms/user/10'; // Replace with the correct API URL
+    final String apiUrl = '${Config().apiDomain}/sms/user/$user_id'; // Replace with the correct API URL
 
     try {
       final response = await http.get(
@@ -327,11 +327,14 @@ class _EventDetailsState extends State<EventDetails> {
          number = responseData['number']; // Display only in testing, remove in production
         _showSnackBar('OTP sent successfully! ');
       } else {
+        print('error sending otp ');
         final errorMessage = jsonDecode(response.body)['response']['message'];
-        _showSnackBar(errorMessage ?? 'Failed to send OTP');
+        print(errorMessage);
+        // _showSnackBar(errorMessage ?? 'Failed to send OTP');
       }
     } catch (e) {
-      _showSnackBar('Error: $e');
+      print(e);
+      // _showSnackBar('Error: $e');
     }
   }
 
@@ -425,7 +428,7 @@ class _EventDetailsState extends State<EventDetails> {
       Uri.parse(url),
       headers: {'Content-Type': 'application/vnd.api+json',
         'Accept': 'application/vnd.api+json'},
-      body: jsonEncode({'user_id': '10', 'otp': otpCode}),
+      body: jsonEncode({'user_id': user_id, 'otp': otpCode}),
     );
 
     if (response.statusCode == 200) {
