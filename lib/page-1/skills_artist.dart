@@ -195,7 +195,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
         'price_per_hour': _hourlyPriceController.text,
         'skill_category': _selectedSkill,
         'special_message': _messageController.text,
-        'fcm_token': fCMToken!,
+        'fcm_token': fCMToken ?? '',
         'sound_system':'0',
       };
 
@@ -480,29 +480,46 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
     });
   }
 
+  bool _isLoading1 = false;
+  bool _isLoading2 = false;
+  bool _isLoading3 = false;
+
   Future<void> _pickVideo1() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.video,
-    );
+    setState(() {
+      _isLoading1 = true;
+    });
+
+    FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.video);
+
     if (_controller1 != null) {
       await _controller1!.dispose();
     }
 
     if (result != null) {
-
       setState(() {
         _video1 = File(result.files.single.path!);
         _controller1 = VideoPlayerController.file(_video1!);
-        _controller1!.initialize();
       });
-      print(_video1);
+
+      await _controller1!.initialize();
+
+      setState(() {
+        _isLoading1 = false;
+      });
+    } else {
+      setState(() {
+        _isLoading1 = false; // Stop loading if no video is picked
+      });
     }
   }
 
   Future<void> _pickVideo2() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.video,
-    );
+    setState(() {
+      _isLoading2 = true;
+    });
+
+    FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.video);
+
     if (_controller2 != null) {
       await _controller2!.dispose();
     }
@@ -511,16 +528,27 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
       setState(() {
         _video2 = File(result.files.single.path!);
         _controller2 = VideoPlayerController.file(_video2!);
-        _controller2!.initialize();
       });
-      print('this is video2:$_video2');
+
+      await _controller2!.initialize();
+
+      setState(() {
+        _isLoading2 = false;
+      });
+    } else {
+      setState(() {
+        _isLoading2 = false; // Stop loading if no video is picked
+      });
     }
   }
 
   Future<void> _pickVideo3() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.video,
-    );
+    setState(() {
+      _isLoading3 = true;
+    });
+
+    FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.video);
+
     if (_controller3 != null) {
       await _controller3!.dispose();
     }
@@ -529,11 +557,20 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
       setState(() {
         _video3 = File(result.files.single.path!);
         _controller3 = VideoPlayerController.file(_video3!);
-        _controller3!.initialize();
       });
-      print(_video3);
+
+      await _controller3!.initialize();
+
+      setState(() {
+        _isLoading3 = false;
+      });
+    } else {
+      setState(() {
+        _isLoading3 = false; // Stop loading if no video is picked
+      });
     }
   }
+
 
   Future<void> _pickVideo4() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -944,7 +981,9 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                                   borderRadius: BorderRadius.circular(10 * fem),
                                   border: Border.all(color: Colors.grey),
                                 ),
-                                child: _controller1 != null
+                                child: _isLoading1
+                                    ? Center(child: CircularProgressIndicator()) // Show loading for video 1
+                                    : _controller1 != null && _controller1!.value.isInitialized
                                     ? ClipRRect(
                                   borderRadius: BorderRadius.circular(10 * fem),
                                   child: VideoPlayer(_controller1!),
@@ -962,7 +1001,9 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                                   borderRadius: BorderRadius.circular(10 * fem),
                                   border: Border.all(color: Colors.grey),
                                 ),
-                                child: _controller2 != null
+                                child: _isLoading2
+                                    ? Center(child: CircularProgressIndicator()) // Show loading for video 2
+                                    : _controller2 != null && _controller2!.value.isInitialized
                                     ? ClipRRect(
                                   borderRadius: BorderRadius.circular(10 * fem),
                                   child: VideoPlayer(_controller2!),
@@ -980,7 +1021,9 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                                   borderRadius: BorderRadius.circular(10 * fem),
                                   border: Border.all(color: Colors.grey),
                                 ),
-                                child: _controller3 != null
+                                child: _isLoading3
+                                    ? Center(child: CircularProgressIndicator()) // Show loading for video 3
+                                    : _controller3 != null && _controller3!.value.isInitialized
                                     ? ClipRRect(
                                   borderRadius: BorderRadius.circular(10 * fem),
                                   child: VideoPlayer(_controller3!),

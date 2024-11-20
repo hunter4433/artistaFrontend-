@@ -249,11 +249,13 @@ class _VerificationCodeInputScreenState
 
       // Fetch FCM token and user type
       String? fCMToken = await _getFCMToken();
+      print('fcmtoken is $fCMToken');
       String? userType = await _getSelectedValue();
 
       // Attempt login
       bool loginSuccessful = await login(fCMToken, phoneNumber);
-
+      print('login suddcess $loginSuccessful ');
+//tempwrory change
       if (loginSuccessful) {
         await storage.write(key: 'authorised', value: 'true');
         if (mounted) _navigateToHome(userType);

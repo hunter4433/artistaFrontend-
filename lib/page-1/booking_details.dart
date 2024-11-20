@@ -392,6 +392,7 @@ class _EventDetailsState extends State<EventDetails> {
                     bool verify = await _verifyOTP(enteredOtp);
 
                     if (verify) {
+                      _bookingCompleted(widget.bookingId);
                       setState(() {
                         isVerified = true; // Update verification status
                       });
@@ -413,6 +414,32 @@ class _EventDetailsState extends State<EventDetails> {
         );
       },
     );
+  }
+
+
+  void _bookingCompleted(String bookingId) async {
+    final response = await http.patch(
+      Uri.parse('${Config().apiDomain}/booking/$bookingId'),
+      headers: <String, String>{
+        'Content-Type': 'application/vnd.api+json',
+        'Accept': 'application/vnd.api+json',
+      },
+      body: json.encode({
+        'status': 3,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      var decodedResponse = json.decode(response.body);
+      print(decodedResponse);
+      print('Booking updated successfully');
+      // _updateBookingstatus(1);
+
+    } else {
+      // Handle the error case
+      print('Failed to update booking: ${response.statusCode}');
+
+    }
   }
 
   Future<bool> _verifyOTP(String otpCode) async {

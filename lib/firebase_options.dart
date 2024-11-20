@@ -54,7 +54,7 @@ class DefaultFirebaseOptions {
     appId: '1:2456262485:android:9b682d67cb5b72a6d4c1dc',
     messagingSenderId: '2456262485',
     projectId: 'homestage-51e95',
-    storageBucket: 'homestage-51e95.appspot.com',
+    storageBucket: 'homestage-51e95.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
@@ -62,7 +62,7 @@ class DefaultFirebaseOptions {
     appId: '1:2456262485:ios:83e8b32c58072205d4c1dc',
     messagingSenderId: '2456262485',
     projectId: 'homestage-51e95',
-    storageBucket: 'homestage-51e95.appspot.com',
+    storageBucket: 'homestage-51e95.firebasestorage.app',
     iosBundleId: 'com.HomeStage.artista',
   );
 
