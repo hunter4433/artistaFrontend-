@@ -20,6 +20,7 @@ import '../config.dart';
 import '../utils.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'artist_sign_up.dart';
 import'page1.dart';
 
 class Setting extends StatefulWidget {
@@ -435,7 +436,11 @@ print(' data is $userData');
                   onTap: () {
                     Navigator.push(
                       context,
+// <<<<<<< HEAD
                       MaterialPageRoute(builder: (context) => account_managment()),
+// =======
+//                       MaterialPageRoute(builder: (context) =>artist_cred()),
+// >>>>>>> 71fc5321e6356695c1a1f769543a7c429f07c784
                     );
                   },
                   child: Container(

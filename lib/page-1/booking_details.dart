@@ -454,6 +454,7 @@ class _EventDetailsState extends State<EventDetails> {
       var decodedResponse = json.decode(response.body);
       print(decodedResponse);
       print('Booking updated successfully');
+// <<<<<<< HEAD
 
 
       // // Update the status of the booking locally
@@ -475,6 +476,14 @@ class _EventDetailsState extends State<EventDetails> {
       print('Failed to update booking: ${response.statusCode}');
       // Show error dialog
       // _showDialog('Error', 'Failed to accept booking');
+// =======
+//       // _updateBookingstatus(1);
+//
+//     } else {
+//       // Handle the error case
+//       print('Failed to update booking: ${response.statusCode}');
+//
+// >>>>>>> 71fc5321e6356695c1a1f769543a7c429f07c784
     }
   }
 

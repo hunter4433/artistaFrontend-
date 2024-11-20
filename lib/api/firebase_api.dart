@@ -25,12 +25,12 @@ class FirebaseApi {
   final _firebaseMessaging = FirebaseMessaging.instance;
   final _localNotifications = FlutterLocalNotificationsPlugin();
 
-final androidChannel = const AndroidNotificationChannel(
-  'high_importance_channel',
-  'High Importance Notifications',
-  description: 'This channel is used for important notification',
-  importance: Importance.defaultImportance,
-);
+  final androidChannel = const AndroidNotificationChannel(
+    'high_importance_channel',
+    'High Importance Notifications',
+    description: 'This channel is used for important notification',
+    importance: Importance.defaultImportance,
+  );
 
 
 
@@ -140,19 +140,19 @@ final androidChannel = const AndroidNotificationChannel(
     FirebaseMessaging.onBackgroundMessage(handleBackgroundMessage);
     FirebaseMessaging.onMessage.listen((message){
       final notification =message.notification;
-     if (notification == null) return;
+      if (notification == null) return;
 
       _localNotifications.show(
         notification.hashCode,
         notification.title,
         notification.body,
         NotificationDetails(
-          android: AndroidNotificationDetails (
-            androidChannel.id,
-            androidChannel.name,
-            channelDescription: androidChannel.description,
-            icon: '@drawable/android_logo',
-          )
+            android: AndroidNotificationDetails (
+              androidChannel.id,
+              androidChannel.name,
+              channelDescription: androidChannel.description,
+              icon: '@drawable/android_logo',
+            )
         ),
         payload: jsonEncode(message.toMap()),
       );

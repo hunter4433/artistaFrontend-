@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:async';
 import 'dart:io';
 // import 'package:ffmpeg_kit_flutter/return_code.dart';
 import 'package:file_picker/file_picker.dart';
@@ -198,7 +199,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
         'price_per_hour': _hourlyPriceController.text,
         'skill_category': _selectedSkill,
         'special_message': _messageController.text,
-        'fcm_token': fCMToken!,
+        'fcm_token': fCMToken ?? '',
         'sound_system':'0',
       };
 
@@ -483,7 +484,13 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
     });
   }
 
+// <<<<<<< HEAD
 
+// =======
+//   bool _isLoading1 = false;
+//   bool _isLoading2 = false;
+//   bool _isLoading3 = false;
+// >>>>>>> 71fc5321e6356695c1a1f769543a7c429f07c784
 
   Future<void> _pickVideo1() async {
     setState(() {
@@ -571,6 +578,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
       });
     }
   }
+
 
   Future<void> _pickVideo4() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
