@@ -38,7 +38,7 @@ class AccountManagementPage1 extends StatelessWidget {
         child: Container(
           width: double.infinity,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Privacy Policy
               InkWell(
@@ -50,8 +50,33 @@ class AccountManagementPage1 extends StatelessWidget {
                     ),
                   );
                 },
-                child: _buildOptionTile(
-                    fem, ffem, 'Privacy Policy', Colors.white),
+                child: Container(
+                  padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.privacy_tip,
+                        color: Colors.white,
+                        size: 24.0,
+                      ),
+                      SizedBox(width: 12.0),
+                      Text(
+                        'Privacy Policy',
+                        style: TextStyle(
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.w400,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Divider(
+                color: Colors.grey,
+                thickness: 0.5,
+                indent: 16.0, // Matches the padding
+                endIndent: 16.0,
               ),
 
               // Terms and Conditions
@@ -64,8 +89,33 @@ class AccountManagementPage1 extends StatelessWidget {
                     ),
                   );
                 },
-                child: _buildOptionTile(
-                    fem, ffem, 'Terms and Conditions', Colors.white),
+                child: Container(
+                  padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.description,
+                        color: Colors.white,
+                        size: 24.0,
+                      ),
+                      SizedBox(width: 12.0),
+                      Text(
+                        'Terms and Conditions',
+                        style: TextStyle(
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.w400,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Divider(
+                color: Colors.grey,
+                thickness: 0.5,
+                indent: 16.0,
+                endIndent: 16.0,
               ),
 
               // Refund Policy
@@ -78,11 +128,37 @@ class AccountManagementPage1 extends StatelessWidget {
                     ),
                   );
                 },
-                child: _buildOptionTile(
-                    fem, ffem, 'Refund Policy', Colors.white),
+                child: Container(
+                  padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.money_off,
+                        color: Colors.white,
+                        size: 24.0,
+                      ),
+                      SizedBox(width: 12.0),
+                      Text(
+                        'Refund Policy',
+                        style: TextStyle(
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.w400,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Divider(
+                color: Colors.grey,
+                thickness: 0.5,
+                indent: 16.0,
+                endIndent: 16.0,
               ),
             ],
           ),
+
         ),
       ),
     );

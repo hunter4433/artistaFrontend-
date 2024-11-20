@@ -442,10 +442,8 @@ class _ArtistCredentials33State extends State<ArtistCredentials33> {
                                         duration: Duration(seconds: 2), // Adjust the duration as needed
                                       ),
                                     );
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(builder: (context) => account_managment()),
-                                    );
+                                    Navigator.pop(context);
+
                                   } else {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(

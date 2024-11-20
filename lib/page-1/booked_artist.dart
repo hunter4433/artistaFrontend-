@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:test1/page-1/review.dart';
 import 'package:test1/page-1/user_bookings.dart';
 import '../config.dart';
+import '../main.dart';
 import '../utils.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -36,31 +37,39 @@ class _BookedState extends State<Booked> {
   String? price;
   String? image;
   String? phone_number;
-   String? dateText ;
+  String? dateText ;
   String? timeText ;
   String? durationText ;
- String? priceText;
-String? locationText ;
-int? hour;
-double? ratings;
-int? minute;
-String? fcm_token;
-String? totalprice;
- int? status;
- String? skill;
+  String? priceText;
+  String? locationText ;
+  int? hour;
+  double? ratings;
+  int? minute;
+  String? fcm_token;
+  String? totalprice;
+  int? status;
+  String? skill;
   String? teamName;
   String? fcmToken;
   String? _durationText;
-   TextEditingController _locationController= TextEditingController();
-   TextEditingController _dateTextController= TextEditingController();
-   TextEditingController _timeTextController= TextEditingController();
-   // TextEditingController _durationTextController= TextEditingController();
+  int? sound_system_price;
+  TextEditingController _locationController= TextEditingController();
+  TextEditingController _dateTextController= TextEditingController();
+  TextEditingController _timeTextController= TextEditingController();
+
+  // TextEditingController _durationTextController= TextEditingController();
+  bool _isLoading = false;
 
 
+  // Add a loading state for each editable field
+  bool _isLoadingDate = false;
+  bool _isLoadingTime = false;
+  bool _isLoadingLocation = false;
+  bool _isInitialLoading = true;
 
   final storage = FlutterSecureStorage();
   bool _isEditing = false;
-
+  Future<void>? _fetchArtistBookingFuture;
 
 
   Future<String?> _getToken() async {
@@ -78,29 +87,37 @@ String? totalprice;
   @override
   void initState() {
     super.initState();
-    _initializeBookingAndArtistDetails();
+    _loadInitialData();
+    _fetchArtistBookingFuture = fetchArtistBooking(widget.artistId);
 
   }
-  Future<void> _initializeBookingAndArtistDetails() async {
+  Future<void> _loadInitialData() async {
     try {
+      setState(() {
+        _isInitialLoading = true;
+      });
+
       await Future.wait([
         fetchBookingDetails(widget.BookingId),
-        fetchArtistBooking(widget.artistId),
+        // fetchArtistBooking(widget.artistId),
         rating()
       ]);
-
-      // If needed, update state after fetching details
-
-
     } catch (error) {
-      // Handle errors gracefully
       print('Error fetching details: $error');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to fetch booking details'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to fetch booking details'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isInitialLoading = false;
+        });
+      }
     }
   }
   Future<void> rating() async {
@@ -148,12 +165,12 @@ String? totalprice;
 
     // Convert pricePerHour to double
     double pricePerHourDouble = double.tryParse(pricePerHour) ?? 0.0;
-
+    double? sound_price=sound_system_price?.toDouble();
     // Calculate the total amount
-    double totalAmount = totalTimeInHours * pricePerHourDouble;
+    double totalAmount = totalTimeInHours * pricePerHourDouble + sound_price!;
 
     // Format the amount to two decimal places
-    String formattedAmount = totalAmount.toStringAsFixed(2);
+    String formattedAmount = totalAmount.toStringAsFixed(2) ;
 
     return formattedAmount;
   }
@@ -162,57 +179,58 @@ String? totalprice;
   Future<String?> fetchBookingDetails(String BookingId)async{
 
     print('booking id is nck ${widget.BookingId}');
-  String? token = await _getToken();
-  String? booking_id = await _getbookingid();
+    String? token = await _getToken();
+    String? booking_id = await _getbookingid();
 
-  String apiUrl= '${Config().apiDomain}/booking/$BookingId';
-  print(apiUrl);
+    String apiUrl= '${Config().apiDomain}/booking/$BookingId';
+    print(apiUrl);
 
-  try {
-    var response = await http.get(
-      Uri.parse(apiUrl),
-      headers: <String, String>{
-        'Content-Type': 'application/vnd.api+json',
-        'Accept': 'application/vnd.api+json',
-        'Authorization': 'Bearer $token',
-      },
-    );
-    if (response.statusCode == 200) {
-      Map<String, dynamic> userData = json.decode(response.body);
-      print("hello mmohuit");
-      print(userData);
-      print("bye");
+    try {
+      var response = await http.get(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/vnd.api+json',
+          'Accept': 'application/vnd.api+json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (response.statusCode == 200) {
+        Map<String, dynamic> userData = json.decode(response.body);
+        print("hello mmohuit");
+        print(userData);
+        print("bye");
 
-      // Check if] the widget is mounted before calling setState
+        // Check if] the widget is mounted before calling setState
 
-      setState(() {
-        _durationText = userData['duration'] ?? '';
-        _locationController.text = userData['location'] ?? '';
-        _dateTextController.text = userData['booking_date'] ?? '';
-        _timeTextController.text = userData['booked_from'] ?? '';
-        status= userData['status'] ?? '';
+        setState(() {
+          _durationText = userData['duration'] ?? '';
+          _locationController.text = userData['location'] ?? '';
+          _dateTextController.text = userData['booking_date'] ?? '';
+          _timeTextController.text = userData['booked_from'] ?? '';
+          status= userData['status'] ?? '';
+          sound_system_price= userData['sound_system_price'] ?? '';
 
-      });
-      print(status);
-      // Split the string by spaces
-      List<String>? parts = _durationText?.split(' ');
+        });
+        print(status);
+        // Split the string by spaces
+        List<String>? parts = _durationText?.split(' ');
 
-      // // Initialize hour and minute variables
-      // int hours = 0;
-      // int minutes = 0;
+        // // Initialize hour and minute variables
+        // int hours = 0;
+        // int minutes = 0;
 
-      // Iterate over the parts and extract the values
-      for (int i = 0; i < parts!.length; i++) {
-        if (parts[i] == "hour" || parts[i] == "hours") {
-          hour = int.parse(parts[i - 1]) as int?;
-        } else if (parts[i] == "minute" || parts[i] == "minutes") {
-          minute = int.parse(parts[i - 1]) as int?;
+        // Iterate over the parts and extract the values
+        for (int i = 0; i < parts!.length; i++) {
+          if (parts[i] == "hour" || parts[i] == "hours") {
+            hour = int.parse(parts[i - 1]) as int?;
+          } else if (parts[i] == "minute" || parts[i] == "minutes") {
+            minute = int.parse(parts[i - 1]) as int?;
+          }
         }
-      }
 
-      // Print the extracted values
-      print('Hours: $hour');
-      print('Minutes: $minute');
+        // Print the extracted values
+        print('Hours: $hour');
+        print('Minutes: $minute');
 
 // setState(() async {
 //   totalprice=await calculateTotalAmount( price!, hour as int , minute as int );
@@ -222,16 +240,16 @@ String? totalprice;
 
 
 
-    }
+      }
 
-   else {
-      print('Failed to fetch user information. Status code: ${response.body}');
+      else {
+        print('Failed to fetch user information. Status code: ${response.body}');
+      }
+    } catch (e) {
+      print('Error fetching user information: $e');
     }
-  } catch (e) {
-    print('Error fetching user information: $e');
+    return null;
   }
-  return null;
-}
 
 
 
@@ -241,6 +259,7 @@ String? totalprice;
     String? id = await _getid();
     // String? kind = await _getKind();
     print(id);
+    print('widget ka istemn kya hai :${widget.isteam}');
 
 
     String apiUrl;
@@ -286,8 +305,16 @@ String? totalprice;
     }
   }
 
+  // Modify the save booking details function to handle field-specific loading states
   Future<bool> _saveBookingDetails() async {
     print('saveBooking is working');
+
+    // Set loading state for specific fields that are being updated
+    setState(() {
+      if (_dateTextController.text != dateText) _isLoadingDate = true;
+      if (_timeTextController.text != timeText) _isLoadingTime = true;
+      if (_locationController.text != locationText) _isLoadingLocation = true;
+    });
 
     String apiUrl = '${Config().apiDomain}/booking/${widget.BookingId}';
     Map<String, dynamic> formData = {
@@ -295,8 +322,6 @@ String? totalprice;
       'booked_from': _timeTextController.text,
       'location': _locationController.text,
     };
-
-    print(formData);
 
     try {
       var response = await http.patch(
@@ -309,26 +334,36 @@ String? totalprice;
       );
 
       if (response.statusCode == 200) {
-        print(response.body);
-        setState(() {
-          _isEditing = false; // Exit editing mode
-        });
+        if (mounted) {
+          setState(() {
+            _isEditing = false;
+            dateText = _dateTextController.text;
+            timeText = _timeTextController.text;
+            locationText = _locationController.text;
+          });
+        }
 
-        // Optionally show a success SnackBar
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Booking details saved successfully')),
         );
 
-        return true; // Indicate success
+        return true;
       } else {
-        print('Error: ${response.body}');
-        _showErrorSnackBar('Failed to save booking details'); // Error message
-        return false; // Indicate failure
+        _showErrorSnackBar('Failed to save booking details');
+        return false;
       }
     } catch (e) {
       print('Error saving booking details: $e');
-      _showErrorSnackBar('Error saving booking details'); // Error message
-      return false; // Indicate failure
+      _showErrorSnackBar('Error saving booking details');
+      return false;
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingDate = false;
+          _isLoadingTime = false;
+          _isLoadingLocation = false;
+        });
+      }
     }
   }
 
@@ -348,6 +383,9 @@ String? totalprice;
   //   throw UnimplementedError();
   // }
   // }
+
+
+
 
 
   @override
@@ -373,7 +411,7 @@ String? totalprice;
       backgroundColor: Colors.white,
       body: SafeArea(
         child: FutureBuilder<void>(
-            future: fetchArtistBooking(widget.artistId), // Fetch the booking details once
+            future: _fetchArtistBookingFuture, // Fetch the booking details once
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Center(
@@ -388,6 +426,7 @@ String? totalprice;
                 return Container(
                   color: Colors.grey,
                   width: double.infinity,
+                  height: double.infinity,
                   child: SingleChildScrollView(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -404,7 +443,7 @@ String? totalprice;
                               IconButton(
                                 icon: Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black),
                                 onPressed: () {
-                                  Navigator.push(
+                                  Navigator.pop(
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => BottomNav(
@@ -526,277 +565,41 @@ String? totalprice;
 
 
 
-                    Container(
-                      margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem,
-                          0.15 * fem),
-                      // depth1frame51h9 (9:1715)
-                      padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 16 * fem,
-                          10 * fem),
-                      width: double.infinity,
-                      height: 80 * fem,
-                      decoration: BoxDecoration(
-                        color: Color(0xFFFFFFFF),
-                      ),
+                        Container(
+                          margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem,
+                              0.15 * fem),
+                          // depth1frame51h9 (9:1715)
+                          padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 16 * fem,
+                              10 * fem),
+                          width: double.infinity,
+                          height: 80 * fem,
+                          decoration: BoxDecoration(
+                            color: Color(0xFFFFFFFF),
+                          ),
 
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            width: 249 * fem,
-                            height: 24 * fem,
-                            child: Text(
-                              'Date:',
-                              style: SafeGoogleFont(
-                                'Be Vietnam Pro',
-                                fontSize: 19 * ffem,
-                                fontWeight: FontWeight.w500,
-                                height: 1.5 * ffem / fem,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: 10 * fem),
-                          Container(
-                            width: 249 * fem,
-                            height: 24 * fem,
-                            child: TextField(
-                              controller: _dateTextController,
-                              style: SafeGoogleFont(
-                                'Be Vietnam Pro',
-                                fontSize: 17 * ffem,
-                                fontWeight: FontWeight.w400,
-                                height: 1.5 * ffem / fem,
-                                color: _isEditing ? Colors.blue : Color(0xff876370),
-                              ),
-                              enabled: _isEditing,
-                              keyboardType: TextInputType.datetime,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.allow(RegExp(r'\d|[-]')),  // Allow only digits and '-'
-                                LengthLimitingTextInputFormatter(10),  // Limit input to 'yyyy-MM-dd'
-                              ],
-                              decoration: InputDecoration(
-                                border: InputBorder.none,
-                                hintText: 'yyyy-MM-dd',  // Placeholder to indicate the required format
-                              ),
-                              onChanged: (value) {
-                                if (_isEditing && !_isValidDateFormat(value)) {
-                                  // Optionally provide feedback or reset the field
-                                  print('Invalid date format. Use yyyy-MM-dd.');
-                                }
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 *
-                        fem, 0.15 * fem),
-                      // depth1frame6vBq (9:1724)
-                      padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 16 * fem,
-                          10 * fem),
-                      width: double.infinity,
-                      height: 80 * fem,
-                      decoration: BoxDecoration(
-                        color: Colors.white
-                        ,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            // depth4frame0nE3 (9:1727)
-                            width: 249 * fem,
-                            height: 24 * fem,
-                            child: Text(
-                              'Time:',
-                              style: SafeGoogleFont(
-                                'Be Vietnam Pro',
-                                fontSize: 19 * ffem,
-                                fontWeight: FontWeight.w500,
-                                height: 1.5 * ffem / fem,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: 10 * fem,),
-                          Container(
-                            width: 249 * fem,
-                            height: 24 * fem,
-                            child: TextField(
-                              controller: _timeTextController,
-                              style: SafeGoogleFont(
-                                'Be Vietnam Pro',
-                                fontSize: 17 * ffem,
-                                fontWeight: FontWeight.w400,
-                                height: 1.5 * ffem / fem,
-                                color: _isEditing ? Colors.blue : Color(
-                                    0xff876370),
-                              ),
-                              enabled: _isEditing,
-                              decoration: InputDecoration(
-                                border: InputBorder.none,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 *
-                        fem, 0.15 * fem),
-                      // depth1frame7BGB (9:1733)
-                      padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 16 * fem,
-                          10 * fem),
-                      width: double.infinity,
-                      height: 80 * fem,
-                      decoration: BoxDecoration(
-                          color: Color(0xFFFFFFFF)
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            width: 249 * fem,
-                            height: 24 * fem,
-
-                            child: Text(
-                              'Duration:',
-                              style: SafeGoogleFont(
-                                'Be Vietnam Pro',
-                                fontSize: 19 * ffem,
-                                fontWeight: FontWeight.w500,
-                                height: 1.5 * ffem / fem,
-                                color: Colors.black,
-
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: 10 * fem,),
-                          Container(
-                            width: 249 * fem,
-                            height: 24 * fem,
-
-                            child: Text(
-                              _durationText ?? '',
-                              style: SafeGoogleFont(
-                                'Be Vietnam Pro',
-                                fontSize: 17 * ffem,
-                                fontWeight: FontWeight.w400,
-                                height: 1.5 * ffem / fem,
-                                color:  Color(
-                                    0xff876370),
-                              ),
-                              // enabled: _isEditing,
-                              // decoration: InputDecoration(
-                              //   border: InputBorder.none,
-                              // ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 *
-                        fem, 0.15 * fem),
-                      // depth1frame8U8o (9:1742)
-                      padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 16 * fem,
-                          10 * fem),
-                      width: double.infinity,
-                      height: 80 * fem,
-                      decoration: BoxDecoration(
-                        color: Color(0xFFFFFFFF)
-                        ,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Container(
-                              width: 249 * fem,
-                              height: 24 * fem,
-                              child: Text(
-                                'Total Price',
-                                style: SafeGoogleFont(
-                                  'Be Vietnam Pro',
-                                  fontSize: 19 * ffem,
-                                  fontWeight: FontWeight.w500,
-                                  height: 1.5 * ffem / fem,
-                                  color: Colors.black,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: 249 * fem,
+                                height: 24 * fem,
+                                child: Text(
+                                  'Date:',
+                                  style: SafeGoogleFont(
+                                    'Be Vietnam Pro',
+                                    fontSize: 19 * ffem,
+                                    fontWeight: FontWeight.w500,
+                                    height: 1.5 * ffem / fem,
+                                    color: Colors.black,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ),
-                          SizedBox(height: 10 * fem,),
-                          // Use FutureBuilder to handle async calculation
-                          FutureBuilder<String>(
-                            future: calculateTotalAmount(price! , hour!, minute!), // Call the async function
-                            builder: (context, snapshot) {
-                              // Check for different states
-                              if (snapshot.connectionState == ConnectionState.waiting) {
-                                // While waiting, show a loading spinner or message
-                                return CircularProgressIndicator();
-                              } else if (snapshot.hasError) {
-                                // If there's an error, show an error message
-                                return Text('Error calculating price');
-                              } else if (snapshot.hasData) {
-                                // Once the data is ready, display the total price
-                                return Expanded(
-                                  child: Container(
-                                    width: 249 * fem,
-                                    height: 24 * fem,
-                                    child: Text(
-                                      snapshot.data ?? 'Price not available', // Use the calculated price
-                                      style: SafeGoogleFont(
-                                        'Be Vietnam Pro',
-                                        fontSize: 17 * ffem,
-                                        fontWeight: FontWeight.w400,
-                                        height: 1.5 * ffem / fem,
-                                        color: Color(0xff876370),
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              } else {
-                                // Fallback for unexpected states
-                                return Text('Price not available');
-                              }
-                            },
-                          ),
-                        ],
-                      ),
-
-                    ),
-                    Container(margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 *
-                        fem, 0.15 * fem),
-                      padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 16 * fem,
-                          1 * fem),
-                      width: double.infinity,
-                      height: 150 * fem,
-                      decoration: BoxDecoration(
-                        color: Color(0xFFFFFFFF),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            width: 349 * fem,
-                            height: 34 * fem,
-                            child: Text(
-                              'Location:',
-                              style: SafeGoogleFont(
-                                'Be Vietnam Pro',
-                                fontSize: 19 * ffem,
-                                fontWeight: FontWeight.w500,
-                                height: 1.5 * ffem / fem,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: 10 * fem,),
-                          Expanded(
-                            child: Container(
-                              width: 349 * fem,
-                              child: SingleChildScrollView(
+                              SizedBox(height: 10 * fem),
+                              Container(
+                                width: 249 * fem,
+                                height: 24 * fem,
                                 child: TextField(
-                                  controller: _locationController,
+                                  controller: _dateTextController,
                                   style: SafeGoogleFont(
                                     'Be Vietnam Pro',
                                     fontSize: 17 * ffem,
@@ -805,24 +608,260 @@ String? totalprice;
                                     color: _isEditing ? Colors.blue : Color(0xff876370),
                                   ),
                                   enabled: _isEditing,
-                                  maxLines: null, // Allow unlimited lines with scroll
+                                  keyboardType: TextInputType.datetime,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.allow(RegExp(r'\d|[-]')),  // Allow only digits and '-'
+                                    LengthLimitingTextInputFormatter(10),  // Limit input to 'yyyy-MM-dd'
+                                  ],
+                                  decoration: InputDecoration(
+                                    border: InputBorder.none,
+                                    hintText: 'yyyy-MM-dd',  // Placeholder to indicate the required format
+                                  ),
+                                  onChanged: (value) {
+                                    if (_isEditing && !_isValidDateFormat(value)) {
+                                      // Optionally provide feedback or reset the field
+                                      print('Invalid date format. Use yyyy-MM-dd.');
+                                    }
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 *
+                            fem, 0.15 * fem),
+                          // depth1frame6vBq (9:1724)
+                          padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 16 * fem,
+                              10 * fem),
+                          width: double.infinity,
+                          height: 80 * fem,
+                          decoration: BoxDecoration(
+                            color: Colors.white
+                            ,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                // depth4frame0nE3 (9:1727)
+                                width: 249 * fem,
+                                height: 24 * fem,
+                                child: Text(
+                                  'Time:',
+                                  style: SafeGoogleFont(
+                                    'Be Vietnam Pro',
+                                    fontSize: 19 * ffem,
+                                    fontWeight: FontWeight.w500,
+                                    height: 1.5 * ffem / fem,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 10 * fem,),
+                              Container(
+                                width: 249 * fem,
+                                height: 24 * fem,
+                                child: TextField(
+                                  controller: _timeTextController,
+                                  style: SafeGoogleFont(
+                                    'Be Vietnam Pro',
+                                    fontSize: 17 * ffem,
+                                    fontWeight: FontWeight.w400,
+                                    height: 1.5 * ffem / fem,
+                                    color: _isEditing ? Colors.blue : Color(
+                                        0xff876370),
+                                  ),
+                                  enabled: _isEditing,
                                   decoration: InputDecoration(
                                     border: InputBorder.none,
                                   ),
-                                  textAlignVertical: TextAlignVertical.top,
                                 ),
                               ),
-                            ),
+                            ],
                           ),
-                        ],
-                      ),
-                    ),
+                        ),
+                        Container(margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 *
+                            fem, 0.15 * fem),
+                          // depth1frame7BGB (9:1733)
+                          padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 16 * fem,
+                              10 * fem),
+                          width: double.infinity,
+                          height: 80 * fem,
+                          decoration: BoxDecoration(
+                              color: Color(0xFFFFFFFF)
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: 249 * fem,
+                                height: 24 * fem,
+
+                                child: Text(
+                                  'Duration:',
+                                  style: SafeGoogleFont(
+                                    'Be Vietnam Pro',
+                                    fontSize: 19 * ffem,
+                                    fontWeight: FontWeight.w500,
+                                    height: 1.5 * ffem / fem,
+                                    color: Colors.black,
+
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 10 * fem,),
+                              Container(
+                                width: 249 * fem,
+                                height: 24 * fem,
+
+                                child: Text(
+                                  _durationText ?? '',
+                                  style: SafeGoogleFont(
+                                    'Be Vietnam Pro',
+                                    fontSize: 17 * ffem,
+                                    fontWeight: FontWeight.w400,
+                                    height: 1.5 * ffem / fem,
+                                    color:  Color(
+                                        0xff876370),
+                                  ),
+                                  // enabled: _isEditing,
+                                  // decoration: InputDecoration(
+                                  //   border: InputBorder.none,
+                                  // ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 *
+                            fem, 0.15 * fem),
+                          // depth1frame8U8o (9:1742)
+                          padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 16 * fem,
+                              10 * fem),
+                          width: double.infinity,
+                          height: 80 * fem,
+                          decoration: BoxDecoration(
+                            color: Color(0xFFFFFFFF)
+                            ,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Container(
+                                  width: 249 * fem,
+                                  height: 24 * fem,
+                                  child: Text(
+                                    'Total Price',
+                                    style: SafeGoogleFont(
+                                      'Be Vietnam Pro',
+                                      fontSize: 19 * ffem,
+                                      fontWeight: FontWeight.w500,
+                                      height: 1.5 * ffem / fem,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 10 * fem,),
+                              // Use FutureBuilder to handle async calculation
+                              FutureBuilder<String>(
+                                future: calculateTotalAmount(price ?? '' , hour!, minute!), // Call the async function
+                                builder: (context, snapshot) {
+                                  // Check for different states
+                                  if (snapshot.connectionState == ConnectionState.waiting) {
+                                    // While waiting, show a loading spinner or message
+                                    return CircularProgressIndicator();
+                                  } else if (snapshot.hasError) {
+                                    // If there's an error, show an error message
+                                    return Text('Error calculating price');
+                                  } else if (snapshot.hasData) {
+                                    // Once the data is ready, display the total price
+                                    return Expanded(
+                                      child: Container(
+                                        width: 249 * fem,
+                                        height: 24 * fem,
+                                        child: Text(
+                                          snapshot.data ?? 'Price not available', // Use the calculated price
+                                          style: SafeGoogleFont(
+                                            'Be Vietnam Pro',
+                                            fontSize: 17 * ffem,
+                                            fontWeight: FontWeight.w400,
+                                            height: 1.5 * ffem / fem,
+                                            color: Color(0xff876370),
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  } else {
+                                    // Fallback for unexpected states
+                                    return Text('Price not available');
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+
+                        ),
+                        Container(margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 *
+                            fem, 0.15 * fem),
+                          padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 16 * fem,
+                              1 * fem),
+                          width: double.infinity,
+                          height: 150 * fem,
+                          decoration: BoxDecoration(
+                            color: Color(0xFFFFFFFF),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: 349 * fem,
+                                height: 34 * fem,
+                                child: Text(
+                                  'Location:',
+                                  style: SafeGoogleFont(
+                                    'Be Vietnam Pro',
+                                    fontSize: 19 * ffem,
+                                    fontWeight: FontWeight.w500,
+                                    height: 1.5 * ffem / fem,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 0 * fem,),
+                              Expanded(
+                                child: Container(
+                                  width: 349 * fem,
+                                  child: SingleChildScrollView(
+                                    child: TextField(
+                                      controller: _locationController,
+                                      style: SafeGoogleFont(
+                                        'Be Vietnam Pro',
+                                        fontSize: 17 * ffem,
+                                        fontWeight: FontWeight.w400,
+                                        height: 1.5 * ffem / fem,
+                                        color: _isEditing ? Colors.blue : Color(0xff876370),
+                                      ),
+                                      enabled: _isEditing,
+                                      maxLines: null, // Allow unlimited lines with scroll
+                                      decoration: InputDecoration(
+                                        border: InputBorder.none,
+                                      ),
+                                      textAlignVertical: TextAlignVertical.top,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
 
                         Container(
                           color: Colors.white,
                           padding: EdgeInsets.fromLTRB(16 * fem, 20 * fem, 16 * fem, 12 * fem),
                           width: double.infinity,
-                          height: 220 * fem,  // Adjust height to accommodate the new button
+                          height: 250 * fem,  // Adjust height to accommodate the new button
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
@@ -833,9 +872,9 @@ String? totalprice;
                                   onPressed: () {
                                     // Navigate to review page or show review dialog
                                     Navigator.push(
-                                           context,
-                                           MaterialPageRoute(builder: (context) => ReviewPage(artistId: widget.artistId, isteam: widget.isteam)),
-                                         );
+                                      context,
+                                      MaterialPageRoute(builder: (context) => ReviewPage(artistId: widget.artistId, isteam: widget.isteam)),
+                                    );
 
                                   },
                                   style: OutlinedButton.styleFrom(
@@ -869,38 +908,55 @@ String? totalprice;
                                 padding: const EdgeInsets.only(left: 25, right: 25),
                                 child: OutlinedButton(
                                   onPressed: () async {
-                                    setState(() async {
+                                    setState(() {
                                       _isEditing = !_isEditing;
-                                      if (!_isEditing) {
-                                        final inputDate = _dateTextController.text;
-                                        final formattedDate = _formatDate(inputDate);
+                                      _isLoading = false;// Update editing state
+                                    });
 
-                                        if (formattedDate == null) {
-                                          // Show SnackBar if date format is invalid
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(
-                                              content: Text('Invalid date format. Please use yyyy-MM-dd.'),
-                                              backgroundColor: Colors.red,
-                                              duration: Duration(seconds: 2),
-                                            ),
-                                          );
-                                        } else {
-                                          _dateTextController.text = formattedDate;
+                                    // Only update if _isEditing is set to false (meaning the user clicked "Save Changes")
+                                    if (!_isEditing) {
+                                      final inputDate = _dateTextController.text;
+                                      final formattedDate = _formatDate(inputDate);
+
+                                      if (formattedDate == null) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text('Invalid date format. Please use yyyy-MM-dd.'),
+                                            backgroundColor: Colors.red,
+                                            duration: Duration(seconds: 2),
+                                          ),
+                                        );
+                                      } else {
+                                        _dateTextController.text = formattedDate;
+
+                                        setState(() {
+                                          _isLoading = true;  // Start loading state
+                                        });
+
+                                        try {
                                           bool success = await _saveBookingDetails();
-                                          if (success) {
-                                            sendNotifications(context, fcm_token!, false);
-                                          } else {
-                                            print('Failed to update booking details');
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              SnackBar(
-                                                content: Text('Retry, Failed to update booking details'),
-                                                backgroundColor: Colors.green,
-                                              ),
-                                            );
-                                          }
+
+                                          setState(() {
+                                            _isLoading = false;  // End loading state
+                                            if (success) {
+                                              sendNotifications(context, fcm_token!, false);
+                                            } else {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                  content: Text('Retry, Failed to update booking details'),
+                                                  backgroundColor: Colors.green,
+                                                ),
+                                              );
+                                            }
+                                          });
+                                        } catch (e) {
+                                          setState(() {
+                                            _isLoading = false;
+                                          });
+                                          print('Error updating booking details: $e');
                                         }
                                       }
-                                    });
+                                    }
                                   },
                                   style: OutlinedButton.styleFrom(
                                     backgroundColor: Colors.white,
@@ -912,9 +968,10 @@ String? totalprice;
                                       vertical: 8 * fem,
                                     ),
                                   ),
+                                  // Update OutlinedButton text based on _isLoading
                                   child: Center(
                                     child: Text(
-                                      _isEditing ? 'Save Changes' : 'Edit Booking',
+                                      _isLoading ? 'Saving...' : (_isEditing ? 'Save Changes' : 'Edit Booking'),
                                       style: SafeGoogleFont(
                                         'Be Vietnam Pro',
                                         fontSize: 16 * ffem,
@@ -933,7 +990,7 @@ String? totalprice;
                               // Cancel Booking Button Logic
                               Padding(
                                 padding: const EdgeInsets.only(left: 25, right: 25),
-                                child: (status == 3)
+                                child: (status == 2)
                                     ? Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -953,7 +1010,7 @@ String? totalprice;
                                           status = 0;
                                         });
                                         cancelBooking(context, widget.BookingId, '0');
-                                        fetchArtist(context, widget.artistId, false);
+                                        fetchArtist( widget.artistId, false);
                                       },
                                       style: OutlinedButton.styleFrom(
                                         backgroundColor: Colors.white,
@@ -976,12 +1033,11 @@ String? totalprice;
                                     ),
                                   ],
                                 )
-                                    : OutlinedButton(
+                                    :OutlinedButton(
                                   onPressed: () {
                                     setState(() {
-                                      status = 3;
-                                      _showCancelConfirmationDialog(
-                                          context, widget.BookingId, widget.artistId);
+                                      status = 2;
+                                      _showCancelConfirmationDialog(context, widget.BookingId, widget.artistId);
                                     });
                                   },
                                   style: OutlinedButton.styleFrom(
@@ -1008,50 +1064,55 @@ String? totalprice;
                           ),
                         ),
 
-                  ],
-                ),
-              ),
-            );
+                      ],
+                    ),
+                  ),
+                );
 
 
-         }
-        }
-  ),
-    ),
+              }
+            }
+        ),
+      ),
     );
   }
 
-  void _showCancelConfirmationDialog(BuildContext context,String booking_id, String artist_id)  {
+  // Show dialog with modified fetchArtist function
+  void _showCancelConfirmationDialog(BuildContext context, String booking_id, String artist_id) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(backgroundColor: Color(0xfffff5f8) ,
+        return AlertDialog(
+          backgroundColor: Color(0xfffff5f8),
           title: Text('Cancel Booking'),
-          content: Text('Are you sure you want to cancel the booking?', style: TextStyle(
-            fontSize: 16,
-          ),),
+          content: Text(
+            'Are you sure you want to cancel the booking?',
+            style: TextStyle(fontSize: 16),
+          ),
           actions: [
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
               },
-              child: Text('No',style: TextStyle(color: Colors.black,fontSize: 15),),
+              child: Text(
+                'No',
+                style: TextStyle(color: Colors.black, fontSize: 15),
+              ),
             ),
             ElevatedButton(
-              onPressed: ()async {
-                // final booking = bookings[index];
-                // booking['status'] = 3;
+              onPressed: () async {
                 Navigator.of(context).pop(); // Close the dialog
-                bool wait= await cancelBooking(context ,booking_id,'3'); // Call the cancel booking function
-                if (wait){
-                  fetchArtist(context,artist_id , true );
-                }else{
-                  print('error occured while fecthing user');
+                bool wait = await cancelBooking(context, booking_id, '2'); // Call the cancel booking function
+                if (wait) {
+                  fetchArtist(artist_id, true); // Pass artist_id only, avoid context dependency
+                } else {
+                  print('Error occurred while fetching user');
                 }
-
-
               },
-              child: Text('Yes', style: TextStyle(fontSize: 15, color: Colors.black),),
+              child: Text(
+                'Yes',
+                style: TextStyle(fontSize: 15, color: Colors.black),
+              ),
             ),
           ],
         );
@@ -1059,57 +1120,47 @@ String? totalprice;
     );
   }
 
-  Future <void> fetchArtist(BuildContext context,String artist_id, bool status ) async{
-    // Initialize API URLs for different kinds
-    print(artist_id);
-
-
+// Modified fetchArtist without context dependency
+  Future<void> fetchArtist(String artist_id, bool status) async {
     String apiUrl = '${Config().apiDomain}/artist/info/$artist_id';
 
     try {
       var uri = Uri.parse(apiUrl);
       var response = await http.get(
         uri,
-        headers: <String, String>{
+        headers: {
           'Content-Type': 'application/vnd.api+json',
           'Accept': 'application/vnd.api+json',
         },
-        // body: json.encode(requestBody),
       );
 
       if (response.statusCode == 200) {
-        print('Artist fetched successfully: ${response.body}');
-        Map<String, dynamic> artist= json.decode(response.body);
+        Map<String, dynamic> artist = json.decode(response.body);
+        String? fcmToken = artist['data']['attributes']['fcm_token'];
 
-        fcmToken=artist['data']['attributes']['fcm_token'];
-        // user_phonenumber=user['phone_number'];
-        sendNotification( context,fcmToken!, status);
-        print('token is :$fcmToken');
-
-
+        if (fcmToken != null) {
+          sendNotification(fcmToken, status); // Avoid using context in sendNotification as well
+        }
       } else {
-        print('user fetch unsuccessful Status code: ${response.body}');
-
+        print('User fetch unsuccessful: ${response.body}');
       }
     } catch (e) {
-      print('Error sending notification: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
+      print('Error fetching artist: $e');
+      // Use app-level navigator key if available for showing a snackbar, instead of context
+      ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
         SnackBar(
           content: Text('Notification has been sent to the artist'),
           backgroundColor: Colors.green,
         ),
       );
     }
-
   }
 
+// Send notification without context dependency
+  Future<void> sendNotification(String fcm_token, bool status) async {
+    if (!mounted) return;
 
-  Future<void> sendNotification(BuildContext context, String fcm_token, bool status) async {
-    if (!mounted) return; // Check if the widget is still mounted
-
-    // Initialize API URLs for different kinds
-    String apiUrl = '${Config().baseDomain}/send-notification';
-
+    String apiUrl = '${Config().apiDomain}/send-notification';
     Map<String, dynamic> requestBody = {
       'type': 'artist',
       'fcm_token': fcm_token,
@@ -1120,38 +1171,32 @@ String? totalprice;
       var uri = Uri.parse(apiUrl);
       var response = await http.post(
         uri,
-        headers: <String, String>{
+        headers: {
           'Content-Type': 'application/vnd.api+json',
           'Accept': 'application/vnd.api+json',
         },
         body: json.encode(requestBody),
       );
       if (response.statusCode == 200) {
-        if (status) {
-          _showDialog('Delete success',
-              'Your Booking has been Deleted successfully and Notification has been Sent to Artist');
-        }else{
-          _showDialog('Request intiated again', 'Notification has been sent to the artist again.');
-        }
-        print('notification sent successfully: ${response.body}');
+        _showDialog(
+          status ? 'Delete success' : 'Request initiated again',
+          status
+              ? 'Your booking has been deleted successfully and notification has been sent to the artist'
+              : 'Notification has been sent to the artist again.',
+        );
       } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Notification unsuccessfull'),
-              backgroundColor: Colors.green,
-            ),
-          );
-        }
-        print('Failed to send notification. Status code: ${response.body}');
+        ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
+          SnackBar(
+            content: Text('Notification unsuccessful'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        print('Failed to send notification: ${response.body}');
       }
     } catch (e) {
-
       print('Error sending notification: $e');
     }
   }
-
-
 
 
 
@@ -1211,7 +1256,7 @@ String? totalprice;
 
   Future<void> sendNotifications(BuildContext context, String fcm_token,bool status ) async {
     // Initialize API URLs for different kinds
-    String apiUrl = '${Config().apiDomain}/send-notification';
+    String apiUrl = '${Config().apiDomain}/send-notification_user';
     print('sendnotoify');
     print(fcm_token);
 
@@ -1260,6 +1305,7 @@ String? totalprice;
     }
   }
 }
+
 
 
 

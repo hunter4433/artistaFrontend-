@@ -25,9 +25,12 @@ class VerificationCodeInputScreen extends StatefulWidget {
 
 class _VerificationCodeInputScreenState
     extends State<VerificationCodeInputScreen> {
-   final List<TextEditingController> _codeController =
+  final TextEditingController _fullCodeController = TextEditingController();
+  final List<TextEditingController> _codeController =
   List.generate(6, (index) => TextEditingController());
-  List<FocusNode> _focusNodes = List.generate(6, (index) => FocusNode());
+  final List<FocusNode> _focusNodes = List.generate(6, (index) => FocusNode());
+
+
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   int _countdown = 30; // Countdown timer in seconds
@@ -61,19 +64,29 @@ class _VerificationCodeInputScreenState
   @override
   void initState() {
     super.initState();
+    // Listener to split OTP when full OTP is autofilled
+    _fullCodeController.addListener(() {
+      final code = _fullCodeController.text;
+      if (code.length == 6) {
+        for (int i = 0; i < 6; i++) {
+          _codeController[i].text = code[i];
+        }
+      }
+    });
     _startCountdown(); // Start the countdown timer when the screen loads
   }
   @override
   void dispose() {
+    _fullCodeController.dispose();
     for (var controller in _codeController) {
       controller.dispose();
     }
-    for (var node in _focusNodes) {
-      node.dispose();
+    for (var focusNode in _focusNodes) {
+      focusNode.dispose();
     }
-    _timer?.cancel(); // Cancel the timer if it's running
     super.dispose();
   }
+
 
   // Future<void> _sendTwilioOTP(String phoneNumber) async {
   //   // Your backend endpoint that integrates with Twilio Verify API
@@ -249,6 +262,7 @@ class _VerificationCodeInputScreenState
 
       // Fetch FCM token and user type
       String? fCMToken = await _getFCMToken();
+      print('fcmtoken is $fCMToken');
       String? userType = await _getSelectedValue();
 
       // Attempt login
@@ -410,170 +424,169 @@ class _VerificationCodeInputScreenState
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
-                decoration: BoxDecoration(
-                  color: Color(0xFF121217),
-                ),
+                color: Color(0xFF121217),
                 child: SizedBox(
                   width: double.infinity,
-                  child: Container(
-                    padding: EdgeInsets.fromLTRB(0, 0, 0, 6),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          margin: EdgeInsets.fromLTRB(16, 110, 16, 24),
-                          child: Center(
-                            child: Text(
-                              'Enter the code we just texted You',
-                              style: GoogleFonts.beVietnamPro(
-                                fontWeight: FontWeight.w400,
-                                fontSize: 24,
-                                height: 1.25,
-                                letterSpacing: -0.7,
-                                color: Colors.white,
-                              ),
-                            ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 110),
+                      Center(
+                        child: Text(
+                          'Enter the code we just texted you',
+                          style: GoogleFonts.beVietnamPro(
+                            fontWeight: FontWeight.w400,
+                            fontSize: 24,
+                            height: 1.25,
+                            letterSpacing: -0.7,
+                            color: Colors.white,
                           ),
                         ),
-                        Container(
-                          margin: EdgeInsets.fromLTRB(16, 0, 16, 16),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: List.generate(6, (index) {
-                              return Expanded(
-                                child: Container(
-                                  margin: EdgeInsets.symmetric(horizontal: 5),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(11),
-                                    color: Color(0xFF292938),
-                                  ),
-                                  child: AspectRatio(
-                                    aspectRatio: 0.81,
-                                    child: TextField(
-                                      controller: _codeController[index],
-                                      focusNode: _focusNodes[index],
-                                      textAlign: TextAlign.center,
-                                      style: GoogleFonts.manrope(
-                                        color: Colors.white, // Text color
-                                        fontSize: 24, // Text size
-                                        fontWeight: FontWeight.w500, // Font weight
-                                      ),
-                                      decoration: InputDecoration(
-                                        border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(11),
-                                          borderSide: BorderSide(
-                                            color: Color(0xFF292938), // Border color when not focused
-                                            width: 1.5,
-                                          ),
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(11),
-                                          borderSide: BorderSide(
-                                            color: Color(0xFFE0E0E0),  // Border color when focused
-                                            width: 1.5,
-                                          ),
-                                        ),
-                                        counterText: '',
-                                        // Adjust the padding to center the text vertically.
-                                        contentPadding: EdgeInsets.symmetric(vertical: 12.0),
-                                      ),
-                                      keyboardType: TextInputType.number,
-                                      maxLength: 1,
-                                      onChanged: (value) {
-                                        if (value.length == 1) {
-                                          if (index < _focusNodes.length - 1) {
-                                            _focusNodes[index].unfocus();
-                                            FocusScope.of(context).requestFocus(_focusNodes[index + 1]);
-                                          } else {
-                                            _focusNodes[index].unfocus();
-                                          }
-                                        } else if (value.isEmpty) {
-                                          if (index > 0) {
-                                            _focusNodes[index].unfocus();
-                                            FocusScope.of(context).requestFocus(_focusNodes[index - 1]);
-                                          }
-                                        }
-                                      },
+                      ),
+                      // SizedBox(height: 24),
+
+                      // Invisible TextField for OTP Autofill
+                      TextField(
+                        controller: _fullCodeController,
+                        keyboardType: TextInputType.number,
+                        maxLength: 6,
+                        autofillHints: [AutofillHints.oneTimeCode],
+                        style: TextStyle(color: Colors.transparent),
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          counterText: '',
+                        ),
+                      ),
+
+                      // Displayed OTP input fields
+                      Container(
+                        margin: EdgeInsets.fromLTRB(16, 0, 16, 16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: List.generate(6, (index) {
+                            return Expanded(
+                              child: Container(
+                                margin: EdgeInsets.symmetric(horizontal: 5),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(11),
+                                  color: Color(0xFF292938),
+                                ),
+                                child: AspectRatio(
+                                  aspectRatio: 0.81,
+                                  child: TextField(
+                                    controller: _codeController[index],
+                                    focusNode: _focusNodes[index],
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.manrope(
+                                      color: Colors.white,
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.w500,
                                     ),
+                                    decoration: InputDecoration(
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(11),
+                                        borderSide: BorderSide(
+                                          color: Color(0xFF292938),
+                                          width: 1.5,
+                                        ),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(11),
+                                        borderSide: BorderSide(
+                                          color: Color(0xFFE0E0E0),
+                                          width: 1.5,
+                                        ),
+                                      ),
+                                      counterText: '',
+                                      contentPadding: EdgeInsets.symmetric(vertical: 12.0),
+                                    ),
+                                    keyboardType: TextInputType.number,
+                                    maxLength: 1,
+                                    onChanged: (value) {
+                                      if (value.length == 1) {
+                                        if (index < _focusNodes.length - 1) {
+                                          _focusNodes[index].unfocus();
+                                          FocusScope.of(context).requestFocus(_focusNodes[index + 1]);
+                                        } else {
+                                          _focusNodes[index].unfocus();
+                                        }
+                                      } else if (value.isEmpty && index > 0) {
+                                        _focusNodes[index].unfocus();
+                                        FocusScope.of(context).requestFocus(_focusNodes[index - 1]);
+                                      }
+                                    },
                                   ),
-                                ),
-                              );
-                            }),
-                          ),
-                        ),
-
-                        SizedBox(height: 15),
-                        Center(
-                          child: SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.9,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(11),
-                                gradient: LinearGradient(
-                                  colors: [
-                                    Color(0xffe5195e), // Starting color
-                                    Color(0xffc2185b), // Ending color
-                                  ],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
                                 ),
                               ),
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  padding: EdgeInsets.symmetric(vertical: 12.5),
-                                  backgroundColor: Colors.transparent, // Set transparent to show gradient
-                                  shadowColor: Colors.transparent, // Remove shadow to avoid overlay issues
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(11),
-                                  ),
+                            );
+                          }),
+                        ),
+                      ),
+
+                      SizedBox(height: 15),
+                      Center(
+                        child: SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.9,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(11),
+                              gradient: LinearGradient(
+                                colors: [
+                                  Color(0xffe5195e),
+                                  Color(0xffc2185b),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                            ),
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                padding: EdgeInsets.symmetric(vertical: 12.5),
+                                backgroundColor: Colors.transparent,
+                                shadowColor: Colors.transparent,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(11),
                                 ),
-                                onPressed: _signInWithPhoneNumber,
-                                child: Text(
-                                  'Confirm',
-                                  style: GoogleFonts.beVietnamPro(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 19,
-                                    color: Colors.white,
-                                  ),
+                              ),
+                              onPressed: _signInWithPhoneNumber,
+                              child: Text(
+                                'Confirm',
+                                style: GoogleFonts.beVietnamPro(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 19,
+                                  color: Colors.white,
                                 ),
                               ),
                             ),
                           ),
                         ),
-                        SizedBox(height: 12),
-                        // Countdown timer and Resend Code button
-                        // Countdown timer and Resend Code button in a single row
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              _countdown > 0 ? 'Resend code in $_countdown seconds' : '',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                              ),
+                      ),
+                      SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            _countdown > 0 ? 'Resend code in $_countdown seconds' : '',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
                             ),
-                            if (_isButtonVisible)
-                              TextButton(
-                                onPressed: () async {
-                                  // Call _resendCode function and handle phone number trimming
-                                   // Debugging line
-                                    _resendCode(context); // Pass phone number to _resendCode
-
-                                },
-                                child: Text(
-                                  'Resend Code',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.blue, // Change button color
-                                  ),
+                          ),
+                          if (_isButtonVisible)
+                            TextButton(
+                              onPressed: () => _resendCode(context),
+                              child: Text(
+                                'Resend Code',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.blue,
                                 ),
                               ),
-                          ],
-                        )
-                      ],
-                    ),
+                            ),
+                        ],
+                      )
+                    ],
                   ),
                 ),
               ),

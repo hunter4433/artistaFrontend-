@@ -1,13 +1,10 @@
 import 'dart:ffi';
 import 'package:geolocator/geolocator.dart';
-
 import 'bottom_nav.dart';
 import 'location_service.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:test1/page-1/booking_history.dart';
 import '../config.dart';
 import '../utils.dart';
 import 'package:intl/intl.dart';
@@ -15,9 +12,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
-import 'booked_artist.dart';
 import 'customer_support.dart';
-import'google_map_page.dart';
+
 
 
 class booking_artist extends StatefulWidget {
@@ -165,7 +161,7 @@ print('minute is $minutes');
 
     // Prepare data to send to the backend
     Map<String, dynamic> userData = {
-      'first_name': name,
+      'first_name': nameController,
     };
 
     try {
@@ -303,7 +299,11 @@ print('minute is $minutes');
         // Assuming 'data' is the decoded JSON response
 
         int? soundSystemPriceInt = data['sound_system_price'];
-         soundSystemPrice = soundSystemPriceInt?.toDouble();
+        setState(() {
+          soundSystemPrice = soundSystemPriceInt?.toDouble();
+          netAmount = totalAmount! +  soundSystemPrice! ;
+        });
+
         print('Audience Size: ${data['audience_size']}');
         print('Sound System Price (int): $soundSystemPriceInt');
         print('Sound System Price (double): $soundSystemPrice');
@@ -1215,21 +1215,105 @@ print('soundsystem is $hasSoundSystem');
                                       children: [
                                         // Row for Sound System Price: Show only if `hasSoundSystem` is false
                                         if (hasSoundSystem)
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
-                                              Text(
-                                                'Sound system price:',
-                                                style: TextStyle(fontSize: 17.0),
+                                              // Sound System Price Row
+                                              Row(
+                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                children: [
+                                                  Text(
+                                                    'Sound system price:',
+                                                    style: TextStyle(
+                                                      fontSize: 17.0,
+                                                      fontWeight: FontWeight.w600,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    '₹${soundSystemPrice}',
+                                                    style: TextStyle(
+                                                      fontSize: 17.0,
+                                                      fontWeight: FontWeight.w600,
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
-                                              Text(
-                                                '₹${soundSystemPrice}',
-                                                style: TextStyle(fontSize: 17.0),
+                                              SizedBox(height: 01.0), // Space between price and "See what's included"
+                                              // See What's Included Row
+                                              Row(
+                                                mainAxisAlignment: MainAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    'See what\'s included',
+                                                    style: TextStyle(
+                                                      fontSize: 15.0,
+                                                      fontWeight: FontWeight.w500,
+                                                      color: Colors.blue, // Highlighted color for visibility
+                                                    ),
+                                                  ),
+                                                  SizedBox(width: 8.0),
+                                                  GestureDetector(
+                                                    onTap: () {
+                                                      // Show dialog box when icon is tapped
+                                                      showDialog(
+                                                        context: context,
+                                                        builder: (BuildContext context) {
+                                                          return AlertDialog(
+                                                            backgroundColor: Colors.white, // Dialog background remains white
+                                                            title: Text(
+                                                              'What\'s Included',
+                                                              style: TextStyle(
+                                                                fontSize: 20.0,
+                                                                fontWeight: FontWeight.w500,
+                                                                color: Color(0xFF121217), // Title text color matches your brand theme
+                                                              ),
+                                                            ),
+                                                            content: Text(
+                                                              'The sound system includes:\n\n'
+                                                                  '- Microphones\n'
+                                                                  '- Speakers\n'
+                                                                  '- Amplifiers\n'
+                                                                  '- Mixer',
+                                                              style: TextStyle(
+                                                                fontSize: 16.0,
+                                                                color: Colors.black, // Content text color
+                                                              ),
+                                                            ),
+                                                            actions: [
+                                                              TextButton(
+                                                                onPressed: () {
+                                                                  Navigator.of(context).pop(); // Close the dialog
+                                                                },
+                                                                child: Text(
+                                                                  'Close',
+                                                                  style: TextStyle(
+                                                                    color: Color(0xFFE5195E), // Brand color for button text
+                                                                    fontWeight: FontWeight.bold,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                            shape: RoundedRectangleBorder(
+                                                              borderRadius: BorderRadius.circular(12), // Rounded corners for dialog box
+                                                            ),
+                                                          );
+                                                        },
+                                                      );
+                                                    },
+                                                    child: Icon(
+                                                      Icons.info_outline,
+                                                      size: 20.0,
+                                                      color: Color(0xFFE5195E),
+                                                    ),
+                                                  ),
+
+                                                ],
                                               ),
                                             ],
                                           ),
 
-                                        SizedBox(height: 5.0),
+
+                                        SizedBox(height: 3.0),
 
                                         // Row for toggle button and message
                                         Row(

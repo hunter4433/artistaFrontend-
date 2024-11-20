@@ -30,6 +30,10 @@ class _EventDetailsState extends State<EventDetails> {
   String? user_id;
   String? number ;
   late Future<void> fetchFuture;
+  String? audience_size;
+  String? user_name;
+
+
 
   @override
   void initState() {
@@ -126,6 +130,8 @@ class _EventDetailsState extends State<EventDetails> {
             booked_from=booking['booked_from'];
             booked_to=booking['booked_to'];
             user_id=booking['user_id'].toString();
+            audience_size=booking['audience_size'];
+            user_name=booking['user_name'];
 
           });
         }
@@ -159,8 +165,11 @@ class _EventDetailsState extends State<EventDetails> {
     double price = double.parse(pricePerHour);
 
     // Calculate the total amount
-    double totalAmount = totalHours * price;
-
+    double totalAmount = totalHours * price / 1.18;
+    // Calculate 18% discount
+    // double discount = totalAmount * 0.18;
+    //
+    // totalAmount = totalAmount - discount;
     // Format the total amount to a string with 2 decimal places
     return totalAmount.toStringAsFixed(2);
   }
@@ -235,6 +244,17 @@ class _EventDetailsState extends State<EventDetails> {
                     ),
                   ),
                   SizedBox(height: 23),
+
+                  Text(
+                    'Name:   $user_name',
+                    style: GoogleFonts.epilogue(
+                      fontWeight: FontWeight.w400,
+                      fontSize: 17,
+                      height: 1.5,
+                      color: Color(0xFFFFFFFF),
+                    ),
+                  ),
+                  SizedBox(height: 23),
                   Text(
                     'On Date:   $BookingDate',
                     style: GoogleFonts.epilogue(
@@ -265,17 +285,17 @@ class _EventDetailsState extends State<EventDetails> {
                     ),
                   ),
                   SizedBox(height: 16),
-                  _buildInfoSection(
-                    title: 'Offer Amount',
-                    info: amount?.toString() ?? 'N/A',
-                  ),
+              _buildInfoSection(
+                title: 'Offer Amount',
+                info: calculateTotalAmount(duration!, amount!), // Calling the function directly
+              ),
                   _buildInfoSection(
                     title: 'Type of Booking',
                     info: Category ?? 'N/A',
                   ),
                   _buildInfoSection(
                     title: 'Audience Size',
-                    info: '500 people',
+                    info: audience_size ?? 'N/A',
                   ),
                   _buildInfoSection(
                     title: 'Location',
@@ -392,6 +412,7 @@ class _EventDetailsState extends State<EventDetails> {
                     bool verify = await _verifyOTP(enteredOtp);
 
                     if (verify) {
+                      _bookingCompleted(widget.bookingId);
                       setState(() {
                         isVerified = true; // Update verification status
                       });
@@ -413,6 +434,48 @@ class _EventDetailsState extends State<EventDetails> {
         );
       },
     );
+  }
+
+
+
+  void _bookingCompleted(String bookingId) async {
+    final response = await http.patch(
+      Uri.parse('${Config().apiDomain}/booking/$bookingId'),
+      headers: <String, String>{
+        'Content-Type': 'application/vnd.api+json',
+        'Accept': 'application/vnd.api+json',
+      },
+      body: json.encode({
+        'status': 3,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      var decodedResponse = json.decode(response.body);
+      print(decodedResponse);
+      print('Booking updated successfully');
+
+
+      // // Update the status of the booking locally
+      // setState(() {
+      //   final booking = bookings.firstWhere(
+      //         (b) => b['id'] == bookingId,
+      //     orElse: () => <String, dynamic>{},
+      //   );
+      //
+      //   if (booking.isNotEmpty) {
+      //     booking['status'] = 1;
+      //   }
+      // });
+
+      // Show success dialog
+      // _showDialog('Success', 'Booking accepted successfully');
+    } else {
+      // Handle the error case
+      print('Failed to update booking: ${response.statusCode}');
+      // Show error dialog
+      // _showDialog('Error', 'Failed to accept booking');
+    }
   }
 
   Future<bool> _verifyOTP(String otpCode) async {

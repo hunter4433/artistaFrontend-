@@ -94,6 +94,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           // _sController.text = userData['data']['attributes']['state'] ?? '';
           // _pinCodeController.text = userData['data']['attributes']['pin'] ?? '';
         });
+        print('address is ${_addressController.text}');
         print('profile photo is $_imageUrl');
       } else {
         print('Failed to fetch user information. Status code: ${response.body}');

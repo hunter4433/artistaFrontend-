@@ -37,6 +37,7 @@ class _ReviewPageState extends State<ReviewPage> {
   @override
   void initState() {
     super.initState();
+    print('ajnsff');
     print(widget.isteam);
     print(widget.artistId);
 
@@ -47,22 +48,17 @@ class _ReviewPageState extends State<ReviewPage> {
   Future<void> _uploadImage(int Id) async {
     if (_selectedImage == null) return;
 
+    if (!mounted) return; // Ensure widget is still mounted before starting
     setState(() {
       _isLoading = true;
     });
 
-    final String backendUrl = '${Config().apiDomain}/upload-image/$Id'; // Replace with your actual API endpoint
+    final String backendUrl = '${Config().apiDomain}/upload-image/$Id';
 
     try {
       var request = http.MultipartRequest('POST', Uri.parse(backendUrl));
+      request.files.add(await http.MultipartFile.fromPath('photo', _selectedImage!.path));
 
-      // Attach the image file
-      request.files.add(await http.MultipartFile.fromPath(
-        'photo',
-        _selectedImage!.path,
-      ));
-
-      // Send the request to backend
       var streamedResponse = await request.send();
       var response = await http.Response.fromStream(streamedResponse);
 
@@ -76,9 +72,11 @@ class _ReviewPageState extends State<ReviewPage> {
     } catch (e) {
       print('Error uploading image: $e');
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {  // Ensure widget is still mounted before calling setState
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -114,18 +112,21 @@ class _ReviewPageState extends State<ReviewPage> {
 
 
   void submitReview() async {
-    final String backendUrl = '${Config().apiDomain}/review'; // Replace with your API URL
+    setState(() {
+      _isLoading = true; // Show loading bar
+    });
+
+    final String backendUrl = '${Config().apiDomain}/review';
     print(backendUrl);
     String? id = await _getid();
-
     print('rating is $starRating');
 
-    // Combine selectedPerformance and reviewController.text
     String reviewText = '$selectedPerformance ${reviewController.text}';
     print('reviewtext is $reviewText');
 
     final String entityIdKey = widget.isteam != 'false' ? 'team_id' : 'artist_id';
     print('entityIdKey is $entityIdKey');
+
 
     final response = await http.post(
       Uri.parse(backendUrl),
@@ -144,23 +145,36 @@ class _ReviewPageState extends State<ReviewPage> {
     if (response.statusCode == 201) {
       print('Review submitted successfully');
       Map<String, dynamic> Data = json.decode(response.body);
-      print(Data);
       int id = Data['id'];
-      _uploadImage(id);
 
-      // Show success dialog
-      showFeedbackDialog(context, 'Success', 'Feedback submitted successfully!');
+      await _uploadImage(id); // Wait for image upload to complete
 
-
+      if (mounted) {
+        showFeedbackDialog(context, 'Success', 'Feedback submitted successfully!');
+      }
     } else {
       print('Failed to submit review: ${response.body}');
 
-      // Show failure dialog
-      showFeedbackDialog(context, 'Failure', 'Failed to submit feedback. Please try again.');
+      if (mounted) {
+        showFeedbackDialog(context, 'Failure', 'Failed to submit feedback. Please try again.');
+      }
+    }
+
+    if (mounted) {
+      setState(() {
+        _isLoading = false; // Hide loading bar
+      });
     }
   }
 
 
+  // Dispose video player properly
+  @override
+  void dispose() {
+    _videoPlayerController?.pause(); // Pause video to stop playback
+    _videoPlayerController?.dispose(); // Dispose controller to release resources
+    super.dispose();
+  }
 
 
   Future<void> _pickImage() async {
@@ -397,9 +411,13 @@ class _ReviewPageState extends State<ReviewPage> {
                     child: VideoPlayer(_videoPlayerController!),
                   ),
                 SizedBox(height: 20),
-          
+
                 Center(
-                  child: ElevatedButton(
+                  child: _isLoading
+                      ? CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xffe5195e)),
+                  )
+                      : ElevatedButton(
                     onPressed: submitReview,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Color(0xffe5195e),
@@ -430,11 +448,7 @@ class _ReviewPageState extends State<ReviewPage> {
     );
   }
 
-  @override
-  void dispose() {
-    _videoPlayerController?.dispose();
-    super.dispose();
-  }
+
 }
 // Star rating widget
 class StarRating extends StatelessWidget {

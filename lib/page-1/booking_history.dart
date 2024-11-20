@@ -19,6 +19,7 @@ class _booking_historyState extends State<booking_history>{
 
   List<Map<String, dynamic>> bookings = [];
   bool isLoading = true;
+  late List<String> feedback;
   // bool isLoading = false;
 
   @override
@@ -55,6 +56,16 @@ class _booking_historyState extends State<booking_history>{
       List<dynamic> decodedList = json.decode(response.body);
       bookings = decodedList.map((item) => Map<String, dynamic>.from(item)).toList();
       print('bookings are :$bookings ');
+
+//Extract feedback from each booking's reviews
+      for (var booking in bookings) {
+        List<dynamic> reviews = booking['reviews'];
+
+        // Extract review_text values
+        feedback = reviews.map((review) => review['review_text'] as String).toList();
+
+        print('Booking ID: ${booking['id']} Feedback: $feedback');
+      }
       // Define the date format for parsing and formatting
       // DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'");
       // DateFormat outputDateFormat = DateFormat('yyyy-MM-dd');
@@ -124,18 +135,20 @@ class _booking_historyState extends State<booking_history>{
           return _buildRequestCard(
             booking['category'],
             booking['booking_date'],
-            "booking['booked_from']",
+            booking['average_rating'],
+            booking['reviews'].map<String>((review) => review['review_text'] as String).toList(),
+            // "booking['booked_from']",
             10,
             11,
             10,
-            5,
+
           );
         },
       ),
     );
   }
   Widget _buildRequestCard(
-      String category, String bookingDate, String BookingTime, int booking_id, int user_id,int artist_id, int index) {
+      String category, String bookingDate, var rating, List<String> review, int user_id,int artist_id, int index) {
     // final booking = bookings[index];
     // final status = booking['status'];
 
@@ -186,7 +199,7 @@ class _booking_historyState extends State<booking_history>{
                   ),
                   SizedBox(height: 8),
                   Text(
-                    'feedback:',
+                    'feedback: $review',
                     style: GoogleFonts.epilogue(
                       fontWeight: FontWeight.w400,
                       fontSize: 14,
@@ -196,7 +209,7 @@ class _booking_historyState extends State<booking_history>{
                   ),
                   SizedBox(height: 8),
                   Text(
-                    'Rating by the Host:',
+                    'Rating by the Host: $rating',
                     style: GoogleFonts.epilogue(
                       fontWeight: FontWeight.w400,
                       fontSize: 14,

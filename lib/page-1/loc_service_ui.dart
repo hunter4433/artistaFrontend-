@@ -20,7 +20,7 @@ class _ServiceCheckerPageState extends State<ServiceCheckerPage> {
   LocationService _locationService = LocationService();
 
   @override
-  void initState() {
+  void initState()  {
     super.initState();
     _currentPosition = Position(
       latitude: 0.0,
@@ -39,6 +39,8 @@ class _ServiceCheckerPageState extends State<ServiceCheckerPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showInitialDialog();
     });
+
+
   }
 
   Future<void> useCurrentLocation() async {
@@ -425,6 +427,8 @@ class _ServiceCheckerPageState extends State<ServiceCheckerPage> {
 
 
   final storage = FlutterSecureStorage();
+
+
 
 
   // Define your function here

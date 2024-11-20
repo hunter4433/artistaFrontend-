@@ -235,7 +235,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
       // return 'Error fetching availability status';
     }
   }
-  Future<List<String>> callSecondApi(String artistId) async {
+  Future<String> callSecondApi(String artistId) async {
     String apiUrl = '${Config().apiDomain}/artist/booking-date/$artistId';
     print('Calling second API: $apiUrl');
 
@@ -250,27 +250,29 @@ class _ArtistProfileState extends State<ArtistProfile> {
 
       if (response.statusCode == 200) {
         var responseData = json.decode(response.body);
+        print('dtaes are $responseData');
 
-        // Handle case 1: The response is a plain list
+        // Process response and format dates into a single string
         if (responseData is List) {
-          return responseData.map((booking) => booking['booking_date'].toString()).toList();
-        }
-        // Handle case 2: The response has a 'data' field containing the list
-        else if (responseData.containsKey('data') && responseData['data'] is List) {
+          List<String> bookingDates = responseData.map((booking) => booking['booking_date'].toString()).toList();
+          print('booking dates are $bookingDates');
+          return bookingDates.isNotEmpty ? 'Booked Dates: ${bookingDates.join(', ')}' : 'No Booked Dates Available';
+        } else if (responseData.containsKey('data') && responseData['data'] is List) {
           List<dynamic> bookings = responseData['data'];
-          print('dtae sarev $bookings');
-          return bookings.map((booking) => booking['booking_date'].toString()).toList();
+          print('booking are $bookings');
+          List<String> bookingDates = bookings.map((booking) => booking['booking_date'].toString()).toList();
+          return bookingDates.isNotEmpty ? 'Booked Dates: ${bookingDates.join(', ')}' : 'No Booked Dates Available';
         } else {
           print('Unexpected response structure.');
-          return [];
+          return 'No Booked Dates Available';
         }
       } else {
         print('Failed to fetch second API data. Status code: ${response.statusCode}');
-        return [];
+        return 'Available for Bookings ';
       }
     } catch (e) {
       print('Error calling second API: $e');
-      return [];
+      return 'Available for Bookings ';
     }
   }
 
@@ -291,17 +293,14 @@ class _ArtistProfileState extends State<ArtistProfile> {
         Map<String, dynamic> responseData = json.decode(response.body);
 
         int status = responseData['data']['attributes']['booked_status'];
+        print('status is $status ');
 
         if (status == 0) {
+          return await callSecondApi(widget.artist_id);
           return 'Available for Bookings';
-        } else if (status == 1) {
-          // Call the second API if status is 1
+        } else   {
+          // Call the second API if status is 1 and return its result directly
 
-            // If status = 1, call the second API to get booked dates
-            bookedDates = await callSecondApi(widget.artist_id);
-
-          return 'Second API Called';
-        } else {
           return 'Not Available';
         }
       } else {
@@ -313,6 +312,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
       return 'Error fetching availability status';
     }
   }
+
 
   Future<List<dynamic>> teamMembersFromBackend() async {
     String apiUrl = '${Config().apiDomain}/artist/team_member/${widget.artist_id}';
@@ -797,6 +797,13 @@ class _ArtistProfileState extends State<ArtistProfile> {
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              // Icon on the left
+                              Icon(
+                                Icons.work, // Use any icon that fits your design
+                                size: 24.0,
+                                color: Colors.grey, // Adjust color to match your theme
+                              ),
+                              SizedBox(width: 8.0), // Space between icon and text
                               // Subheading for Experience
                               Text(
                                 'Experience : ',
@@ -807,39 +814,62 @@ class _ArtistProfileState extends State<ArtistProfile> {
                               ),
                               SizedBox(width: 8.0),
                               // Display Experience from backend
-                              Text(
-                                artistAboutText ?? teamAbout ?? '',
-                                style: TextStyle(fontWeight: FontWeight.w400,
-                                  fontSize: 16.0,
+                              Expanded( // Ensures proper wrapping of text
+                                child: Text(
+                                  artistAboutText ?? teamAbout ?? '',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w400,
+                                    fontSize: 17.0,
+                                  ),
                                 ),
                               ),
                             ],
                           ),
+
                           SizedBox(height: 10.0*fem),
 
                           // Row for Sound System
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Subheading for Sound System
-                              Text(
-                                'Has Sound System?:',
-                                style: TextStyle(
-                                  fontSize: 18.0*fem,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                              // Icon on the left
+                              Icon(
+                                Icons.speaker, // Choose an appropriate icon
+                                size: 24.0,
+                                color: Colors.grey, // Adjust color to fit your theme
                               ),
-                              SizedBox(width: 8.0*fem),
-                              // Display Yes/No for Sound System
-                              Text(
-                                hasSoundSystem != null && hasSoundSystem! ? 'Yes' : 'Will be arranged by\nHomestage',
-                                style: TextStyle(fontWeight: FontWeight.w500,
-                                  fontSize: 18.0*fem,
-                                  color: hasSoundSystem != null ? Colors.green : Colors.pink,
+                              SizedBox(width: 8.0 * fem), // Space between icon and text
+                              // Text content for the row
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Subheading for Sound System
+                                    Text(
+                                      'Has Sound System?:',
+                                      style: TextStyle(
+                                        fontSize: 18.0 * fem,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    SizedBox(height: 5 * fem), // Optional spacing for better readability
+                                    // Display Yes/No for Sound System
+                                    Text(
+                                      hasSoundSystem != null && hasSoundSystem!
+                                          ? 'Yes'
+                                          : 'Will be arranged by Homestage',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 18.0 * fem,
+                                        color: hasSoundSystem != null ? Colors.green : Colors.pink,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
                           ),
+
                         ],
                       ),
 
@@ -1037,35 +1067,40 @@ class _ArtistProfileState extends State<ArtistProfile> {
                 Container(
                   margin: EdgeInsets.only(bottom: 32),
                   width: double.infinity,
-                  height: 38,
                   decoration: BoxDecoration(
                     border: Border.all(color: Color(0xffe8d1d6)),
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: artistSpecialMessage != null
-                      ? Padding(
-                    padding: EdgeInsets.all(5),
-                    child: Text(
-                      artistSpecialMessage!,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w400,
-                        color: Colors.black,
-                      ),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: 38, // Minimum height remains 38
                     ),
-                  )
-                      : Center(
-                    child: Text(
-                      'Error fetching special message',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w400,
-                        color: Colors.red,
+                    child: Padding(
+                      padding: EdgeInsets.all(5),
+                      child: artistSpecialMessage != null
+                          ? Text(
+                        artistSpecialMessage!,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                          color: Colors.black,
+                        ),
+                      )
+                          : Center(
+                        child: Text(
+                          'Error fetching special message',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
+                            color: Colors.red,
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ),
+
 
 // Reviews section heading
                       Text(
@@ -1454,7 +1489,7 @@ class _AllReviewsPageState extends State<AllReviewsPage>{
           .map((review) => review['user_id'] as int?)
           .where((id) => id != null) // Filter out null user_ids
           .toList();
-
+print('user idfs are $userIds');
       // API URL for sending user IDs and fetching names
       final String apiUrl = '${Config().apiDomain}/review/usernames';
 

@@ -30,7 +30,7 @@ class _payment_historyState extends State<payment_history>{
   @override
   void initState() {
     super.initState();
-    _loadPayments(widget.artist_id); // Fetch profile data when screen initializes
+    _loadCompletedBookingsWithPaymentStatus(widget.artist_id); // Fetch profile data when screen initializes
   }
 
 
@@ -46,55 +46,54 @@ class _payment_historyState extends State<payment_history>{
     return await storage.read(key: 'selected_value'); // Assuming you stored the token with key 'selected_value'
   }
 
-  Future<void> _loadPayments(String artist_id ) async {
+  Future<void> _loadCompletedBookingsWithPaymentStatus(String artistId) async {
 
-    // String? id = await _getArtist_id();
-    // String? id = await _getid();
+
     String? team_id= await _getTeamid();
     String? kind = await _getKind();
 
     String apiUrl;
     if (kind == 'solo_artist') {
-      apiUrl = '${Config().apiDomain}/artist/payments/$artist_id';
+      apiUrl = '${Config().apiDomain}/payments/booking/$artistId';
     } else if (kind == 'team') {
-      apiUrl = '${Config().apiDomain}/team/payments/$team_id';
+      apiUrl = '${Config().apiDomain}/payments/booking/team/$team_id';
     } else {
       return;
     }
+    // final String apiUrl = '${Config().apiDomain}/payments/booking/$artistId';
 
-    final response = await http.get(Uri.parse(apiUrl));
+    try {
+      // Send a GET request to the API
+      final response = await http.get(Uri.parse(apiUrl));
 
-    if (response.statusCode == 200) {
-      List<dynamic> decodedList = json.decode(response.body);
-      print(decodedList);
-      bookings = decodedList.map((item) => Map<String, dynamic>.from(item)).toList();
-      print('payments are :$bookings ');
-      // Define the date format for parsing and formatting
-      // DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'");
-      // DateFormat outputDateFormat = DateFormat('yyyy-MM-dd');
-      // DateFormat outputTimeFormat = DateFormat('HH:mm:ss');
+      if (response.statusCode == 200) {
+        // Decode the response body
+        List<dynamic> decodedList = json.decode(response.body);
 
-      // for (var booking in bookings) {
-      //   DateTime createdAt = inputFormat.parse(booking['created_at']);
-      //   String formattedDate = outputDateFormat.format(createdAt);
-      //   String formattedTime = outputTimeFormat.format(createdAt);
-      //
-      //
-      //
-      //   print('Booking ID: ${booking['id']}');
-      //   print('Created Date: $formattedDate');
-      //   print('Created Time: $formattedTime');
-      //   print('---');
-      // }
+        // Map each item to a detailed booking object
+        List<Map<String, dynamic>> bookingsWithPaymentStatus = decodedList.map((item) => Map<String, dynamic>.from(item)).toList();
 
+        // Print the list of bookings with payment status for debugging
+        print('Bookings with payment status: $bookingsWithPaymentStatus');
+
+        // Update the state with the processed bookings
+        setState(() {
+          bookings = bookingsWithPaymentStatus;
+          isLoading = false;
+        });
+      } else {
+        // Handle non-200 status codes here
+        setState(() {
+          isLoading = false;
+        });
+        print('Error: Failed to load bookings with payment status');
+      }
+    } catch (error) {
+      // Handle exceptions, such as network errors
       setState(() {
         isLoading = false;
       });
-    } else {
-      // Handle the error case
-      setState(() {
-        isLoading = false;
-      });
+      print('Exception occurred: $error');
     }
   }
 
@@ -108,6 +107,121 @@ class _payment_historyState extends State<payment_history>{
     double baseWidth = 390;
     double fem = MediaQuery.of(context).size.width / baseWidth;
     double ffem = fem * 0.97;
+
+
+
+
+
+    Widget _buildRequestCard(
+        String category,
+        String bookingDate,
+        String bookingTime,
+        String location,
+        String paymentStatus,
+        Map<String, dynamic>? paymentDetails,
+        ) {
+      return GestureDetector(
+        child: Stack(
+          children: [
+            Card(
+              margin: EdgeInsets.only(bottom: 16),
+              color: Color(0xFF292938),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              elevation: 8,
+              shadowColor: Colors.black54,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(16, 16, 30, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Booking Completed for $category',
+                      style: GoogleFonts.epilogue(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 16,
+                        height: 1.5,
+                        color: Colors.white,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Booking Date: $bookingDate at $bookingTime',
+                      style: GoogleFonts.epilogue(
+                        fontWeight: FontWeight.w400,
+                        fontSize: 14,
+                        height: 1.5,
+                        color: Color(0xFF9494C7),
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Location: $location',
+                      style: GoogleFonts.epilogue(
+                        fontWeight: FontWeight.w400,
+                        fontSize: 14,
+                        height: 1.5,
+                        color: Color(0xFF9494C7),
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Divider(color: Colors.white38),
+                    SizedBox(height: 8),
+                    Text(
+                      'Payment Status: $paymentStatus',
+                      style: GoogleFonts.epilogue(
+                        fontWeight: FontWeight.w400,
+                        fontSize: 14,
+                        height: 1.5,
+                        color: paymentStatus == 'Completed'
+                            ? Colors.green
+                            : Colors.orangeAccent,
+                      ),
+                    ),
+                    if (paymentStatus == 'Completed' &&
+                        paymentDetails != null) ...[
+                      SizedBox(height: 8),
+                      Text(
+                        'Transaction ID: ${paymentDetails['txn_id']}',
+                        style: GoogleFonts.epilogue(
+                          fontWeight: FontWeight.w400,
+                          fontSize: 14,
+                          height: 1.5,
+                          color: Color(0xFF9494C7),
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'Amount: ₹${paymentDetails['amount']}',
+                        style: GoogleFonts.epilogue(
+                          fontWeight: FontWeight.w400,
+                          fontSize: 14,
+                          height: 1.5,
+                          color: Color(0xFF9494C7),
+                        ),
+                      ),
+                    ] else
+                      if (paymentStatus == 'Pending') ...[
+                        SizedBox(height: 8),
+                        Text(
+                          'Payment Pending.It will be shortly processed to your account.',
+                          style: GoogleFonts.epilogue(
+                            fontWeight: FontWeight.w400,
+                            fontSize: 14,
+                            height: 1.5,
+                            color: Colors.redAccent,
+                          ),
+                        ),
+                      ],
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: Color(0xFF121217),
@@ -125,119 +239,36 @@ class _payment_historyState extends State<payment_history>{
         ),
       ),
       body: isLoading
-          ? Center(
-        child: CircularProgressIndicator(),
-      )
+          ? Center(child: CircularProgressIndicator())
           : bookings.isEmpty
-
           ? Center(
         child: Text(
-          'No Booking Event Completed Yet ',
+          'No Booking Event Completed Yet',
           style: TextStyle(
             color: Colors.white,
             fontSize: 18,
           ),
         ),
       )
-          :ListView.builder(
+          : ListView.builder(
         padding: EdgeInsets.all(16),
         itemCount: bookings.length,
         itemBuilder: (context, index) {
           final booking = bookings[index];
           return _buildRequestCard(
-            booking['amount'],
-            "booking['booking_date']",
-            "booking['booked_from']",
-            10,
-            11,
-            10,
-            5,
+            booking['category'] ?? 'N/A',
+            booking['booking_date'] ?? 'N/A',
+            booking['booked_from'] ?? 'N/A',
+            booking['location'] ?? 'N/A',
+            booking['payment_status'] ?? 'N/A',
+            booking['payment_details'],
           );
         },
       ),
     );
-  }
-  Widget _buildRequestCard(
-      String category, String bookingDate, String BookingTime, int booking_id, int user_id,int artist_id, int index) {
-    // final booking = bookings[index];
-    // final status = booking['status'];
 
-    return GestureDetector(
-      // onTap: () {
-      //   print('booking_id : $booking_id');
-      //   String bookingId = booking_id.toString();
-      //   String artistId =artist_id.toString();
-      //   print(index);
-      //   Navigator.push(
-      //     context,
-      //     MaterialPageRoute(builder: (context) => EventDetails(bookingId: bookingId,artistId: artistId)),
-      //   );
-      // },
-      child: Stack(
-        children: [
-          Card(
-            margin: EdgeInsets.only(bottom: 16),
-            color: Color(0xFF292938),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            elevation: 8,
-            shadowColor: Colors.black54,
-            child: Padding(
-                padding: EdgeInsets.fromLTRB(16, 16, 30, 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Booking Completed for the  $category',
-                      style: GoogleFonts.epilogue(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 16,
-                        height: 1.5,
-                        color: Colors.white,
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Booking Date: $bookingDate',
-                      style: GoogleFonts.epilogue(
-                        fontWeight: FontWeight.w400,
-                        fontSize: 14,
-                        height: 1.5,
-                        color: Color(0xFF9494C7),
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'feedback:',
-                      style: GoogleFonts.epilogue(
-                        fontWeight: FontWeight.w400,
-                        fontSize: 14,
-                        height: 1.5,
-                        color: Color(0xFF9494C7),
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Rating by the Host:',
-                      style: GoogleFonts.epilogue(
-                        fontWeight: FontWeight.w400,
-                        fontSize: 14,
-                        height: 1.5,
-                        color: Color(0xFF9494C7),
-                      ),
-                    ),
 
-                  ],
-                )
-
-            ),
-          ),
-        ],
-      ),
-
-    );
-  }
+    }
 
 }
 

@@ -164,6 +164,7 @@ final androidChannel = const AndroidNotificationChannel(
     try {
       await _firebaseMessaging.requestPermission();
       final fCMToken = await _firebaseMessaging.getToken();
+      print('token is : $fCMToken');
       if (fCMToken != null) {
         print('token: $fCMToken');
         await storage.write( key: 'fCMToken', value: fCMToken);

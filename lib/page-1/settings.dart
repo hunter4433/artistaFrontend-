@@ -2,6 +2,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:test1/page-1/FAQs.dart';
 import 'package:test1/page-1/account_managment.dart';
 import 'package:test1/page-1/artist_info_edit.dart';
 import 'package:test1/page-1/customer_support.dart';
@@ -82,6 +83,7 @@ class _SettingState extends State<Setting> {
      String? id = await _getid();
      String? team_id = await _getTeamid();
      String? kind = await _getKind();
+     print('the kind is $kind');
      String? user=await _getUserid();
 
      String apiUrl;
@@ -92,7 +94,7 @@ class _SettingState extends State<Setting> {
      } else {
        apiUrl = '${Config().apiDomain}/info/$user';
      }
-
+print(apiUrl);
      try {
        var response = await http.get(
          Uri.parse(apiUrl),
@@ -354,7 +356,7 @@ print(' data is $userData');
                   height: 136 * fem,
                   decoration: const BoxDecoration(
                     border: Border(
-                      bottom: BorderSide(color: Colors.grey, width: 0.15),
+                      bottom: BorderSide(color: Colors.grey, width: 0.25),
                     ),
                   ),
                   child: Row(
@@ -429,11 +431,11 @@ print(' data is $userData');
             },
           ),
 
-            InkWell(
+                InkWell(
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) =>account_managment()),
+                      MaterialPageRoute(builder: (context) => account_managment()),
                     );
                   },
                   child: Container(
@@ -446,11 +448,22 @@ print(' data is $userData');
                         bottom: BorderSide(
                           color: Colors.grey, // Specify the border color here
                           width: 0.25, // Specify the border width here
-                        ),),
-                      // Add decoration as needed
+                        ),
+                      ),
                     ),
                     child: Row(
                       children: [
+                        Container(
+                          // Fixed width for the icon container
+                          width: 40 * fem, // Adjust width based on your icon size
+                          height: 44 * fem,
+                          child: Icon(
+                            Icons.account_circle, // Use your desired icon
+                            color: Colors.white,
+                            size: 26 * fem, // Adjust size as needed
+                          ),
+                        ),
+                        SizedBox(width: 8 * fem), // Adds space between icon and text
                         Expanded(
                           child: Text(
                             'Account',
@@ -463,16 +476,13 @@ print(' data is $userData');
                             ),
                           ),
                         ),
-                        Container(
 
-                          // depth2frame1MPD (19:2920)
+                        Container(
                           width: 64 * fem,
                           height: 44 * fem,
                           child: Icon(
-                            Icons.arrow_forward_ios_rounded, color: Colors.white
-                            ,// Different icon
-                            // Color of the icon
-                            // Size of the icon
+                            Icons.arrow_forward_ios_rounded,
+                            color: Colors.white,
                           ),
                         ),
                       ],
@@ -487,24 +497,33 @@ print(' data is $userData');
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) =>AccountManagementPage1()),
+                      MaterialPageRoute(builder: (context) => AccountManagementPage1()),
                     );
                   },
                   child: Container(
-                    // depth1frame5N8P (16:2494)
                     padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 6 * fem, 10 * fem),
                     width: double.infinity,
                     height: 56 * fem,
                     decoration: const BoxDecoration(
                       border: Border(
                         bottom: BorderSide(
-                          color: Colors.grey, // Specify the border color here
-                          width: 0.25, // Specify the border width here
-                        ),),
-                      // Add decoration as needed
+                          color: Colors.grey, // Border color
+                          width: 0.25, // Border width
+                        ),
+                      ),
                     ),
                     child: Row(
                       children: [
+                        Container(
+                          width: 40 * fem, // Adjust the width for the legal icon
+                          height: 44 * fem,
+                          child: Icon(
+                            Icons.gavel, // Legal icon (gavel)
+                            color: Colors.white,
+                            size: 26 * fem, // Icon size
+                          ),
+                        ),
+                        SizedBox(width: 8 * fem), // Adds space between the icon and the text
                         Expanded(
                           child: Text(
                             'Legal',
@@ -518,22 +537,72 @@ print(' data is $userData');
                           ),
                         ),
                         Container(
-
-                          // depth2frame1MPD (19:2920)
                           width: 64 * fem,
                           height: 44 * fem,
                           child: Icon(
-                            Icons.arrow_forward_ios_rounded, color: Colors.white
-                            ,// Different icon
-                            // Color of the icon
-                            // Size of the icon
+                            Icons.arrow_forward_ios_rounded, // Arrow icon
+                            color: Colors.white,
                           ),
                         ),
                       ],
                     ),
                   ),
                 ),
-
+                InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => FAQ()),
+                    );
+                  },
+                  child: Container(
+                    padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 6 * fem, 10 * fem),
+                    width: double.infinity,
+                    height: 56 * fem,
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: Colors.grey, // Border color
+                          width: 0.25, // Border width
+                        ),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 40 * fem, // Adjust the width for the support icon
+                          height: 44 * fem,
+                          child: Icon(
+                            Icons.help_outline, // Customer support icon
+                            color: Colors.white,
+                            size: 26 * fem, // Icon size
+                          ),
+                        ),
+                        SizedBox(width: 8 * fem), // Adds space between the icon and the text
+                        Expanded(
+                          child: Text(
+                            'FAQs',
+                            style: SafeGoogleFont(
+                              'Be Vietnam Pro',
+                              fontSize: 17 * ffem,
+                              fontWeight: FontWeight.w400,
+                              height: 1.5 * ffem / fem,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          width: 64 * fem,
+                          height: 44 * fem,
+                          child: Icon(
+                            Icons.arrow_forward_ios_rounded, // Arrow icon on the right
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
 
                 InkWell(
                   onTap: () {
@@ -543,149 +612,158 @@ print(' data is $userData');
                     );
                   },
                   child: Container(
-                    // depth1frame5N8P (16:2494)
                     padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 6 * fem, 10 * fem),
                     width: double.infinity,
                     height: 56 * fem,
                     decoration: BoxDecoration(
                       border: Border(
                         bottom: BorderSide(
-                          color: Colors.grey, // Specify the border color here
-                          width: 0.25, // Specify the border width here
-                        ),),
-                      // Add decoration as needed
+                          color: Colors.grey, // Border color
+                          width: 0.25, // Border width
+                        ),
+                      ),
                     ),
                     child: Row(
                       children: [
+                        Container(
+                          width: 40 * fem, // Adjust the width for the support icon
+                          height: 44 * fem,
+                          child: Icon(
+                            Icons.support_agent, // Customer support icon
+                            color: Colors.white,
+                            size: 26 * fem, // Icon size
+                          ),
+                        ),
+                        SizedBox(width: 8 * fem), // Adds space between the icon and the text
                         Expanded(
-                          child: Container(
-
-                            // depth3frame02ij (16:2496)
-                            child: Text(
-                              'Cusromer Support',
-                              style: SafeGoogleFont(
-                                'Be Vietnam Pro',
-                                fontSize: 17 * ffem,
-                                fontWeight: FontWeight.w400,
-                                height: 1.5 * ffem / fem,
-                                color: Colors.white,
-                              ),
+                          child: Text(
+                            'Customer Support',
+                            style: SafeGoogleFont(
+                              'Be Vietnam Pro',
+                              fontSize: 17 * ffem,
+                              fontWeight: FontWeight.w400,
+                              height: 1.5 * ffem / fem,
+                              color: Colors.white,
                             ),
                           ),
                         ),
                         Container(
-
-                          // depth2frame1MPD (19:2920)
                           width: 64 * fem,
                           height: 44 * fem,
                           child: Icon(
-                            Icons.arrow_forward_ios_rounded, color: Colors.white,// Different icon
-                            // Color of the icon
-
-                            // Size of the icon
+                            Icons.arrow_forward_ios_rounded, // Arrow icon on the right
+                            color: Colors.white,
                           ),
                         ),
                       ],
                     ),
                   ),
                 ),
-                InkWell(
 
+                InkWell(
                   child: Container(
-                    // depth1frame5N8P (16:2494)
                     padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 6 * fem, 10 * fem),
                     width: double.infinity,
                     height: 56 * fem,
                     decoration: BoxDecoration(
                       border: Border(
                         bottom: BorderSide(
-                          color: Colors.grey, // Specify the border color here
-                          width: 0.25, // Specify the border width here
-                        ),),
-                      // Add decoration as needed
+                          color: Colors.grey, // Border color
+                          width: 0.25, // Border width
+                        ),
+                      ),
                     ),
                     child: Row(
                       children: [
-                        Expanded(
-                          child: Container(
 
-                            // depth3frame02ij (16:2496)
-                            child: Text(
-                              'App Version',
-                              style: SafeGoogleFont(
-                                'Be Vietnam Pro',
-                                fontSize: 17 * ffem,
-                                fontWeight: FontWeight.w400,
-                                height: 1.5 * ffem / fem,
-                                color: Colors.white,
-                              ),
+                        Container(
+                          width: 40 * fem, // Adjust width for icon
+                          height: 44 * fem,
+                          child: Icon(
+                            Icons.info_outline, // Example icon
+                            color: Colors.white,
+                            size: 24 * fem,
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            'App Version',
+                            style: SafeGoogleFont(
+                              'Be Vietnam Pro',
+                              fontSize: 17 * ffem,
+                              fontWeight: FontWeight.w400,
+                              height: 1.5 * ffem / fem,
+                              color: Colors.white,
                             ),
                           ),
                         ),
                         Container(
                           height: 44,
                           width: 94,
-
-                          // depth2frame1MPD (19:2920)
-
-                          child:Center(
-                            child: const Text('1.0.0',
-                              style: TextStyle(color: Colors.white,
+                          child: Center(
+                            child: const Text(
+                              '1.0.0', // Version number
+                              style: TextStyle(
+                                color: Colors.white,
                                 fontSize: 19,
                                 fontWeight: FontWeight.w300,
-                              )
-
                               ),
+                            ),
                           ),
-
-                          ),
-
+                        ),
                       ],
                     ),
                   ),
                 ),
 
-                 GestureDetector(
-                   onTap: ()async {
-                     // Call the logout function when the container is tapped
-                     _showLogoutConfirmationDialog();
-
-
-      },
-        child: Container(
-          padding: EdgeInsets.fromLTRB(16, 10, 6, 10),
-          width: double.infinity,
-          height: 56,
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(
-                color: Colors.grey,
-                width: 0.25,
-              ),
-            ),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Container(
-                  child: Text(
-                    'Logout',
-                    style: TextStyle(
-                      fontFamily: 'Be Vietnam Pro',
-                      fontSize: 17,
-                      fontWeight: FontWeight.w400,
-                      height: 1.5,
-                      color: Color(0xffe5195e),
-
-
+                GestureDetector(
+                  onTap: () async {
+                    // Call the logout function when the container is tapped
+                    _showLogoutConfirmationDialog();
+                  },
+                  child: Container(
+                    padding: EdgeInsets.fromLTRB(16, 10, 6, 10),
+                    width: double.infinity,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: Colors.grey,
+                          width: 0.25,
+                        ),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        // Logout Icon
+                        Container(
+                          width: 40, // Icon size
+                          height: 44,
+                          child: Icon(
+                            Icons.exit_to_app, // Logout icon
+                            color: Color(0xffe5195e), // Icon color matching the text
+                            size: 24, // Icon size
+                          ),
+                        ),
+                        SizedBox(width: 8), // Adds space between the icon and text
+                        // Text: Logout
+                        Expanded(
+                          child: Text(
+                            'Logout',
+                            style: TextStyle(
+                              fontFamily: 'Be Vietnam Pro',
+                              fontSize: 17,
+                              fontWeight: FontWeight.w400,
+                              height: 1.5,
+                              color: Color(0xffe5195e), // Text color
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        ),
-      ),
+
 
               ],
             ),

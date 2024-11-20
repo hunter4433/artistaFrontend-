@@ -5,7 +5,6 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
-
 import '../config.dart';
 import 'booked_artist.dart';
 import 'booking_details.dart';
@@ -34,9 +33,6 @@ class _AllBookingsState extends State<AllBookings> {
   DateFormat outputTimeFormat = DateFormat('HH:mm:ss');
 
 
-  // Future<String?> _getArtist_id() async {
-  //   return await storage.read(key: 'id'); // Assuming you stored the token with key 'token'
-  // }
 
   @override
   void initState() {
@@ -58,7 +54,7 @@ class _AllBookingsState extends State<AllBookings> {
       path: phoneNumber,
     );
 
-    print('Attempting to launch: $launchUri'); // Log the actual URI
+
 
     if (await canLaunchUrl(launchUri)) {
       await launchUrl(launchUri);
@@ -99,23 +95,14 @@ class _AllBookingsState extends State<AllBookings> {
     if (response.statusCode == 200) {
       List<dynamic> decodedList = json.decode(response.body);
       bookings = decodedList.map((item) => Map<String, dynamic>.from(item)).toList();
-      print('bookings are :$bookings ');
       // Define the date format for parsing and formatting
-      DateFormat inputFormat = DateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'");
-      DateFormat outputDateFormat = DateFormat('yyyy-MM-dd');
-      DateFormat outputTimeFormat = DateFormat('HH:mm:ss');
+
 
       for (var booking in bookings) {
         DateTime createdAt = inputFormat.parse(booking['created_at']);
         String formattedDate = outputDateFormat.format(createdAt);
         String formattedTime = outputTimeFormat.format(createdAt);
 
-
-
-        print('Booking ID: ${booking['id']}');
-        print('Created Date: $formattedDate');
-        print('Created Time: $formattedTime');
-        print('---');
       }
 
       setState(() {
@@ -150,15 +137,13 @@ class _AllBookingsState extends State<AllBookings> {
       if (response.statusCode == 200) {
         print('user fetched successfully: ${response.body}');
         Map<String, dynamic> user= json.decode(response.body);
-        print( user);
+
 
         user_fcmToken=user['fcm_token'];
         user_phonenumber=user['phone_number'];
         sendNotification( context,  user_fcmToken!,status);
-        print(user_fcmToken);
-        // String name= user['name'];
-        // print(name);
-        // print(user_fcmToken);
+
+
 
       } else {
         print('user fetch unsuccessful Status code: ${response.body}');
@@ -387,6 +372,7 @@ class _AllBookingsState extends State<AllBookings> {
                           SizedBox(height: 8),
                           OutlinedButton(
                             onPressed: () {
+                              _rejectBooking(booking_id,0);
                               setState(() {
                                 booking['status'] = 0; // Undo rejection
                               });
@@ -449,7 +435,7 @@ class _AllBookingsState extends State<AllBookings> {
                         OutlinedButton(
                           onPressed: () {
                             // Cancel booking logic here
-                            _rejectBooking(booking_id,3);
+                            _rejectBooking(booking_id,2);
 
                             setState(() {
                               booking['status'] = 2; // Mark as rejected
@@ -559,6 +545,8 @@ class _AllBookingsState extends State<AllBookings> {
       ),
     );
   }
+
+
   void _acceptBooking(int bookingId) async {
     final response = await http.patch(
       Uri.parse('${Config().apiDomain}/booking/$bookingId'),
@@ -575,7 +563,7 @@ class _AllBookingsState extends State<AllBookings> {
       var decodedResponse = json.decode(response.body);
       print(decodedResponse);
       print('Booking updated successfully');
-      _updateBookingstatus(1);
+      // _updateBookingstatus(1);
 
       // Update the status of the booking locally
       setState(() {
@@ -602,7 +590,7 @@ class _AllBookingsState extends State<AllBookings> {
 
   void _rejectBooking(int bookingId,int status ) async {
     // Your logic to reject the booking
-    // Your logic to accept the booking
+
     final response = await http.patch(
       Uri.parse('${Config().apiDomain}/booking/$bookingId'),
       headers: <String, String>{
@@ -619,7 +607,7 @@ class _AllBookingsState extends State<AllBookings> {
       var decodedResponse = json.decode(response.body);
       print(decodedResponse);
       print('Booking updated successfully');
-      _updateBookingstatus(0);
+      // _updateBookingstatus(0);
       _showDialog('Success', 'Booking rejected successfully');
       // Optionally, refresh the bookings list or update the UI
     } else {
@@ -649,66 +637,6 @@ class _AllBookingsState extends State<AllBookings> {
     );
   }
 
-  void _updateBookingstatus(int status) async {
 
-    final storage = FlutterSecureStorage();
-    String? id = await _getid();
-    String? team_id= await _getTeamid();
-    String? kind = await _getKind();
-
-    // String? id = await _getArtist_id();
-
-    String apiUrl;
-    if(kind =='solo_artist') {
-      apiUrl='${Config().apiDomain}/artist/info/$id';
-
-    }else{
-      apiUrl='${Config().apiDomain}/artist/team_info/$team_id';
-    }
-
-    // String? kind = await storage.read(key: 'selected_value');
-
-    // if (id == null ) {
-    //   print('Error: User id or kind is null');
-    //   return;
-    // }
-
-
-    // if (kind == 'solo_artist') {
-    //   apiUrl = '${Config().apiDomain}/artist/info/$id';
-    // } else if (kind == 'team') {
-    //   apiUrl = 'http://192.0.0.2:8000/api/artist/team_info/$id';
-    // } else {
-    //   print('Error: Unrecognized kind');
-    //   return;
-    // }
-
-    Map<String, dynamic> booked_status = {
-      'booked_status': status,
-    };
-    print( booked_status);
-
-    try {
-      var response = await http.patch(
-        Uri.parse(apiUrl),
-        headers: {
-          'Content-Type': 'application/vnd.api+json',
-          'Accept': 'application/vnd.api+json',
-        },
-        body: jsonEncode(booked_status),
-      );
-
-      if (response.statusCode == 200) {
-        print('booked_status saved successfully');
-        print('Response: ${response.body}');
-      } else {
-        print('Failed to save booked_status. Status code: ${response
-            .statusCode}');
-        print('Error response: ${response.body}');
-      }
-    } catch (e) {
-      print('Error saving booked_status: $e');
-    }
-  }
 
 }

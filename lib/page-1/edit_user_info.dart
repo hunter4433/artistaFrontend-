@@ -12,8 +12,9 @@ class UserInformation extends StatefulWidget {
 
 class _UserInformationState extends State<UserInformation> {
   TextEditingController _nameController = TextEditingController();
-  TextEditingController _lastNameController = TextEditingController();
+  // TextEditingController _lastNameController = TextEditingController();
   TextEditingController _phoneController = TextEditingController();
+  TextEditingController _emailController=TextEditingController();
   // TextEditingController _buildingController = TextEditingController();
   // TextEditingController _cityController = TextEditingController();
   // TextEditingController _stateController = TextEditingController();
@@ -68,7 +69,7 @@ class _UserInformationState extends State<UserInformation> {
         // Update text controllers with fetched data
         setState(() {
           _nameController.text = userData['first_name'] ?? '';
-          _lastNameController.text = userData['last_name'] ?? '';
+           _emailController.text = userData['last_name'] ?? '';
           _phoneController.text = userData['phone_number'] ?? '';
           // _buildingController.text = userData['house_no_building'] ?? '';
           // _cityController.text = userData['city'] ?? '';
@@ -136,7 +137,8 @@ class _UserInformationState extends State<UserInformation> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   buildEditableRow("Name:", _nameController, fem, ffem),
-                  buildEditableRow("Last Name:", _lastNameController, fem, ffem),
+                  // buildEditableRow("Last Name:", _lastNameController, fem, ffem),
+                  buildEditableRow("Email:", _emailController, fem, ffem),
                   buildEditableRow("Phone No:", _phoneController, fem, ffem),
                   // buildEditableRow("Building:", _buildingController, fem, ffem),
                   // buildEditableRow("City:", _cityController, fem, ffem),
@@ -202,7 +204,7 @@ class _UserInformationState extends State<UserInformation> {
     // Prepare data to send to the backend
     Map<String, dynamic> userData = {
       'first_name': _nameController.text,
-      'last_name': _lastNameController.text,
+      'last_name': _emailController.text,
       'phone_number': _phoneController.text,
       // 'house_no_building': _buildingController.text,
       // 'city': _cityController.text,
