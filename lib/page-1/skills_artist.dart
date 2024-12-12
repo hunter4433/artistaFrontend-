@@ -36,6 +36,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
   TextEditingController _subskillController = TextEditingController();
   TextEditingController _experienceController = TextEditingController();
   TextEditingController _hourlyPriceController = TextEditingController();
+  TextEditingController _pastController = TextEditingController();
   TextEditingController _messageController = TextEditingController();
   String? selectedOption;
   bool isUpiSelected = false;
@@ -48,16 +49,23 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
   bool _isLoading2 = false;
   bool _isLoading3 = false;
 
-
-  String _selectedSkill = ''; // Variable to store the selected skill
+  String _selectedSkill = ''; // Selected skill
   List<String> _skills = ['Musician', 'Comedian', 'Visual Artist', 'Dancer', 'Chef', 'Magician'];
+  final Map<String, List<String>> _skillToSubSkills = {
+    'Musician': ['Singing', 'Instrumental', 'Songwriting'],
+    'Comedian': ['Stand-Up', 'Improv', 'Sketch Comedy'],
+    'Visual Artist': ['Painting', 'Sketching', 'Digital Art'],
+    'Dancer': ['Ballet', 'Hip-Hop', 'Contemporary'],
+    'Chef': ['Baking', 'Grilling', 'Vegan Cooking'],
+    'Magician': ['Card Tricks', 'Illusions', 'Mentalism'],
+  };
+  List<String> _subSkills = []; // Sub-skills for the selected skill
+  List<String> _selectedSubSkills = []; // Selected sub-skills
+  // Variables for equipment and selected equipment
+  List<String> _equipmentOptions = ['Sound System', 'Lighting', 'Stage Setup', 'Microphone', 'Projector'];
+  List<String> _selectedEquipment = [];
 
-  // List of skills
-  String _selectedSubSkill = ''; // Variable to store the selected sub-skill
-  List<String> _subSkills = []; // List of sub-skills based on the selected skill
 
-  // Selected options in the sub-skill dropdown
-  List<String> _selectedSubSkills = [];
   bool _isLoading = false;
   bool _isCompressing = false;
   // double _progress = 0.0;
@@ -194,7 +202,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
       // Prepare data to send to the backend
       Map<String, String> artistData = {
         'phone_number': phoneNumber!,
-        'skills': _selectedSubSkill,
+
         'about_yourself': _experienceController.text,
         'price_per_hour': _hourlyPriceController.text,
         'skill_category': _selectedSkill,
@@ -367,7 +375,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
   void initState() {
     super.initState();
     _selectedSkill = _skills.first; // Initialize selected skill with the first item in the list
-    _updateSubSkills(_selectedSkill); // Update sub-skills based on the selected skill
+     // Update sub-skills based on the selected skill
   }
 
   File? _image1;
@@ -402,29 +410,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
     });
   }
 
-  void _updateSubSkills(String skill) {
-    setState(() {
-      _subSkills.clear(); // Clear the previous sub-skills
-      switch (skill) {
-        case 'Musician':
-          _subSkills.addAll(['Guitar', 'Piano', 'Violin']);
-          break;
-        case 'Comedian':
-          _subSkills.addAll(['Stand-up', 'Impersonation', 'Sketch']);
-          break;
-        case 'Visual Artist':
-          _subSkills.addAll(['Painting', 'Sculpture', 'Drawing']);
-          break;
-        case 'Magician':
-          _subSkills.addAll(['Magician', 'Sculpture', 'Drawing']);
-          break;
-        case 'Dancer':
-          _subSkills.addAll(['freestyle', 'classical', 'hip-hop']);
-          break;
-      }
-      _selectedSubSkill = _subSkills.first; // Initialize selected sub-skill with the first item in the list
-    });
-  }
+
 
 
 
@@ -627,8 +613,8 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
             child: Text(
               'Sign Up',
               style: TextStyle(
-                fontSize: 20 * fem,
-                fontWeight: FontWeight.w400,
+                fontSize: 22 * fem,
+                fontWeight: FontWeight.w500,
                 color: Colors.white,
               ),
             ),
@@ -655,7 +641,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
-                              margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 8 * fem),
+                              margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 10 * fem),
                               child: Text(
                                 'Your Skills',
                                 style: SafeGoogleFont(
@@ -669,75 +655,142 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                             ),
                             Container(
                               width: double.infinity,
-                              height: 60 * fem,
+                              height: 60,
                               child: DropdownButtonFormField<String>(
-                                value: _selectedSkill,
+                                value: _selectedSkill.isEmpty ? null : _selectedSkill,
                                 items: _skills.map((String skill) {
                                   return DropdownMenuItem<String>(
                                     value: skill,
-                                    child: Text(skill,style: TextStyle(fontSize: 18, color: Colors.white),),
+                                    child: Text(skill, style: TextStyle(fontSize: 18, color: Colors.white)),
                                   );
                                 }).toList(),
                                 onChanged: (String? value) {
                                   setState(() {
                                     _selectedSkill = value!;
-                                    _updateSubSkills(_selectedSkill); // Update sub-skills based on the selected skill
+                                    _subSkills = _skillToSubSkills[_selectedSkill] ?? [];
+                                    _selectedSubSkills.clear(); // Clear sub-skills when skill changes
                                   });
                                 },
                                 decoration: InputDecoration(
-                                  hintText: 'Choose Skill',
-                                  hintStyle: TextStyle(color:  Color(0xFF9E9EB8)),
+                                  hintText: 'Select Skill',
+                                  hintStyle: TextStyle(color: Color(0xFF9E9EB8)),
                                   enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12 * fem),
+                                    borderRadius: BorderRadius.circular(12),
                                     borderSide: BorderSide(width: 1.25, color: Color(0xFF9E9EB8)),
                                   ),
                                   focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12 * fem),
+                                    borderRadius: BorderRadius.circular(12),
                                     borderSide: BorderSide(width: 1.25, color: Colors.white),
                                   ),
                                 ),
-                                style: TextStyle(color:  Color(0xFF9E9EB8)),
-                                dropdownColor: Color(0xFF292938),
+                                style: TextStyle(color: Color(0xFF9E9EB8)),
+                                dropdownColor: Colors.black,
                               ),
+
                             ),
+
                             SizedBox(
                               height: 14 * fem,
                             ),
                             Container(
                               width: double.infinity,
-                              height: 60 * fem,
-                              child: DropdownButtonFormField<String>(
-                                value: _selectedSubSkill,
-                                items: _subSkills.map((String subSkill) {
-                                  return DropdownMenuItem<String>(
-                                    value: subSkill,
-                                    child: Text(subSkill, style: TextStyle(fontSize: 18, color: Colors.white),),
-                                  );
-                                }).toList(),
-                                onChanged: (String? value) {
-                                  setState(() {
-                                    _selectedSubSkill = value!;
-                                  });
-                                },
-                                decoration: InputDecoration(
-                                  hintText: 'Sub-Skill',
-                                  hintStyle: TextStyle(color:  Color(0xFF9E9EB8)),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12 * fem),
-                                    borderSide: BorderSide(width: 1.25, color:  Color(0xFF9E9EB8)),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12 * fem),
-                                    borderSide: BorderSide(width: 1.25, color: Colors.white),
-                                  ),
-                                ),
-                                style: TextStyle(color:  Color(0xFF9E9EB8)),
-                                dropdownColor: Color(0xFF292938),
+                              height: 60,
+                              padding: EdgeInsets.symmetric(horizontal: 12),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(width: 1.25, color: Color(0xFF9E9EB8)),
                               ),
-                            ),
-
-
-
+                              child: GestureDetector(
+                                onTap: () {
+                                  // Trigger the modal dropdown
+                                  showModalBottomSheet(
+                                    context: context,
+                                    backgroundColor: Colors.black,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                                    ),
+                                    builder: (BuildContext context) {
+                                      return StatefulBuilder(
+                                        builder: (BuildContext context, StateSetter setModalState) {
+                                          return Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Padding(
+                                                padding: const EdgeInsets.all(16.0),
+                                                child: Text(
+                                                  'Select Sub-Skills',
+                                                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                                                ),
+                                              ),
+                                              Expanded(
+                                                child: ListView(
+                                                  children: _subSkills.map((subSkill) {
+                                                    return CheckboxListTile(
+                                                      title: Text(
+                                                        subSkill,
+                                                        style: TextStyle(color: Colors.white),
+                                                      ),
+                                                      value: _selectedSubSkills.contains(subSkill),
+                                                      activeColor: Colors.white,
+                                                      checkColor: Colors.black,
+                                                      onChanged: (bool? value) {
+                                                        setModalState(() {
+                                                          if (value == true) {
+                                                            _selectedSubSkills.add(subSkill);
+                                                          } else {
+                                                            _selectedSubSkills.remove(subSkill);
+                                                          }
+                                                        });
+                                                      },
+                                                    );
+                                                  }).toList(),
+                                                ),
+                                              ),
+                                              Padding(
+                                                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                                                child: ElevatedButton(
+                                                  style: ElevatedButton.styleFrom(
+                                                    backgroundColor: Color(0xffe5195e), // Customize button color
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius: BorderRadius.circular(10),
+                                                    ),
+                                                    minimumSize: Size(200, 50), // Adjust button size
+                                                  ),
+                                                  onPressed: () {
+                                                    Navigator.pop(context);
+                                                    setState(() {}); // Trigger UI update after modal is dismissed
+                                                  },
+                                                  child: Text('OK', style: TextStyle(color: Colors.white,fontSize: 17*fem)),
+                                                ),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
+                                    },
+                                  );
+                                },
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        _selectedSubSkills.isEmpty ? 'Sub-Skill' : _selectedSubSkills.join(', '),
+                                        style: TextStyle(
+                                          color: _selectedSubSkills.isEmpty ? Color(0xFF9E9EB8) : Colors.white,
+                                          fontSize: 18,
+                                        ),
+                                        overflow: TextOverflow.ellipsis, // Handle long lists gracefully
+                                      ),
+                                    ),
+                                    Icon(
+                                      Icons.keyboard_arrow_down,
+                                      color: Color(0xFF9E9EB8),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
 
 
                           ],
@@ -745,7 +798,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                         ),
                       ),
                       SizedBox(
-                        height: 19 * fem,
+                        height: 20 * fem,
                       ),
                       Container(
                         width: double.infinity,
@@ -753,11 +806,11 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
-                              margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 9 * fem),
+                              margin: EdgeInsets.fromLTRB(0 * fem, 10 * fem, 0 * fem, 10 * fem),
                               child: Text(
                                 'Tell Users about Yourself',
                                 style: SafeGoogleFont(
-                                  'Plus Jakarta Sans',
+                                  'Be Vietnam Pro',
                                   fontSize: 20 * ffem,
                                   fontWeight: FontWeight.w400,
                                   height: 1.5 * ffem / fem,
@@ -769,7 +822,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
 
                               width: double.infinity,
                               // Adjusted height to match the height of the outer container
-                              height: 70 * fem,
+                              height: 60 * fem,
 
                               child: TextField(
                                 controller: _experienceController,
@@ -782,17 +835,42 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10 * fem),
-                                    borderSide: BorderSide(width: 1.25, color: Color(0xffe5195e) ),
+                                    borderSide: BorderSide(width: 1.25, color: Colors.white ),
                                   ),
                                 ),
                                 style: TextStyle(color: Colors.white, fontSize: 16),
                               ),
                             ),
                             SizedBox(height: 10,),
+
+                            Container(
+
+                              width: double.infinity,
+                              // Adjusted height to match the height of the outer container
+                              height: 60 * fem,
+
+                              child: TextField(
+                                controller: _pastController,
+                                decoration: InputDecoration(
+                                  hintText: 'Total no of bookings handled before?',
+                                  hintStyle: TextStyle(color:  Color(0xFF9E9EB8)),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10 * fem),
+                                    borderSide: BorderSide(width: 1.25, color:Color(0xFF9E9EB8),),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10 * fem),
+                                    borderSide: BorderSide(width: 1.25, color: Colors.white ),
+                                  ),
+                                ),
+                                style: TextStyle(color: Colors.white, fontSize: 16),
+                              ),
+                            ),
+                            SizedBox(height: 10*fem),
                             Container(
                               margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 11 * fem),
                               child: Text(
-                                'Do you have your own equipment  (microphone, speakers, etc.) for the performance?',
+                                'Please select the equipment you\'ll need for your performance in front of a small audience',
                                 style: SafeGoogleFont(
                                   'Plus Jakarta Sans',
                                   fontSize: 16 * ffem,
@@ -802,43 +880,110 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                                 ),
                               ),
                             ),
-                            Container(
-                              width: double.infinity,
-                              height: 70 * fem, // Adjusted height to match the outer container
-                              child: DropdownButtonFormField<String>(
-                                decoration: InputDecoration(
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10 * fem),
-                                    borderSide: BorderSide(width: 1.25, color: Color(0xFF9E9EB8)),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10 * fem),
-                                    borderSide: BorderSide(width: 1.25, color: Colors.white),
-                                  ),
-                                  hintText: 'Your Answer',
-                                  hintStyle: TextStyle(color: Color(0xFF9E9EB8)),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10 * fem),
-                                    borderSide: BorderSide(width: 1.25, color: Color(0xFF9E9EB8)),
+              Container(
+                width: double.infinity,
+                height: 60 * fem, // Adjusted height to match the outer container
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10 * fem),
+                  border: Border.all(width: 1.25, color: Color(0xFF9E9EB8)),
+                ),
+                padding: EdgeInsets.symmetric(horizontal: 12 * fem), // Adjusted padding
+                child: GestureDetector(
+                  onTap: () {
+                    // Trigger the modal dropdown
+                    showModalBottomSheet(
+                      context: context,
+                      backgroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                      ),
+                      builder: (BuildContext context) {
+                        return StatefulBuilder(
+                          builder: (BuildContext context, StateSetter setModalState) {
+                            return Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Text(
+                                    'Select Required Equipment',
+                                    style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                                   ),
                                 ),
-                                value: selectedOption, // The currently selected value (nullable)
-                                items: ['Yes', 'No'].map((String value) {
-                                  return DropdownMenuItem<String>(
-                                    value: value,
-                                    child: Text(value, style: TextStyle(color: Colors.white,fontSize: 16)), // Dropdown item text
-                                  );
-                                }).toList(),
-                                dropdownColor: Color(0xff1a1a1a), // Background color of dropdown menu
-                                onChanged: (String? newValue) {
-                                  setState(() {
-                                    selectedOption = newValue; // Update selected option
-                                  });
-                                  print('soun dystem : $selectedOption');
-                                },
-                              ),
-                            )
-                        ] ),
+                                Expanded(
+                                  child: ListView(
+                                    children: _equipmentOptions.map((equipment) {
+                                      return CheckboxListTile(
+                                        title: Text(
+                                          equipment,
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                        value: _selectedEquipment.contains(equipment),
+                                        activeColor: Colors.white,
+                                        checkColor: Colors.black,
+                                        onChanged: (bool? value) {
+                                          setModalState(() {
+                                            if (value == true) {
+                                              _selectedEquipment.add(equipment);
+                                            } else {
+                                              _selectedEquipment.remove(equipment);
+                                            }
+                                          });
+                                        },
+                                      );
+                                    }).toList(),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Color(0xffe5195e), // Customize button color
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      minimumSize: Size(200, 50), // Adjust button size
+                                    ),
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                      setState(() {}); // Trigger UI update after modal is dismissed
+                                    },
+                                    child: Text('OK', style: TextStyle(color: Colors.white,fontSize: 17*fem)),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                    );
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          _selectedEquipment.isEmpty
+                              ? 'Select Equipment'
+                              : _selectedEquipment.join(', '), // Show selected equipment
+                          style: TextStyle(
+                            color: _selectedEquipment.isEmpty ? Color(0xFF9E9EB8) : Colors.white,
+                            fontSize: 16,
+                          ),
+                          overflow: TextOverflow.ellipsis, // Handle long list gracefully
+                        ),
+                      ),
+                      Icon(
+                        Icons.keyboard_arrow_down,
+                        color: Color(0xFF9E9EB8),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+
+
+              ] ),
                       ),
                       SizedBox(
                         height: 8 * fem,
@@ -851,9 +996,9 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                 ),
 
                 Container(
-                  padding: EdgeInsets.fromLTRB(16 * fem, 0 * fem, 16 * fem, 0 * fem),
+                  padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 16 * fem, 0 * fem),
                   width: double.infinity,
-                  height: 485 * fem,
+                  height: 515 * fem,
                   decoration: BoxDecoration(
                     color: Color(0xFF121217),
                   ),
@@ -862,15 +1007,15 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                     children: [
 
                       const Padding(
-                        padding: EdgeInsets.all(8.0),
+                        padding: EdgeInsets.all(.0),
                         child: SizedBox(
-                          height: 30,
+                          height: 60,
 
                           child: Text(
-                            'Photos For the Portfolio',
+                            'Upload your photos to showcase talent and boost bookings!',
                             textAlign: TextAlign.left,
                             style: TextStyle(
-                              fontSize: 17,
+                              fontSize: 18,
                               fontWeight: FontWeight.w500,
                               color: Colors.white,
                               fontFamily: 'Be Vietnam Pro',
@@ -943,14 +1088,14 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
 
 
                       const Padding(
-                        padding: EdgeInsets.fromLTRB(0, 30, 0, 0),
+                        padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
                         child: SizedBox(
-                          height: 20,
+                          height: 25,
                           child: Text(
-                            'Upload Your Videos Here',
+                            'Upload your videos here',
                             textAlign: TextAlign.left,
                             style: TextStyle(
-                              fontSize: 17,
+                              fontSize: 18,
                               fontWeight: FontWeight.w500,
                               color: Colors.white,
                               fontFamily: 'Be Vietnam Pro',
@@ -961,14 +1106,14 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
 
 // Description to indicate the duration limit
                       const Padding(
-                        padding: EdgeInsets.fromLTRB(0, 5, 0, 20),
+                        padding: EdgeInsets.fromLTRB(0, 10, 0, 10),
                         child: Text(
-                          'Keep the video duration maximum to 15 seconds.',
+                          'Keep the video duration within 20 seconds.',
                           textAlign: TextAlign.left,
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 16,
                             fontWeight: FontWeight.w400,
-                            color: Colors.red,
+                            color: Color(0xffe5195e),
                             fontFamily: 'Be Vietnam Pro',
                           ),
                         ),
@@ -1044,10 +1189,14 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                       ),
 
 
+
                     ],
+
                   ),
 
+
                 ),
+
                 Padding(
                   padding: EdgeInsets.fromLTRB(16 * fem, 0 * fem, 16 * fem, 18 * fem),
                   child: Container(
@@ -1056,7 +1205,43 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
-                          margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 8* fem),
+                          margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 9 * fem),
+                          child: Text(
+                            'For video longer than 20 seconds',
+                            style: SafeGoogleFont(
+                              'Be Vietnam Pro',
+                              fontSize: 16 * ffem,
+                              fontWeight: FontWeight.w400,
+                              height: 1.5 * ffem / fem,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        Container(
+
+                          width: double.infinity,
+                          // Adjusted height to match the height of the outer container
+                          height: 60 * fem,
+
+                          child: TextField(
+                            decoration: InputDecoration(
+                              hintText: 'Please paste the YouTube video link here.',
+                              hintStyle: TextStyle(color:  Color(0xFF9E9EB8)),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10 * fem),
+                                borderSide: BorderSide(width: 1.25, color:Color(0xFF9E9EB8),),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10 * fem),
+                                borderSide: BorderSide(width: 1.25, color: Colors.white ),
+                              ),
+                            ),
+                            style: TextStyle(color: Colors.white, fontSize: 16),
+                          ),
+                        ),
+                        SizedBox(height: 10,),
+                        Container(
+                          margin: EdgeInsets.fromLTRB(0 * fem, 20 * fem, 0 * fem, 8* fem),
                           child: Text(
                             'How Much Do You Charge Per Hour ?',
                             style: SafeGoogleFont(
@@ -1073,13 +1258,13 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                           child: Text(
                             '⦾ Include transportation in the total price for city bookings.'
                                 ' For out-of-city bookings, charges can be discussed with the host \n\n'
-                                '⦾ HomeStage will charge a 20% fee on the total price.',
+                                '⦾ The price shown to the user includes all fees and taxes, so you\'ll receive the full amount.',
                             style: SafeGoogleFont(
                               'Be Vietnam Pro',
                               fontSize: 16.5 * ffem,
                               fontWeight: FontWeight.w400,
                               height: 1.5 * ffem / fem,
-                              color: Colors.blue,
+                              color: Color(0xffe5195e),
                             ),
                           ),
                         ),
@@ -1130,11 +1315,11 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
-                              margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 14 * fem),
+                              margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 5 * fem),
                               child: Text(
-                                'For Receiving Payments',
+                                'For Receiving Payments\n(Choose any one of the below)',
                                 style: TextStyle(
-                                  fontSize: 17 * ffem,
+                                  fontSize: 18 * ffem,
                                   fontWeight: FontWeight.w400,
                                   height: 1.5 * ffem / fem,
                                   color: Colors.white,
@@ -1158,6 +1343,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                                         isAccountSelected = !value;
                                       });
                                     },
+                                    activeColor: Color(0xffe5195e),
                                   ),
                                 ),
                                 Expanded(
@@ -1174,6 +1360,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                                         isUpiSelected = !value;
                                       });
                                     },
+                                    activeColor: Color(0xffe5195e),
                                   ),
                                 ),
                               ],
@@ -1183,7 +1370,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                               visible: isUpiSelected,
                               child: Container(
                                 width: double.infinity,
-                                height: 70 * fem,
+                                height: 60 * fem,
                                 margin: EdgeInsets.only(top: 10 * fem),
                                 child: TextField(
                                   controller: _upiController,
@@ -1216,7 +1403,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                                 children: [
                                   Container(
                                     width: double.infinity,
-                                    height: 70 * fem,
+                                    height: 60 * fem,
                                     margin: EdgeInsets.only(top: 10 * fem),
                                     child: TextField(
                                       controller: _accountNumberController,
@@ -1243,7 +1430,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                                   ),
                                   Container(
                                     width: double.infinity,
-                                    height: 70 * fem,
+                                    height: 60 * fem,
                                     margin: EdgeInsets.only(top: 10 * fem),
                                     child: TextField(
                                       controller: _ifscController,
@@ -1270,7 +1457,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                                   ),
                                   Container(
                                     width: double.infinity,
-                                    height: 70 * fem,
+                                    height: 60 * fem,
                                     margin: EdgeInsets.only(top: 10 * fem),
                                     child: TextField(
                                       controller: _accountHolderNameController,
@@ -1325,7 +1512,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                             Container(
                               margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 18 * fem),
                               child: Text(
-                                'Special message for the host',
+                                'Special message for the host (Optional)',
                                 style: SafeGoogleFont(
                                   'Be Vietnam Pro',
                                   fontSize: 20 * ffem,
@@ -1338,7 +1525,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                             Container(
 
                               width: double.infinity,
-                              height: 70 * fem,
+                              height: 60 * fem,
 
                               child: TextField(
                                 controller: _messageController,
@@ -1378,7 +1565,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
               ),
               child: Center(
                 child : Text(
-                  _isLoading ? 'loading...' : 'finish',
+                  _isLoading ? 'Loading...' : 'Finish',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w500,
