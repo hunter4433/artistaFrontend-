@@ -152,7 +152,7 @@ class SearchedArtist extends StatelessWidget {
                                   ),
                                   // Rating text aligned to the right
                                   Text(
-                                    'Rating: ${filteredArtistData[index]['rating']}/5',
+                                    'Rating: ${filteredArtistData[index]['average_rating']}/5',
                                     style: TextStyle(
                                       fontSize: 17 * ffem,
                                       fontWeight: FontWeight.w400,

@@ -35,6 +35,15 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
 
     _searchFocusNode.addListener(_onSearchFocusChange);
     WidgetsBinding.instance.addObserver(this);
+    readAllStorage();
+  }
+
+
+  Future<void> readAllStorage() async {
+    Map<String, String> allValues = await storage.readAll();
+    allValues.forEach((key, value) {
+      print('Key: $key, Value: $value');
+    });
   }
 
   @override
@@ -243,8 +252,8 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
                         'Search',
                         style: TextStyle(
                           fontFamily: 'Be Vietnam Pro',
-                          fontSize: 21 * ffem,
-                          fontWeight: FontWeight.w400,
+                          fontSize: 22 * ffem,
+                          fontWeight: FontWeight.w500,
                           color: Colors.white,
                         ),
                       ),

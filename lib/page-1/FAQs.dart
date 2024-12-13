@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class SupportScreen extends StatelessWidget {
+class FAQ extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar:AppBar(
         leading: IconButton(
           icon: Icon(
             Icons.arrow_back_ios, // iOS-style back arrow icon
@@ -16,7 +16,7 @@ class SupportScreen extends StatelessWidget {
           },
         ),
         title: Text(
-          'Support',
+          'FAQs',
           textAlign: TextAlign.center,
           style: TextStyle(
             fontFamily: 'Be Vietnam Pro',
@@ -38,35 +38,7 @@ class SupportScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                child: Text(
-                  'How may we help you?',
-                  style: GoogleFonts.inter(
-                    fontWeight: FontWeight.w500,
-                    fontSize: 22,
-                    color: Color(0xFF0D141C),
-                  ),
-                ),
-              ),
-              SizedBox(height: 12),
-              _buildSupportOption(
-                title: 'Call Us: 9896825379',
-              ),
-              _buildSupportOption(
-                title: 'Email us: support@homestage.com',
-              ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(16, 20, 16, 12),
-                child: Text(
-                  'FAQs',
-                  style: GoogleFonts.inter(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 22,
-                    color: Color(0xFF0D141C),
-                  ),
-                ),
-              ),
+
               _buildFaqItem(
                 question: 'What is your refund policy?',
                 answer:

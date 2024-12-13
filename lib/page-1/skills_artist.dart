@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:async';
 import 'dart:io';
 // import 'package:ffmpeg_kit_flutter/return_code.dart';
 import 'package:file_picker/file_picker.dart';
@@ -43,6 +44,9 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
   TextEditingController _accountNumberController = TextEditingController();
   TextEditingController _ifscController = TextEditingController();
   TextEditingController _accountHolderNameController = TextEditingController();
+  bool _isLoading1 = false;
+  bool _isLoading2 = false;
+  bool _isLoading3 = false;
 
 
   String _selectedSkill = ''; // Variable to store the selected skill
@@ -480,9 +484,13 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
     });
   }
 
-  bool _isLoading1 = false;
-  bool _isLoading2 = false;
-  bool _isLoading3 = false;
+// <<<<<<< HEAD
+
+// =======
+//   bool _isLoading1 = false;
+//   bool _isLoading2 = false;
+//   bool _isLoading3 = false;
+// >>>>>>> 71fc5321e6356695c1a1f769543a7c429f07c784
 
   Future<void> _pickVideo1() async {
     setState(() {

@@ -56,6 +56,7 @@ print(response.statusCode );
         _showSnackBar('Error: $error');
       }
     } catch (e) {
+print(e);
       _showSnackBar('Something went wrong: $e');
     }
   }

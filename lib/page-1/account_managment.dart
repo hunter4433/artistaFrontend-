@@ -5,9 +5,11 @@ import 'package:test1/page-1/artsit_skills_edit.dart';
 import 'package:test1/page-1/customer_support.dart';
 import 'package:test1/page-1/delete_account.dart';
 import 'package:test1/page-1/edit_user_info.dart';
+import 'package:test1/page-1/payment_edit.dart';
 import 'package:test1/page-1/worksamples_edit.dart';
 import 'package:test1/page-1/edit_team_members.dart';
 
+import '../utils.dart';
 import 'edit_team_members.dart';
 
 
@@ -29,22 +31,41 @@ class account_managment extends StatelessWidget {
     return Scaffold(backgroundColor: Color(0xFF121217)
       ,
       appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: Padding(
-          padding: const EdgeInsets.fromLTRB(0, 0, 8, 0),
-          child: Center(
-            child: Text(
-              'Account',
-              style: TextStyle(
-                fontSize: 20 * fem,
-                fontWeight: FontWeight.w400,
+        automaticallyImplyLeading: false, // Disables the default back button
+        title: Row(
+          children: [
+            // iOS-style Back Button
+            IconButton(
+              icon: Icon(
+                Icons.arrow_back_ios, // iOS back arrow style
                 color: Colors.white,
               ),
+              onPressed: () {
+                Navigator.pop(context); // Navigate back
+              },
             ),
-          ),
+            // Title
+            Expanded(
+              child: Center(
+                child:Text(
+                  'Account',
+                  style: SafeGoogleFont (
+                    'Be Vietnam Pro',
+                    fontSize: 20*ffem,
+                    fontWeight: FontWeight.w500,
+                    height: 1.25*ffem/fem,
+                    letterSpacing: -0.2700000107*fem,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(width: 48), // To balance the Row (space for back button)
+          ],
         ),
         backgroundColor: Color(0xFF121217),
       ),
+
       body: SafeArea(
         child: FutureBuilder<String?>(
           future: _getKind(),
@@ -70,29 +91,39 @@ class account_managment extends StatelessWidget {
                 children: [
                   // Edit Profile
                   if (isHire)
-                  InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => UserInformation()),
-                      );
-                    },
-                    child: Container(
-                      padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 6 * fem, 10 * fem),
-                      width: double.infinity,
-                      height: 56 * fem,
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color: Colors.grey,
-                            width: 0.2,
+                    InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => UserInformation()),
+                        );
+                      },
+                      child: Container(
+                        padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 6 * fem, 10 * fem),
+                        width: double.infinity,
+                        height: 56 * fem,
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              color: Colors.grey,
+                              width: 0.2,
+                            ),
                           ),
                         ),
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Container(
+                        child: Row(
+                          children: [
+                            // Logo or Icon on the left
+                            Container(
+                              width: 30 * fem, // Adjust size if necessary
+                              height: 44 * fem,
+                              margin: EdgeInsets.only(right: 10 * fem),
+                              child: Icon(
+                                Icons.person, // Replace with the desired icon or logo
+                                color: Colors.white,
+                              ),
+                            ),
+                            // Text
+                            Expanded(
                               child: Text(
                                 'Edit Profile',
                                 style: TextStyle(
@@ -103,18 +134,20 @@ class account_managment extends StatelessWidget {
                                 ),
                               ),
                             ),
-                          ),
-                          Container(
-                            width: 64 * fem,
-                            height: 44 * fem,
-                            child: Icon(
-                              Icons.arrow_forward_ios_rounded,color: Colors.white,
+                            // Arrow icon on the right
+                            Container(
+                              width: 64 * fem,
+                              height: 44 * fem,
+                              child: Icon(
+                                Icons.arrow_forward_ios_rounded,
+                                color: Colors.white,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
-                  ),
+
                   // Edit Artist Profile (based on conditions)
                   if (isSoloArtist || isTeam)
                     InkWell(
@@ -186,31 +219,42 @@ class account_managment extends StatelessWidget {
                         ),
                         child: Row(
                           children: [
+                            // Logo/Icon on the left
+                            Container(
+                              width: 30 * fem, // Adjust width if necessary
+                              height: 44 * fem,
+                              margin: EdgeInsets.only(right: 10 * fem),
+                              child: Icon(
+                                Icons.group, // Replace with the desired icon or logo
+                                color: Colors.white,
+                              ),
+                            ),
+                            // Text
                             Expanded(
-                              child: Container(
-                                child: Text(
-                                  'Edit Team Members',
-                                  style: TextStyle(
-                                    fontSize: 18 * ffem,
-                                    fontWeight: FontWeight.w400,
-                                    height: 1.5 * ffem / fem,
-                                    color: Colors.white,
-                                  ),
+                              child: Text(
+                                'Edit Team Members',
+                                style: TextStyle(
+                                  fontSize: 18 * ffem,
+                                  fontWeight: FontWeight.w400,
+                                  height: 1.5 * ffem / fem,
+                                  color: Colors.white,
                                 ),
                               ),
                             ),
+                            // Arrow icon on the right
                             Container(
                               width: 64 * fem,
                               height: 44 * fem,
                               child: Icon(
-                                Icons.arrow_forward_ios_rounded,color: Colors.white
-                                ,
+                                Icons.arrow_forward_ios_rounded,
+                                color: Colors.white,
                               ),
                             ),
                           ],
                         ),
                       ),
                     ),
+
                   if (isSoloArtist || isTeam)
                     InkWell(
                       onTap: () {
@@ -233,30 +277,42 @@ class account_managment extends StatelessWidget {
                         ),
                         child: Row(
                           children: [
+                            // Logo or Icon on the left
+                            Container(
+                              width: 30 * fem, // Adjust size as needed
+                              height: 44 * fem,
+                              margin: EdgeInsets.only(right: 10 * fem),
+                              child: Icon(
+                                Icons.star, // Replace with your desired logo or Image widget
+                                color: Colors.white,
+                              ),
+                            ),
+                            // Text
                             Expanded(
-                              child: Container(
-                                child: Text(
-                                  'Edit Skills',
-                                  style: TextStyle(
-                                    fontSize: 17 * ffem,
-                                    fontWeight: FontWeight.w400,
-                                    height: 1.5 * ffem / fem,
-                                    color: Colors.white,
-                                  ),
+                              child: Text(
+                                'Edit Skills',
+                                style: TextStyle(
+                                  fontSize: 17 * ffem,
+                                  fontWeight: FontWeight.w400,
+                                  height: 1.5 * ffem / fem,
+                                  color: Colors.white,
                                 ),
                               ),
                             ),
+                            // Arrow icon on the right
                             Container(
                               width: 64 * fem,
                               height: 44 * fem,
                               child: Icon(
-                                Icons.arrow_forward_ios_rounded,color: Colors.white,
+                                Icons.arrow_forward_ios_rounded,
+                                color: Colors.white,
                               ),
                             ),
                           ],
                         ),
                       ),
                     ),
+
                   // // Edit Work Samples (based on conditions)
                   // if (isSoloArtist || isTeam)
                   //   InkWell(
@@ -305,11 +361,72 @@ class account_managment extends StatelessWidget {
                   //     ),
                   //   ),
                   // Report a Problem
+                  if (isSoloArtist || isTeam)
+                    InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => EditPaymentInfoScreen()),
+                        );
+                      },
+                      child: Container(
+                        padding: EdgeInsets.fromLTRB(16 * fem, 10 * fem, 6 * fem, 10 * fem),
+                        width: double.infinity,
+                        height: 56 * fem,
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              color: Colors.grey, // Border color
+                              width: 0.25, // Border width
+                            ),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            // Left-side Icon
+                            Container(
+                              width: 30 * fem, // Icon container width
+                              height: 44 * fem, // Icon container height
+                              child: Center(
+                                child: Icon(
+                                  Icons.payment, // Icon representing payment
+                                  color: Colors.white, // Icon color
+                                  size: 26 * fem, // Icon size
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 8 * fem), // Space between the icon and the text
+                            // Text
+                            Expanded(
+                              child: Text(
+                                'Edit Payment Information', // Updated text spacing
+                                style: TextStyle(
+                                  fontSize: 17 * ffem,
+                                  fontWeight: FontWeight.w400,
+                                  height: 1.5 * ffem / fem,
+                                  color: Colors.white, // Text color
+                                ),
+                              ),
+                            ),
+                            // Right-side Arrow Icon
+                            Container(
+                              width: 64 * fem,
+                              height: 44 * fem,
+                              child: Icon(
+                                Icons.arrow_forward_ios_rounded, // Arrow icon
+                                color: Colors.white, // Icon color
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
                   InkWell(
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) =>SupportScreen()),
+                        MaterialPageRoute(builder: (context) => SupportScreen()),
                       );
                     },
                     child: Container(
@@ -319,37 +436,52 @@ class account_managment extends StatelessWidget {
                       decoration: BoxDecoration(
                         border: Border(
                           bottom: BorderSide(
-                            color: Colors.grey,
-                            width: 0.2,
+                            color: Colors.grey, // Border color
+                            width: 0.2, // Border width
                           ),
                         ),
                       ),
                       child: Row(
                         children: [
-                          Expanded(
-                            child: Container(
-                              child: Text(
-                                'Report a Problem',
-                                style: TextStyle(
-                                  fontSize: 17 * ffem,
-                                  fontWeight: FontWeight.w400,
-                                  height: 1.5 * ffem / fem,
-                                  color: Colors.white,
-                                ),
+                          // Icon on the left
+                          Container(
+                            width: 30 * fem, // Icon container width
+                            height: 44 * fem, // Icon container height
+                            child: Center( // Ensures the icon is vertically centered
+                              child: Icon(
+                                Icons.report_problem, // Use an appropriate icon
+                                color: Colors.white, // Icon color
+                                size: 26 * fem, // Icon size
                               ),
                             ),
                           ),
+                          SizedBox(width: 8 * fem), // Space between the icon and the text
+                          // Expanded widget for the text
+                          Expanded(
+                            child: Text(
+                              'Report a Problem',
+                              style: TextStyle(
+                                fontSize: 17 * ffem,
+                                fontWeight: FontWeight.w400,
+                                height: 1.5 * ffem / fem,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          // Arrow icon on the right
                           Container(
                             width: 64 * fem,
                             height: 44 * fem,
                             child: Icon(
-                              Icons.arrow_forward_ios_rounded,color: Colors.white
+                              Icons.arrow_forward_ios_rounded, // Right-side arrow icon
+                              color: Colors.white, // Icon color
                             ),
                           ),
                         ],
                       ),
                     ),
                   ),
+
                   // Delete Account
                   InkWell(
                     onTap: () {
@@ -365,37 +497,52 @@ class account_managment extends StatelessWidget {
                       decoration: BoxDecoration(
                         border: Border(
                           bottom: BorderSide(
-                            color: Colors.grey,
-                            width: 0.25,
+                            color: Colors.grey, // Border color
+                            width: 0.25, // Border width
                           ),
                         ),
                       ),
                       child: Row(
                         children: [
-                          Expanded(
-                            child: Container(
-                              child: Text(
-                                'Delete Account',
-                                style: TextStyle(
-                                  fontSize: 17 * ffem,
-                                  fontWeight: FontWeight.w400,
-                                  height: 1.5 * ffem / fem,
-                                  color: Colors.red,
-                                ),
+                          // Icon on the left
+                          Container(
+                            width: 30 * fem, // Icon container width
+                            height: 44 * fem, // Icon container height
+                            child: Center( // Center the icon vertically
+                              child: Icon(
+                                Icons.delete_forever, // Delete icon
+                                color: Colors.red, // Icon color
+                                size: 26 * fem, // Icon size
                               ),
                             ),
                           ),
+                          SizedBox(width: 8 * fem), // Space between the icon and the text
+                          // Expanded widget for the text
+                          Expanded(
+                            child: Text(
+                              'Delete Account',
+                              style: TextStyle(
+                                fontSize: 17 * ffem,
+                                fontWeight: FontWeight.w400,
+                                height: 1.5 * ffem / fem,
+                                color: Colors.red, // Text color matches the icon
+                              ),
+                            ),
+                          ),
+                          // Arrow icon on the right
                           Container(
                             width: 64 * fem,
                             height: 44 * fem,
                             child: Icon(
-                              Icons.arrow_forward_ios_rounded,color: Colors.white,
+                              Icons.arrow_forward_ios_rounded, // Right-side arrow icon
+                              color: Colors.white, // Icon color
                             ),
                           ),
                         ],
                       ),
                     ),
                   ),
+
                 ],
               ),
             );

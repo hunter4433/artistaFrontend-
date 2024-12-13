@@ -23,6 +23,7 @@ class Home_user extends StatefulWidget {
 
 class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixin, WidgetsBindingObserver{
   final storage = FlutterSecureStorage();
+
   late VideoPlayerController _controller;
   Future<Map<String, List<dynamic>>>? _fetchAssetsFuture;
   // Dummy data for testing. Replace it with actual data from your backend.
@@ -76,6 +77,7 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
        fetchData();
       hasCalledApi = true;
     }
+
 
     // fetchFeaturedTeams();
     // fetchAssets();
@@ -233,6 +235,7 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
     }
   }
 
+
   final List<Map<String, dynamic>> seasonal = [
 
   ];
@@ -358,8 +361,8 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
             child: Text(
               'Home',
               style: TextStyle(
-                fontSize: 20 * fem,
-                fontWeight: FontWeight.w400,
+                fontSize: 22 * fem,
+                fontWeight: FontWeight.w500,
                 color: Colors.white,
               ),
             ),

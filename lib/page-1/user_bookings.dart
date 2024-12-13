@@ -152,7 +152,7 @@ class _UserBookingsState extends State<UserBookings> with AutomaticKeepAliveClie
   }
 
   Widget _buildRequestCard(String Category, String booking_date, String Time,
-      int booking_id, int artist_id, int index) {
+      int booking_id, int artist_id, String isteam,  int index) {
     double baseWidth = 390;
     final bookings = cachedData?['bookings'] ?? [];
     double fem = MediaQuery
@@ -173,7 +173,7 @@ class _UserBookingsState extends State<UserBookings> with AutomaticKeepAliveClie
     } else if (status == 2) {
       progress = 0.0; // Event rejected by artist
     } else if (status == 3) {
-      progress = 0.0; // Rejected, no progress
+      progress = 1.0; // completed, no progress
     }
 
     return GestureDetector(
@@ -183,7 +183,7 @@ class _UserBookingsState extends State<UserBookings> with AutomaticKeepAliveClie
           MaterialPageRoute(builder: (context) =>
               Booked(BookingId: booking_id.toString(),
                   artistId: artist_id.toString(),
-                  isteam: widget.isteam)),
+                  isteam: isteam)),
         );
       },
       child: Stack(
@@ -230,22 +230,20 @@ class _UserBookingsState extends State<UserBookings> with AutomaticKeepAliveClie
                   SizedBox(height: 16),
                   Stack(
                     children: [
-                      LinearProgressIndicator(
-                        value: progress,
-                        backgroundColor: Colors.grey[800],
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                            Color(0xffe5195e)),
-                        minHeight: 8,
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(4.0), // Adjust corner radius as needed
+                        child: LinearProgressIndicator(
+                          value: progress,
+                          backgroundColor: Colors.grey[800],
+                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xffe5195e)),
+                          minHeight: 8,
+                        ),
                       ),
-// <<<<<<< HEAD
                       Positioned(
-                        left: MediaQuery
-                            .of(context)
-                            .size
-                            .width * progress - 30,
+                        left: MediaQuery.of(context).size.width * progress - 30,
                         top: -4,
                         child: CircleAvatar(
-                          radius: 6,
+                          radius: 8,
                           backgroundColor: Colors.black,
                           child: CircleAvatar(
                             radius: 4,
@@ -255,6 +253,7 @@ class _UserBookingsState extends State<UserBookings> with AutomaticKeepAliveClie
                       ),
                     ],
                   ),
+
                   SizedBox(height: 8),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -283,7 +282,7 @@ class _UserBookingsState extends State<UserBookings> with AutomaticKeepAliveClie
                     ],
                   ),
                   SizedBox(height: 16),
-              status != 1
+              status != 3
                   ? Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -401,14 +400,10 @@ class _UserBookingsState extends State<UserBookings> with AutomaticKeepAliveClie
           child: Text(
             'Bookings',
             style: TextStyle(
-// <<<<<<< HEAD
-//                 fontSize: 22, fontWeight: FontWeight.w400, color: Colors.white),
-// =======
               fontSize: 22,
               fontWeight: FontWeight.w500,
               color: Colors.white,
             ),
-// >>>>>>> c29e89df1aac051be8cea2d6749ef204c90acc8e
           ),
         ),
         backgroundColor: const Color(0xFF121217),
@@ -453,18 +448,20 @@ class _UserBookingsState extends State<UserBookings> with AutomaticKeepAliveClie
         itemCount: bookings.length,
         itemBuilder: (context, index) {
           final booking = bookings[index];
+          print('booking data :$booking');
           final idToUse = booking['artist_id'] ?? booking['team_id'];
-          widget.isteam =
+           String isteam =
           (booking['team_id'] != '0' && booking['team_id'] != null)
               ? 'true'
               : 'false';
-
+print('isteam nsdj : ${widget.isteam}');
           return _buildRequestCard(
             booking['category'],
             booking['booking_date'],
             booking['booked_from'],
             booking['id'],
             idToUse,
+            isteam,
             index,
           );
         },
