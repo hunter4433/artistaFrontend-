@@ -25,6 +25,10 @@ class _artist_credState extends State<artist_cred> {
   late Position _currentPosition;
   bool isLoading = false;
   String? _address;
+  final List<String> _cities = ['Chandigarh (Tricity)', 'Delhi', 'Mumbai', 'Bangalore','Gurugram'];
+  final List<String> _selectedCities = [];
+
+
 
 
   Color _nameBorderColor = Color(0xffeac6d3);
@@ -68,8 +72,8 @@ class _artist_credState extends State<artist_cred> {
             child: Text(
               'Sign Up',
               style: TextStyle(
-                fontSize: 20 * fem,
-                fontWeight: FontWeight.w400,
+                fontSize: 22 * fem,
+                fontWeight: FontWeight.w500,
                 color: Colors.white,
               ),
             ),
@@ -88,26 +92,9 @@ class _artist_credState extends State<artist_cred> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Container(
-                  margin: EdgeInsets.fromLTRB(0 * fem, 15 * fem, 0 * fem, 25 * fem),
-                  constraints: BoxConstraints(
-                    maxWidth: 333 * fem,
-                  ),
-                  child: Text(
-                    'Be your own boss, choose your working hours and prices.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 22 * ffem,
-                      fontWeight: FontWeight.w400,
-                      height: 1.25 * ffem / fem,
-                      letterSpacing: -0.8000000119 * fem,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
 
                 Container(
-                  padding: EdgeInsets.fromLTRB(16 * fem, 1 * fem, 16 * fem, 10 * fem),
+                  padding: EdgeInsets.fromLTRB(16 * fem, 20 * fem, 16 * fem, 10 * fem),
                   width: double.infinity,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -119,8 +106,8 @@ class _artist_credState extends State<artist_cred> {
                             _getImage();
                           },
                           child: Container(
-                            width: 190 * fem,
-                            height: 220 * fem,
+                            width: 185 * fem,
+                            height: 205 * fem,
                             decoration: BoxDecoration(
                               border: Border.all(
                                 color: Color(0xFF9E9EB8),
@@ -132,8 +119,8 @@ class _artist_credState extends State<artist_cred> {
                               borderRadius: BorderRadius.circular(10 * fem), // Ensure the image inside also has rounded corners
                               child: Image.file(
                                 _imageFile!,
-                                width: 190 * fem,
-                                height: 220 * fem,
+                                width: 185 * fem,
+                                height: 205 * fem,
                                 fit: BoxFit.cover,
                               ),
                             )
@@ -203,6 +190,7 @@ class _artist_credState extends State<artist_cred> {
                         ),
                       ),
                       SizedBox(height: 16 * fem),
+
                       GestureDetector(
                         onTap: () {
                           _showLocationDialog(context);
@@ -220,7 +208,7 @@ class _artist_credState extends State<artist_cred> {
                                   Icons.home_outlined,
                                   color: Color(0xFF9E9EB8),
                                 ),
-                                hintText: 'Enter Your Current Address',
+                                hintText: 'Enter Your Address',
                                 hintStyle: TextStyle(color: Color(0xFF9E9EB8)),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10 * fem),
@@ -242,7 +230,118 @@ class _artist_credState extends State<artist_cred> {
                           ),
                         ),
                       ),
-                      SizedBox(height: 35 * fem),
+                      SizedBox(height: 16 * fem),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Choose the cities for most of your bookings. Accommodation won’t be provided here.',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16, // Adjust as needed
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          SizedBox(height: 8 * fem), // Space between text and dropdown
+                          GestureDetector(
+                            onTap: () {
+                              showModalBottomSheet(
+                                context: context,
+                                backgroundColor: Colors.black,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                                ),
+                                builder: (BuildContext context) {
+                                  return StatefulBuilder(
+                                    builder: (BuildContext context, StateSetter setModalState) {
+                                      return Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.all(16.0),
+                                            child: Text(
+                                              'Select Cities',
+                                              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                                            ),
+                                          ),
+                                          Expanded(
+                                            child: ListView(
+                                              children: _cities.map((city) {
+                                                return CheckboxListTile(
+                                                  title: Text(
+                                                    city,
+                                                    style: TextStyle(color: Colors.white),
+                                                  ),
+                                                  value: _selectedCities.contains(city),
+                                                  activeColor: Colors.white,
+                                                  checkColor: Colors.black,
+                                                  onChanged: (bool? value) {
+                                                    setModalState(() {
+                                                      if (value == true) {
+                                                        _selectedCities.add(city);
+                                                      } else {
+                                                        _selectedCities.remove(city);
+                                                      }
+                                                    });
+                                                    setState(() {}); // Update UI after selection
+                                                  },
+                                                );
+                                              }).toList(),
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(vertical: 0), // Adjusted the space here
+                                            child: ElevatedButton(
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor:  Color(0xffe5195e), // Changed to green for example
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(10),
+                                                ),
+                                                minimumSize: Size(200, 50), // Shortened width
+                                              ),
+                                              onPressed: () {
+                                                Navigator.pop(context);
+                                              },
+                                              child: Text('OK', style: TextStyle(color: Colors.white,fontSize: 17*fem)),
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  );
+                                },
+                              );
+                            },
+                            child: Container(
+                              width: double.infinity,
+                              height: 56 * fem,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10 * fem),
+                                border: Border.all(width: 1.25, color: Color(0xFF9E9EB8)),
+                              ),
+                              padding: EdgeInsets.symmetric(horizontal: 12 * fem), // Adjust padding
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      _selectedCities.isEmpty ? 'Select Cities' : _selectedCities.join(', '),
+                                      style: TextStyle(
+                                        color: _selectedCities.isEmpty ? Color(0xFF9E9EB8) : Colors.white,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ),
+                                  Icon(Icons.keyboard_arrow_down, color: Color(0xFF9E9EB8)), // Arrow on the right side
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+
+                      SizedBox(height: 30 * fem),
+
                       ElevatedButton(
                         onPressed: () async {
                           if (_nameController.text.isEmpty ||

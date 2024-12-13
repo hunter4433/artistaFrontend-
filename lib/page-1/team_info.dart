@@ -21,6 +21,9 @@ class _artist_credState extends State<team_info> {
   TextEditingController _addressController = TextEditingController();
   TextEditingController _alternatephoneController = TextEditingController();
 
+  final List<String> _cities = ['Chandigarh (Tricity)', 'Delhi', 'Mumbai', 'Bangalore','Gurugram'];
+  final List<String> _selectedCities = [];
+
   double? _latitude;
   double? _longitude;
   late Position _currentPosition;
@@ -232,6 +235,115 @@ class _artist_credState extends State<team_info> {
                           ),
                         ),
                       ),
+                      SizedBox(height: 16 * fem),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Choose the cities for most of your bookings. Accommodation won’t be provided here.',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16, // Adjust as needed
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          SizedBox(height: 8 * fem), // Space between text and dropdown
+                          GestureDetector(
+                            onTap: () {
+                              showModalBottomSheet(
+                                context: context,
+                                backgroundColor: Colors.black,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                                ),
+                                builder: (BuildContext context) {
+                                  return StatefulBuilder(
+                                    builder: (BuildContext context, StateSetter setModalState) {
+                                      return Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.all(16.0),
+                                            child: Text(
+                                              'Select Cities',
+                                              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                                            ),
+                                          ),
+                                          Expanded(
+                                            child: ListView(
+                                              children: _cities.map((city) {
+                                                return CheckboxListTile(
+                                                  title: Text(
+                                                    city,
+                                                    style: TextStyle(color: Colors.white),
+                                                  ),
+                                                  value: _selectedCities.contains(city),
+                                                  activeColor: Colors.white,
+                                                  checkColor: Colors.black,
+                                                  onChanged: (bool? value) {
+                                                    setModalState(() {
+                                                      if (value == true) {
+                                                        _selectedCities.add(city);
+                                                      } else {
+                                                        _selectedCities.remove(city);
+                                                      }
+                                                    });
+                                                    setState(() {}); // Update UI after selection
+                                                  },
+                                                );
+                                              }).toList(),
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(vertical: 0), // Adjusted the space here
+                                            child: ElevatedButton(
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor:  Color(0xffe5195e), // Changed to green for example
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(10),
+                                                ),
+                                                minimumSize: Size(200, 50), // Shortened width
+                                              ),
+                                              onPressed: () {
+                                                Navigator.pop(context);
+                                              },
+                                              child: Text('OK', style: TextStyle(color: Colors.white,fontSize: 17*fem)),
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  );
+                                },
+                              );
+                            },
+                            child: Container(
+                              width: double.infinity,
+                              height: 56 * fem,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10 * fem),
+                                border: Border.all(width: 1.25, color: Color(0xFF9E9EB8)),
+                              ),
+                              padding: EdgeInsets.symmetric(horizontal: 12 * fem), // Adjust padding
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      _selectedCities.isEmpty ? 'Select Cities' : _selectedCities.join(', '),
+                                      style: TextStyle(
+                                        color: _selectedCities.isEmpty ? Color(0xFF9E9EB8) : Colors.white,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ),
+                                  Icon(Icons.keyboard_arrow_down, color: Color(0xFF9E9EB8)), // Arrow on the right side
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
                       SizedBox(height: 19 * fem),
                       ElevatedButton(
                         onPressed: () async {
