@@ -1457,22 +1457,6 @@ class _AllReviewsPageState extends State<AllReviewsPage>{
 
 
     List<Map<String, dynamic>> reviews = [
-    // {
-    //   'profilePicture': 'https://via.placeholder.com/150', // Placeholder image URL
-    //   'name': 'John Doe',
-    //   'rating': 4,
-    //   'heading': 'Great performance!',
-    //   'review': 'The artist was amazing, truly talented and professionalghghghghghghghghghjgh'
-    //       'ghgghghjghvghgjghghgfgkkkhj.'
-    // },
-    // {
-    //   'profilePicture': 'https://via.placeholder.com/150',
-    //   'name': 'Jane Smith',
-    //   'rating': 5,
-    //   'heading': 'Incredible!',
-    //   'review': 'Best performance I’ve ever seen! Highly recommend.'
-    // },
-    // Add more reviews...
   ];
   @override
   void initState() {

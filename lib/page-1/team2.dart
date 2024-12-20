@@ -18,13 +18,10 @@ import 'package:path_provider/path_provider.dart';
 
 import 'bottomNav_artist.dart';
 
-
-
-
 class team2signup extends StatefulWidget {
   final File? profilePhoto;
 
-  team2signup ({
+  team2signup({
     this.profilePhoto,
   });
   @override
@@ -40,18 +37,39 @@ class _ArtistCredentials2State extends State<team2signup> {
   bool isUpiSelected = false;
   bool isAccountSelected = false;
   TextEditingController _upiController = TextEditingController();
+  TextEditingController _pastController = TextEditingController();
   TextEditingController _accountNumberController = TextEditingController();
   TextEditingController _ifscController = TextEditingController();
   TextEditingController _accountHolderNameController = TextEditingController();
 
+  String _selectedSkill = ''; // Selected skill
+  List<String> _skills = [
+    'Musician',
+    'Comedian',
+    'Visual Artist',
+    'Dancer',
+    'Chef',
+    'Magician'
+  ];
+  final Map<String, List<String>> _skillToSubSkills = {
+    'Musician': ['Singing', 'Instrumental', 'Songwriting'],
+    'Comedian': ['Stand-Up', 'Improv', 'Sketch Comedy'],
+    'Visual Artist': ['Painting', 'Sketching', 'Digital Art'],
+    'Dancer': ['Ballet', 'Hip-Hop', 'Contemporary'],
+    'Chef': ['Baking', 'Grilling', 'Vegan Cooking'],
+    'Magician': ['Card Tricks', 'Illusions', 'Mentalism'],
+  };
+  List<String> _subSkills = []; // Sub-skills for the selected skill
+  List<String> _selectedSubSkills = [];
 
-
-  List<String> _skills = ['Musician', 'Comedian', 'Visual Artist', 'Dancer', 'Chef', 'Magician'];
-  String? selectedSkill;
-  // List of skills
-  String _selectedSubSkill = ''; // Variable to store the selected sub-skill
-  List<String> _subSkills = ['sufi','punjabi']; // List of sub-skills based on the selected skill
-
+  List<String> _equipmentOptions = [
+    'Sound System',
+    'Lighting',
+    'Stage Setup',
+    'Microphone',
+    'Projector'
+  ];
+  List<String> _selectedEquipment = [];
 
   File? _image1;
   File? _image3;
@@ -67,8 +85,9 @@ class _ArtistCredentials2State extends State<team2signup> {
   VideoPlayerController? _controller4;
   AudioPlayer _audioPlayer = AudioPlayer();
   File? _audioFile;
-  File? _imageForSearchedSection; // Variable to store the selected image for the searched section
-bool _isLoading=false;
+  File?
+      _imageForSearchedSection; // Variable to store the selected image for the searched section
+  bool _isLoading = false;
   final storage = FlutterSecureStorage();
   Future<Map<String, String?>> getAllSharedPreferences() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -81,13 +100,13 @@ bool _isLoading=false;
     };
   }
 
-Future<String?>_getPhoneNumber()async {
+  Future<String?> _getPhoneNumber() async {
     return await storage.read(key: 'phone_number');
-}
-  Future<String?>_getFCMToken()async {
-    return await storage.read(key: 'fCMToken');
   }
 
+  Future<String?> _getFCMToken() async {
+    return await storage.read(key: 'fCMToken');
+  }
 
   // Function to pick an image for the searched section
   Future<void> _pickImageForSearchedSection() async {
@@ -106,16 +125,15 @@ Future<String?>_getPhoneNumber()async {
   //
   // File profilePhotoFile = File(profilePhotoPath!);
 
-
   Future<void> storeBankDetails() async {
     final url = Uri.parse('${Config().apiDomain}/artist-bank-details');
-    String? team_id= await storage.read(key: 'team_id');
+    String? team_id = await storage.read(key: 'team_id');
 
     // Collect data from controllers
     final Map<String, dynamic> bankData = {
       'UPI_id': _upiController.text,
       'account_number': _accountNumberController.text,
-      'IFSC_code':  _ifscController.text,
+      'IFSC_code': _ifscController.text,
       'account_holder_name': _accountHolderNameController.text,
       'artist_id': team_id ?? '',
       // 'team_id': int.tryParse(_teamIdController.text) ?? null,
@@ -125,7 +143,7 @@ Future<String?>_getPhoneNumber()async {
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
-        body:jsonEncode(bankData),
+        body: jsonEncode(bankData),
       );
 
       if (response.statusCode == 201) {
@@ -150,7 +168,7 @@ Future<String?>_getPhoneNumber()async {
     try {
       // Send data to the backend and get the ID
       bool dataSent = await _sendDataToBackend();
-await storeBankDetails();
+      await storeBankDetails();
       // if (!dataSent) {
       //   print('Failed to send data to backend. mohit ');
       //   return false;
@@ -169,8 +187,8 @@ await storeBankDetails();
 
       // Run upload functions in parallel with ID
       final results = await Future.wait([
-        uploadImages(imageFiles, id),      // Upload images with ID
-        uploadVideos(videoFiles, id)         // Upload videos with ID
+        uploadImages(imageFiles, id), // Upload images with ID
+        uploadVideos(videoFiles, id) // Upload videos with ID
       ]);
 
       bool imagesUploaded = results[0] as bool; // Result from _uploadImages
@@ -190,7 +208,6 @@ await storeBankDetails();
     return false;
   }
 
-
   Future<bool> _sendDataToBackend() async {
     String? profilePhotoPath = widget.profilePhoto?.path;
     File profilePhotoFile = File(profilePhotoPath!);
@@ -199,7 +216,8 @@ await storeBankDetails();
 
     try {
       // Get shared preferences data
-      Map<String, dynamic?> sharedPreferencesData = await getAllSharedPreferences();
+      Map<String, dynamic?> sharedPreferencesData =
+          await getAllSharedPreferences();
       // Map<String, String?> profilePreferencesData = await profileSharedPreferences();
 
       // Get authentication token and FCM token
@@ -211,17 +229,18 @@ await storeBankDetails();
       Map<String, String> artistData = {
         'phone_number': phoneNumber!,
         'price_per_hour': _hourlyPriceController.text,
-        'skill_category': selectedSkill!,
+
         'special_message': _messageController.text,
         'fcm_token': fCMToken!,
         // Convert "Yes" to "1" and "No" to "0" as strings
         'sound_system': selectedOption == 'Yes' ? '1' : '0',
       };
 
-
-
       // Merge sharedPreferencesData with artistData
-      Map<String, String?> mergedData = {...sharedPreferencesData, ...artistData};
+      Map<String, String?> mergedData = {
+        ...sharedPreferencesData,
+        ...artistData
+      };
 
       // Ensure that the images and videos were successfully uploaded
       // if (profilePhotoPath != null) {
@@ -273,9 +292,6 @@ await storeBankDetails();
 
     return false;
   }
-
-
-
 
   Future<bool> uploadVideos(List<File?> videoFiles, String id) async {
     try {
@@ -342,7 +358,8 @@ await storeBankDetails();
         print(response);
         return true;
       } else {
-        print('Video upload failed with status: ${streamedResponse.statusCode}');
+        print(
+            'Video upload failed with status: ${streamedResponse.statusCode}');
         return false;
       }
     } catch (e) {
@@ -350,8 +367,6 @@ await storeBankDetails();
       return false;
     }
   }
-
-
 
   @override
   void dispose() {
@@ -464,6 +479,7 @@ await storeBankDetails();
       });
     }
   }
+
   Future<void> _pickVideo3() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.video,
@@ -477,6 +493,7 @@ await storeBankDetails();
       });
     }
   }
+
   Future<void> _pickVideo4() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.video,
@@ -496,21 +513,22 @@ await storeBankDetails();
     double baseWidth = 390;
     double fem = MediaQuery.of(context).size.width / baseWidth;
     double ffem = fem * 0.97;
-    return Scaffold(backgroundColor: Color(0xFF121217),
+    return Scaffold(
+      backgroundColor: Color(0xFF121217),
       appBar: AppBar(
         title: Text(
           'Sign up',
           textAlign: TextAlign.center,
           style: SafeGoogleFont(
             'Be Vietnam Pro',
-            fontSize: 21 * ffem,
+            fontSize: 22 * ffem,
             fontWeight: FontWeight.w500,
             height: 1.25 * ffem / fem,
             letterSpacing: -0.8000000119 * fem,
             color: Colors.white,
           ),
         ),
-        backgroundColor:  Color(0xFF121217),
+        backgroundColor: Color(0xFF121217),
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios),
           onPressed: () {
@@ -526,8 +544,8 @@ await storeBankDetails();
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Container(
-
-                  padding: EdgeInsets.fromLTRB(16 * fem, 12 * fem, 16 * fem, 12 * fem),
+                  padding: EdgeInsets.fromLTRB(
+                      16 * fem, 12 * fem, 16 * fem, 12 * fem),
                   width: double.infinity,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -538,13 +556,14 @@ await storeBankDetails();
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
-                              margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 8 * fem),
+                              margin: EdgeInsets.fromLTRB(
+                                  0 * fem, 0 * fem, 0 * fem, 8 * fem),
                               child: Text(
                                 'Your Skills',
                                 style: SafeGoogleFont(
                                   'Be Vietnam Pro',
-                                  fontSize: 18 * ffem,
-                                  fontWeight: FontWeight.w500,
+                                  fontSize: 20 * ffem,
+                                  fontWeight: FontWeight.w400,
                                   height: 1.5 * ffem / fem,
                                   color: Colors.white,
                                 ),
@@ -552,79 +571,187 @@ await storeBankDetails();
                             ),
                             Container(
                               width: double.infinity,
-                              height: 60 * fem,
+                              height: 60,
                               child: DropdownButtonFormField<String>(
-                                value: (_skills.isNotEmpty && _skills.contains(selectedSkill))
-                                    ? selectedSkill
-                                    : null, // Ensure value exists in _skills list
+                                value: _selectedSkill.isEmpty
+                                    ? null
+                                    : _selectedSkill,
                                 items: _skills.map((String skill) {
                                   return DropdownMenuItem<String>(
                                     value: skill,
-                                    child: Text(skill, style: TextStyle(color: Colors.black)),
+                                    child: Text(skill,
+                                        style: TextStyle(
+                                            fontSize: 18, color: Colors.white)),
                                   );
                                 }).toList(),
                                 onChanged: (String? value) {
                                   setState(() {
-                                    selectedSkill = value; // Update selected skill when it changes
+                                    _selectedSkill = value!;
+                                    _subSkills =
+                                        _skillToSubSkills[_selectedSkill] ?? [];
+                                    _selectedSubSkills
+                                        .clear(); // Clear sub-skills when skill changes
                                   });
                                 },
                                 decoration: InputDecoration(
-                                  hintText: 'Choose Skill',
-                                  hintStyle: TextStyle(color: Color(0xFF9E9EB8)),
+                                  hintText: 'Select Skill',
+                                  hintStyle:
+                                      TextStyle(color: Color(0xFF9E9EB8)),
                                   enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12 * fem),
-                                    borderSide: BorderSide(width: 1.25, color: Color(0xFF9E9EB8)),
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(
+                                        width: 1.25, color: Color(0xFF9E9EB8)),
                                   ),
                                   focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12 * fem),
-                                    borderSide: BorderSide(width: 1.25, color: Colors.white),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            SizedBox(height: 14 * fem),
-                            Container(
-                              width: double.infinity,
-                              height: 60 * fem,
-                              child: DropdownButtonFormField<String>(
-                                value: (_subSkills.isNotEmpty && _subSkills.contains(_selectedSubSkill))
-                                    ? _selectedSubSkill
-                                    : null, // Ensure value exists in _subSkills list
-                                items: _subSkills.map((String subSkill) {
-                                  return DropdownMenuItem<String>(
-                                    value: subSkill,
-                                    child: Text(subSkill, style: TextStyle(fontSize: 18, color: Colors.white)),
-                                  );
-                                }).toList(),
-                                onChanged: (String? value) {
-                                  setState(() {
-                                    _selectedSubSkill = value!;
-                                  });
-                                },
-                                //Color(0xFF9E9EB8
-                                decoration: InputDecoration(
-                                  hintText: 'Sub-Skill',
-                                  hintStyle: TextStyle(color: Color(0xFF9E9EB8)),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12 * fem),
-                                    borderSide: BorderSide(width: 1.25, color: Color(0xFF9E9EB8)),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12 * fem),
-                                    borderSide: BorderSide(width: 1.25, color: Colors.white),
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(
+                                        width: 1.25, color: Colors.white),
                                   ),
                                 ),
                                 style: TextStyle(color: Color(0xFF9E9EB8)),
-                                dropdownColor: Color(0xFF292938),
+                                dropdownColor: Colors.black,
                               ),
                             ),
-
-
+                            SizedBox(
+                              height: 14 * fem,
+                            ),
+                            Container(
+                              width: double.infinity,
+                              height: 60,
+                              padding: EdgeInsets.symmetric(horizontal: 12),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                    width: 1.25, color: Color(0xFF9E9EB8)),
+                              ),
+                              child: GestureDetector(
+                                onTap: () {
+                                  // Trigger the modal dropdown
+                                  showModalBottomSheet(
+                                    context: context,
+                                    backgroundColor: Colors.black,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.vertical(
+                                          top: Radius.circular(16)),
+                                    ),
+                                    builder: (BuildContext context) {
+                                      return StatefulBuilder(
+                                        builder: (BuildContext context,
+                                            StateSetter setModalState) {
+                                          return Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.all(16.0),
+                                                child: Text(
+                                                  'Select Sub-Skills',
+                                                  style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 18,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                              ),
+                                              Expanded(
+                                                child: ListView(
+                                                  children: _subSkills
+                                                      .map((subSkill) {
+                                                    return CheckboxListTile(
+                                                      title: Text(
+                                                        subSkill,
+                                                        style: TextStyle(
+                                                            color:
+                                                                Colors.white),
+                                                      ),
+                                                      value: _selectedSubSkills
+                                                          .contains(subSkill),
+                                                      activeColor: Colors.white,
+                                                      checkColor: Colors.black,
+                                                      onChanged: (bool? value) {
+                                                        setModalState(() {
+                                                          if (value == true) {
+                                                            _selectedSubSkills
+                                                                .add(subSkill);
+                                                          } else {
+                                                            _selectedSubSkills
+                                                                .remove(
+                                                                    subSkill);
+                                                          }
+                                                        });
+                                                      },
+                                                    );
+                                                  }).toList(),
+                                                ),
+                                              ),
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 16.0),
+                                                child: ElevatedButton(
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                    backgroundColor: Color(
+                                                        0xffe5195e), // Customize button color
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              10),
+                                                    ),
+                                                    minimumSize: Size(200,
+                                                        50), // Adjust button size
+                                                  ),
+                                                  onPressed: () {
+                                                    Navigator.pop(context);
+                                                    setState(
+                                                        () {}); // Trigger UI update after modal is dismissed
+                                                  },
+                                                  child: Text('OK',
+                                                      style: TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: 17 * fem)),
+                                                ),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
+                                    },
+                                  );
+                                },
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        _selectedSubSkills.isEmpty
+                                            ? 'Sub-Skill'
+                                            : _selectedSubSkills.join(', '),
+                                        style: TextStyle(
+                                          color: _selectedSubSkills.isEmpty
+                                              ? Color(0xFF9E9EB8)
+                                              : Colors.white,
+                                          fontSize: 18,
+                                        ),
+                                        overflow: TextOverflow
+                                            .ellipsis, // Handle long lists gracefully
+                                      ),
+                                    ),
+                                    Icon(
+                                      Icons.keyboard_arrow_down,
+                                      color: Color(0xFF9E9EB8),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
                           ],
                         ),
                       ),
                       SizedBox(
-                        height: 19 * fem,
+                        height: 20 * fem,
                       ),
                       Container(
                         width: double.infinity,
@@ -632,7 +759,8 @@ await storeBankDetails();
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
-                              margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 9 * fem),
+                              margin: EdgeInsets.fromLTRB(
+                                  0 * fem, 10 * fem, 0 * fem, 9 * fem),
                               child: Text(
                                 'Tell Users about Yourself',
                                 style: SafeGoogleFont(
@@ -645,34 +773,75 @@ await storeBankDetails();
                               ),
                             ),
                             Container(
-
                               width: double.infinity,
                               // Adjusted height to match the height of the outer container
-                              height: 70 * fem,
+                              height: 60 * fem,
 
                               child: TextField(
                                 controller: _experienceController,
                                 decoration: InputDecoration(
                                   hintText: 'Years of Experience you have',
-                                  hintStyle: TextStyle(color:  Color(0xFF9E9EB8)),
+                                  hintStyle:
+                                      TextStyle(color: Color(0xFF9E9EB8)),
                                   enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10 * fem),
-                                    borderSide: BorderSide(width: 1.25, color:Color(0xFF9E9EB8),),
+                                    borderRadius:
+                                        BorderRadius.circular(10 * fem),
+                                    borderSide: BorderSide(
+                                      width: 1.25,
+                                      color: Color(0xFF9E9EB8),
+                                    ),
                                   ),
                                   focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10 * fem),
-                                    borderSide: BorderSide(width: 1.25, color: Colors.white ),
+                                    borderRadius:
+                                        BorderRadius.circular(10 * fem),
+                                    borderSide: BorderSide(
+                                        width: 1.25, color: Colors.white),
                                   ),
                                 ),
-                                style: TextStyle(color: Colors.white, fontSize: 16),
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 16),
                               ),
                             ),
-
-                            SizedBox(height: 10,),
+                            SizedBox(
+                              height: 10,
+                            ),
                             Container(
-                              margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 11 * fem),
+                              width: double.infinity,
+                              // Adjusted height to match the height of the outer container
+                              height: 60 * fem,
+
+                              child: TextField(
+                                controller: _pastController,
+                                decoration: InputDecoration(
+                                  hintText:
+                                      'Total no of bookings handled before?',
+                                  hintStyle:
+                                      TextStyle(color: Color(0xFF9E9EB8)),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius:
+                                        BorderRadius.circular(10 * fem),
+                                    borderSide: BorderSide(
+                                      width: 1.25,
+                                      color: Color(0xFF9E9EB8),
+                                    ),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius:
+                                        BorderRadius.circular(10 * fem),
+                                    borderSide: BorderSide(
+                                        width: 1.25, color: Colors.white),
+                                  ),
+                                ),
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 16),
+                              ),
+                            ),
+                            SizedBox(height: 10 * fem),
+                            Container(
+                              margin: EdgeInsets.fromLTRB(
+                                  0 * fem, 0 * fem, 0 * fem, 11 * fem),
                               child: Text(
-                                'Do you have your own equipment  (microphone, speakers, etc.) for the performance?',
+                                'Please select the equipment you\'ll need for your performance in front of a small audience',
                                 style: SafeGoogleFont(
                                   'Plus Jakarta Sans',
                                   fontSize: 16 * ffem,
@@ -682,44 +851,118 @@ await storeBankDetails();
                                 ),
                               ),
                             ),
-
                             Container(
                               width: double.infinity,
-                              height: 70 * fem, // Adjusted height to match the outer container
-                              child: DropdownButtonFormField<String>(
-                                decoration: InputDecoration(
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10 * fem),
-                                    borderSide: BorderSide(width: 1.25, color: Color(0xFF9E9EB8)),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10 * fem),
-                                    borderSide: BorderSide(width: 1.25, color: Colors.white),
-                                  ),
-                                  hintText: 'Your Answer',
-                                  hintStyle: TextStyle(color: Color(0xFF9E9EB8)),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10 * fem),
-                                    borderSide: BorderSide(width: 1.25, color: Color(0xFF9E9EB8)),
-                                  ),
+                              height: 60 * fem, // Adjusted height to match the outer container
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10 * fem),
+                                border: Border.all(
+                                  width: 1.25,
+                                  color: Color(0xFF9E9EB8),
                                 ),
-                                value: selectedOption, // The currently selected value (nullable)
-                                items: ['Yes', 'No'].map((String value) {
-                                  return DropdownMenuItem<String>(
-                                    value: value,
-                                    child: Text(value, style: TextStyle(color: Colors.white,fontSize: 16)), // Dropdown item text
-                                  );
-                                }).toList(),
-                                dropdownColor: Color(0xff1a1a1a), // Background color of dropdown menu
-                                onChanged: (String? newValue) {
-                                  setState(() {
-                                    selectedOption = newValue; // Update selected option
-                                  });
-                                },
                               ),
-                            )
-
-
+                              padding: EdgeInsets.symmetric(horizontal: 12 * fem), // Adjusted padding
+                              child: GestureDetector(
+                                onTap: () {
+                                  // Trigger the modal dropdown
+                                  showModalBottomSheet(
+                                    context: context,
+                                    backgroundColor: Colors.black,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                                    ),
+                                    builder: (BuildContext context) {
+                                      return StatefulBuilder(
+                                        builder: (BuildContext context, StateSetter setModalState) {
+                                          return Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Padding(
+                                                padding: const EdgeInsets.all(16.0),
+                                                child: Text(
+                                                  'Select Required Equipment',
+                                                  style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 18,
+                                                      fontWeight: FontWeight.bold),
+                                                ),
+                                              ),
+                                              Expanded(
+                                                child: ListView(
+                                                  children: _equipmentOptions.map((equipment) {
+                                                    return CheckboxListTile(
+                                                      title: Text(
+                                                        equipment,
+                                                        style: TextStyle(color: Colors.white),
+                                                      ),
+                                                      value: _selectedEquipment.contains(equipment),
+                                                      activeColor: Colors.white,
+                                                      checkColor: Colors.black,
+                                                      onChanged: (bool? value) {
+                                                        setModalState(() {
+                                                          if (value == true) {
+                                                            _selectedEquipment.add(equipment);
+                                                          } else {
+                                                            _selectedEquipment.remove(equipment);
+                                                          }
+                                                        });
+                                                      },
+                                                    );
+                                                  }).toList(),
+                                                ),
+                                              ),
+                                              Padding(
+                                                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                                                child: ElevatedButton(
+                                                  style: ElevatedButton.styleFrom(
+                                                    backgroundColor: Color(0xffe5195e), // Customize button color
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius: BorderRadius.circular(10),
+                                                    ),
+                                                    minimumSize: Size(200, 50), // Adjust button size
+                                                  ),
+                                                  onPressed: () {
+                                                    Navigator.pop(context);
+                                                    setState(() {}); // Trigger UI update after modal is dismissed
+                                                  },
+                                                  child: Text('OK',
+                                                      style: TextStyle(
+                                                          color: Colors.white, fontSize: 17 * fem)),
+                                                ),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
+                                    },
+                                  );
+                                },
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        _selectedEquipment.isNotEmpty
+                                            ? _selectedEquipment.join(', ') // Display selected items
+                                            : 'Select Equipment', // Display hint text if nothing is selected
+                                        style: TextStyle(
+                                          color: _selectedEquipment.isNotEmpty
+                                              ? Colors.white // Selected text color
+                                              : Color(0xFF9E9EB8), // Hint text color
+                                          fontSize: 16,
+                                        ),
+                                        overflow: TextOverflow.ellipsis, // Handle long text
+                                      ),
+                                    ),
+                                    Icon(
+                                      Icons.keyboard_arrow_down, // Dropdown arrow icon
+                                      color: Color(0xFF9E9EB8), // Arrow color
+                                      size: 24, // Arrow size
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
 
                           ],
                         ),
@@ -727,29 +970,24 @@ await storeBankDetails();
                       SizedBox(
                         height: 24 * fem,
                       ),
-
-
-
                     ],
                   ),
                 ),
-
                 Container(
-                  padding: EdgeInsets.fromLTRB(16 * fem, 0 * fem, 16 * fem, 0 * fem),
+                  padding:
+                      EdgeInsets.fromLTRB(16 * fem, 0 * fem, 16 * fem, 0 * fem),
                   width: double.infinity,
-                  height: 485 * fem,
+                  height: 475 * fem,
                   decoration: BoxDecoration(
                     color: Color(0xFF121217),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-
                       const Padding(
                         padding: EdgeInsets.all(8.0),
                         child: SizedBox(
                           height: 30,
-
                           child: Text(
                             'Photos For the Portfolio',
                             textAlign: TextAlign.left,
@@ -770,18 +1008,21 @@ await storeBankDetails();
                             GestureDetector(
                               onTap: _pickImage1,
                               child: Container(
-                                width: 150 * fem,  // Set your desired width
+                                width: 150 * fem, // Set your desired width
                                 height: 170 * fem, // Set your desired height
-                                margin: EdgeInsets.only(right: 16.0), // Spacing between boxes
+                                margin: EdgeInsets.only(
+                                    right: 16.0), // Spacing between boxes
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(10 * fem),
                                   border: Border.all(color: Colors.grey),
                                 ),
                                 child: _image1 != null
                                     ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(10 * fem), // Rounded corners
-                                  child: Image.file(_image1!, fit: BoxFit.cover),
-                                )
+                                        borderRadius: BorderRadius.circular(
+                                            10 * fem), // Rounded corners
+                                        child: Image.file(_image1!,
+                                            fit: BoxFit.cover),
+                                      )
                                     : Icon(Icons.add, color: Colors.white),
                               ),
                             ),
@@ -797,9 +1038,11 @@ await storeBankDetails();
                                 ),
                                 child: _image2 != null
                                     ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(10 * fem), // Rounded corners
-                                  child: Image.file(_image2!, fit: BoxFit.cover),
-                                )
+                                        borderRadius: BorderRadius.circular(
+                                            10 * fem), // Rounded corners
+                                        child: Image.file(_image2!,
+                                            fit: BoxFit.cover),
+                                      )
                                     : Icon(Icons.add, color: Colors.white),
                               ),
                             ),
@@ -815,22 +1058,21 @@ await storeBankDetails();
                                 ),
                                 child: _image3 != null
                                     ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(10 * fem), // Rounded corners
-                                  child: Image.file(_image3!, fit: BoxFit.cover),
-                                )
+                                        borderRadius: BorderRadius.circular(
+                                            10 * fem), // Rounded corners
+                                        child: Image.file(_image3!,
+                                            fit: BoxFit.cover),
+                                      )
                                     : Icon(Icons.add, color: Colors.white),
                               ),
                             ),
                           ],
                         ),
                       ),
-
-
                       const Padding(
-                        padding: EdgeInsets.fromLTRB(0,30,0,0),
+                        padding: EdgeInsets.fromLTRB(0, 30, 0, 0),
                         child: SizedBox(
                           height: 40,
-
                           child: Text(
                             'Upload Your Videos Here',
                             textAlign: TextAlign.left,
@@ -851,18 +1093,20 @@ await storeBankDetails();
                             GestureDetector(
                               onTap: _pickVideo1,
                               child: Container(
-                                width: 150 * fem,  // Set your desired width
+                                width: 150 * fem, // Set your desired width
                                 height: 170 * fem, // Set your desired height
-                                margin: EdgeInsets.only(right: 16.0), // Spacing between boxes
+                                margin: EdgeInsets.only(
+                                    right: 16.0), // Spacing between boxes
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(10 * fem),
                                   border: Border.all(color: Colors.grey),
                                 ),
                                 child: _controller1 != null
                                     ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(10 * fem), // Rounded corners for the video
-                                  child: VideoPlayer(_controller1!),
-                                )
+                                        borderRadius: BorderRadius.circular(10 *
+                                            fem), // Rounded corners for the video
+                                        child: VideoPlayer(_controller1!),
+                                      )
                                     : Icon(Icons.add, color: Colors.white),
                               ),
                             ),
@@ -878,9 +1122,10 @@ await storeBankDetails();
                                 ),
                                 child: _controller2 != null
                                     ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(10 * fem),
-                                  child: VideoPlayer(_controller2!),
-                                )
+                                        borderRadius:
+                                            BorderRadius.circular(10 * fem),
+                                        child: VideoPlayer(_controller2!),
+                                      )
                                     : Icon(Icons.add, color: Colors.white),
                               ),
                             ),
@@ -896,77 +1141,149 @@ await storeBankDetails();
                                 ),
                                 child: _controller3 != null
                                     ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(10 * fem),
-                                  child: VideoPlayer(_controller3!),
-                                )
+                                        borderRadius:
+                                            BorderRadius.circular(10 * fem),
+                                        child: VideoPlayer(_controller3!),
+                                      )
                                     : Icon(Icons.add, color: Colors.white),
                               ),
                             ),
                           ],
                         ),
                       ),
-
-
                     ],
                   ),
-
                 ),
                 Padding(
-                  padding: EdgeInsets.fromLTRB(16 * fem, 0 * fem, 16 * fem, 18 * fem),
+                  padding: EdgeInsets.fromLTRB(
+                      16 * fem, 0 * fem, 16 * fem, 18 * fem),
                   child: Container(
                     width: double.infinity,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
-                          margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 8* fem),
+                          margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 9 * fem),
                           child: Text(
-                            'How Much Do You Charge Per Hour ?',
+                            'For videos longer than 20 seconds',
                             style: SafeGoogleFont(
-                                'Be Vietnam Pro',
-                                fontSize: 20 * ffem,
-                                fontWeight: FontWeight.w400,
-                                height: 1.5 * ffem / fem,
-                                color: Colors.white
+                              'Be Vietnam Pro',
+                              fontSize: 16 * ffem,
+                              fontWeight: FontWeight.w400,
+                              height: 1.5 * ffem / fem,
+                              color: Colors.white,
                             ),
                           ),
                         ),
                         Container(
-                          margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 18 * fem),
+
+                          width: double.infinity,
+                          // Adjusted height to match the height of the outer container
+                          height: 60 * fem,
+
+                          child: TextField(
+                            decoration: InputDecoration(
+                              hintText: 'Please paste the YouTube video link here.',
+                              hintStyle: TextStyle(color:  Color(0xFF9E9EB8)),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10 * fem),
+                                borderSide: BorderSide(width: 1.25, color:Color(0xFF9E9EB8),),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10 * fem),
+                                borderSide: BorderSide(width: 1.25, color: Colors.white ),
+                              ),
+                            ),
+                            style: TextStyle(color: Colors.white, fontSize: 16),
+                          ),
+                        ),
+
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0,10,0,0),
+                          child: Container(
+
+                            width: double.infinity,
+                            // Adjusted height to match the height of the outer container
+                            height: 60 * fem,
+
+                            child: TextField(
+                              decoration: InputDecoration(
+                                hintText: 'Please paste the YouTube video link here.',
+                                hintStyle: TextStyle(color:  Color(0xFF9E9EB8)),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10 * fem),
+                                  borderSide: BorderSide(width: 1.25, color:Color(0xFF9E9EB8),),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10 * fem),
+                                  borderSide: BorderSide(width: 1.25, color: Colors.white ),
+                                ),
+                              ),
+                              style: TextStyle(color: Colors.white, fontSize: 16),
+                            ),
+                          ),
+                        ),
+
+                        Container(
+                          margin: EdgeInsets.fromLTRB(
+                              0 * fem, 30 * fem, 0 * fem, 8 * fem),
+                          child: Text(
+                            'How Much Do You Charge Per Hour ?',
+                            style: SafeGoogleFont('Be Vietnam Pro',
+                                fontSize: 20 * ffem,
+                                fontWeight: FontWeight.w400,
+                                height: 1.5 * ffem / fem,
+                                color: Colors.white),
+                          ),
+                        ),
+                        Container(
+                          margin: EdgeInsets.fromLTRB(
+                              0 * fem, 0 * fem, 0 * fem, 18 * fem),
                           child: Text(
                             '⦾ Include transportation in the total price for city bookings.'
-                                ' For out-of-city bookings, charges can be discussed with the host \n\n'
-                                '⦾ HomeStage will charge a 20% fee on the total price.',
+                            ' For out-of-city bookings, charges can be discussed with the host \n\n'
+                            '⦾  The price shown to the user includes all fees and taxes, so you\'ll receive the full amount.',
                             style: SafeGoogleFont(
                               'Be Vietnam Pro',
                               fontSize: 16.5 * ffem,
                               fontWeight: FontWeight.w400,
                               height: 1.5 * ffem / fem,
-                              color: Colors.blue,
+                              color:  Color(0xffe5195e),
                             ),
                           ),
                         ),
                         Container(
                           width: double.infinity,
-                          height: 56 * fem,
+                          height: 60 * fem,
                           child: TextField(
                             controller: _hourlyPriceController,
-                            keyboardType: TextInputType.number, // Ensures that only numbers are entered
+                            keyboardType: TextInputType
+                                .number, // Ensures that only numbers are entered
                             decoration: InputDecoration(
-                              hintText: _hourlyPriceController.text.isEmpty ? 'Your Total Per Hour Price' : null, // Hint text only when the field is empty
+                              hintText: _hourlyPriceController.text.isEmpty
+                                  ? 'Your Total Per Hour Price'
+                                  : null, // Hint text only when the field is empty
                               hintStyle: TextStyle(color: Color(0xFF9E9EB8)),
-                              prefixText: 'Rs ', // Prefix Rs that stays in place as user types
-                              prefixStyle: TextStyle(color: Colors.white, fontSize: 19), // Style for the Rs
+                              prefixText:
+                                  '₹ ', // Prefix Rs that stays in place as user types
+                              prefixStyle: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 19), // Style for the Rs
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10 * fem),
-                                borderSide: BorderSide(width: 1.25, color: Color(0xFF9E9EB8)),
+                                borderSide: BorderSide(
+                                    width: 1.25, color: Color(0xFF9E9EB8)),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10 * fem),
-                                borderSide: BorderSide(width: 1.25, color: Colors.white),
+                                borderSide: BorderSide(
+                                    width: 1.25, color: Colors.white),
                               ),
                             ),
-                            style: TextStyle(color: Colors.white, fontSize: 19), // Style for the text entered by the user
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize:
+                                    19), // Style for the text entered by the user
                             onChanged: (value) {
                               // Rebuild the widget when the text changes to manage the hintText visibility
                               (context as Element).markNeedsBuild();
@@ -978,24 +1295,41 @@ await storeBankDetails();
                   ),
                 ),
                 Container(
-                  padding: EdgeInsets.fromLTRB(16 * fem, 0 * fem, 16 * fem, 10 * fem),
+                  padding: EdgeInsets.fromLTRB(
+                      16 * fem, 0 * fem, 16 * fem, 10 * fem),
                   width: double.infinity,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Container(
                         color: Color(0xFF121217),
-                        margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 20 * fem),
+                        margin: EdgeInsets.fromLTRB(
+                            0 * fem, 0 * fem, 0 * fem, 20 * fem),
                         width: double.infinity,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
-                              margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 14 * fem),
+                              margin: EdgeInsets.fromLTRB(
+                                  0 * fem, 0 * fem, 0 * fem, 4 * fem),
                               child: Text(
                                 'For Receiving Payments',
                                 style: TextStyle(
-                                  fontSize: 17 * ffem,
+                                  fontSize: 20 * ffem,
+                                  fontWeight: FontWeight.w400,
+                                  height: 1.5 * ffem / fem,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+
+                            Container(
+                              margin: EdgeInsets.fromLTRB(
+                                  0 * fem, 0 * fem, 0 * fem, 14 * fem),
+                              child: Text(
+                                'If you expect to receive higher payments in the future, please select the account option.',
+                                style: TextStyle(
+                                  fontSize: 16 * ffem,
                                   fontWeight: FontWeight.w400,
                                   height: 1.5 * ffem / fem,
                                   color: Colors.white,
@@ -1019,6 +1353,7 @@ await storeBankDetails();
                                         isAccountSelected = !value;
                                       });
                                     },
+                                    activeColor: Color(0xffe5195e),
                                   ),
                                 ),
                                 Expanded(
@@ -1035,6 +1370,7 @@ await storeBankDetails();
                                         isUpiSelected = !value;
                                       });
                                     },
+                                    activeColor: Color(0xffe5195e),
                                   ),
                                 ),
                               ],
@@ -1044,22 +1380,25 @@ await storeBankDetails();
                               visible: isUpiSelected,
                               child: Container(
                                 width: double.infinity,
-                                height: 70 * fem,
+                                height: 60 * fem,
                                 margin: EdgeInsets.only(top: 10 * fem),
                                 child: TextField(
                                   controller: _upiController,
                                   decoration: InputDecoration(
                                     hintText: 'Your UPI ID',
-                                    hintStyle: TextStyle(color: Color(0xFF9E9EB8)),
+                                    hintStyle:
+                                        TextStyle(color: Color(0xFF9E9EB8)),
                                     enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12 * fem),
+                                      borderRadius:
+                                          BorderRadius.circular(12 * fem),
                                       borderSide: BorderSide(
                                         width: 1.25,
                                         color: Color(0xFF9E9EB8),
                                       ),
                                     ),
                                     focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12 * fem),
+                                      borderRadius:
+                                          BorderRadius.circular(12 * fem),
                                       borderSide: BorderSide(
                                         width: 1.25,
                                         color: Colors.white,
@@ -1077,22 +1416,25 @@ await storeBankDetails();
                                 children: [
                                   Container(
                                     width: double.infinity,
-                                    height: 70 * fem,
+                                    height: 60 * fem,
                                     margin: EdgeInsets.only(top: 10 * fem),
                                     child: TextField(
                                       controller: _accountNumberController,
                                       decoration: InputDecoration(
                                         hintText: 'Account Number',
-                                        hintStyle: TextStyle(color: Color(0xFF9E9EB8)),
+                                        hintStyle:
+                                            TextStyle(color: Color(0xFF9E9EB8)),
                                         enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12 * fem),
+                                          borderRadius:
+                                              BorderRadius.circular(12 * fem),
                                           borderSide: BorderSide(
                                             width: 1.25,
                                             color: Color(0xFF9E9EB8),
                                           ),
                                         ),
                                         focusedBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12 * fem),
+                                          borderRadius:
+                                              BorderRadius.circular(12 * fem),
                                           borderSide: BorderSide(
                                             width: 1.25,
                                             color: Colors.white,
@@ -1104,22 +1446,25 @@ await storeBankDetails();
                                   ),
                                   Container(
                                     width: double.infinity,
-                                    height: 70 * fem,
+                                    height: 60 * fem,
                                     margin: EdgeInsets.only(top: 10 * fem),
                                     child: TextField(
                                       controller: _ifscController,
                                       decoration: InputDecoration(
                                         hintText: 'IFSC Code',
-                                        hintStyle: TextStyle(color: Color(0xFF9E9EB8)),
+                                        hintStyle:
+                                            TextStyle(color: Color(0xFF9E9EB8)),
                                         enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12 * fem),
+                                          borderRadius:
+                                              BorderRadius.circular(12 * fem),
                                           borderSide: BorderSide(
                                             width: 1.25,
                                             color: Color(0xFF9E9EB8),
                                           ),
                                         ),
                                         focusedBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12 * fem),
+                                          borderRadius:
+                                              BorderRadius.circular(12 * fem),
                                           borderSide: BorderSide(
                                             width: 1.25,
                                             color: Colors.white,
@@ -1131,22 +1476,25 @@ await storeBankDetails();
                                   ),
                                   Container(
                                     width: double.infinity,
-                                    height: 70 * fem,
+                                    height: 60 * fem,
                                     margin: EdgeInsets.only(top: 10 * fem),
                                     child: TextField(
                                       controller: _accountHolderNameController,
                                       decoration: InputDecoration(
                                         hintText: 'Account Holder Name',
-                                        hintStyle: TextStyle(color: Color(0xFF9E9EB8)),
+                                        hintStyle:
+                                            TextStyle(color: Color(0xFF9E9EB8)),
                                         enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12 * fem),
+                                          borderRadius:
+                                              BorderRadius.circular(12 * fem),
                                           borderSide: BorderSide(
                                             width: 1.25,
                                             color: Color(0xFF9E9EB8),
                                           ),
                                         ),
                                         focusedBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12 * fem),
+                                          borderRadius:
+                                              BorderRadius.circular(12 * fem),
                                           borderSide: BorderSide(
                                             width: 1.25,
                                             color: Colors.white,
@@ -1165,43 +1513,46 @@ await storeBankDetails();
                     ],
                   ),
                 ),
-                Container(color: Color(0xFF121217),
-                  margin: EdgeInsets.fromLTRB(16 * fem, 0 * fem, 16 * fem, 24 * fem),
+                Container(
+                  color: Color(0xFF121217),
+                  margin: EdgeInsets.fromLTRB(
+                      16 * fem, 0 * fem, 16 * fem, 24 * fem),
                   width: double.infinity,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Container(
-                        margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 18 * fem),
+                        margin: EdgeInsets.fromLTRB(
+                            0 * fem, 0 * fem, 0 * fem, 18 * fem),
                         child: Text(
-                          'Special message for the host',
-                          style: SafeGoogleFont(
-                              'Be Vietnam Pro',
+                          'Special message for the host\n (Optional)',
+                          style: SafeGoogleFont('Be Vietnam Pro',
                               fontSize: 20 * ffem,
                               fontWeight: FontWeight.w400,
                               height: 1.5 * ffem / fem,
-                              color: Colors.white
-                          ),
+                              color: Colors.white),
                         ),
                       ),
                       Container(
-
                         width: double.infinity,
                         height: 70 * fem,
-
                         child: TextField(
                           controller: _messageController,
                           maxLines: null,
                           decoration: InputDecoration(
                             hintText: 'I don\'t work after 11 !',
-                            hintStyle: TextStyle(color:  Color(0xFF9E9EB8)),
+                            hintStyle: TextStyle(color: Color(0xFF9E9EB8)),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12 * fem),
-                              borderSide: BorderSide(width: 1.25, color: Color(0xFF9E9EB8),),
+                              borderSide: BorderSide(
+                                width: 1.25,
+                                color: Color(0xFF9E9EB8),
+                              ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12 * fem),
-                              borderSide: BorderSide(width: 1.25, color: Colors.white),
+                              borderSide:
+                                  BorderSide(width: 1.25, color: Colors.white),
                             ),
                           ),
                           style: TextStyle(color: Colors.white),
@@ -1210,23 +1561,19 @@ await storeBankDetails();
                     ],
                   ),
                 ),
-
-
-
-
-
-
                 Container(
-                  padding: EdgeInsets.fromLTRB(16 * fem, 0 * fem, 16 * fem, 12 * fem),
+                  padding: EdgeInsets.fromLTRB(
+                      16 * fem, 0 * fem, 16 * fem, 12 * fem),
                   width: double.infinity,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-
                       Padding(
                         padding: const EdgeInsets.only(left: 20, right: 20),
                         child: ElevatedButton(
-                          onPressed: _isLoading ? null : _handleButtonClick, // Disable button when loading
+                          onPressed: _isLoading
+                              ? null
+                              : _handleButtonClick, // Disable button when loading
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Color(0xffe5195e),
                             shape: RoundedRectangleBorder(
@@ -1240,7 +1587,9 @@ await storeBankDetails();
                           ),
                           child: Center(
                             child: Text(
-                              _isLoading ? 'Loading...' : 'Finish', // Show 'Loading...' if loading
+                              _isLoading
+                                  ? 'Loading...'
+                                  : 'Finish', // Show 'Loading...' if loading
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
@@ -1262,6 +1611,7 @@ await storeBankDetails();
       ),
     );
   }
+
   Future<void> _handleButtonClick() async {
     setState(() {
       _isLoading = true;
@@ -1269,7 +1619,8 @@ await storeBankDetails();
     // double _progress = 0.0;
     showDialog(
       context: context,
-      barrierDismissible: false, // Prevents dismissing the dialog by tapping outside
+      barrierDismissible:
+          false, // Prevents dismissing the dialog by tapping outside
       builder: (BuildContext context) {
         return StatefulBuilder(
           builder: (context, setState) {
@@ -1285,12 +1636,13 @@ await storeBankDetails();
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xffe5195e)),
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(Color(0xffe5195e)),
                     ),
                     SizedBox(height: 20),
                     Text(
                       'Your profile is generating...'
-                          'It may take upto few minutes',
+                      'It may take upto few minutes',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -1339,7 +1691,6 @@ await storeBankDetails();
     );
   }
 
-
   Future<bool> uploadImages(List<File?> imageFiles, String id) async {
     try {
       // Your image upload API endpoint
@@ -1354,8 +1705,10 @@ await storeBankDetails();
         var imageFile = imageFiles[i];
         if (imageFile != null) {
           // Use 'profile_photo' for the last image, otherwise use 'image{i + 1}'
-          String fieldName = (i == imageFiles.length - 1) ? 'profile_photo' : 'image${i + 1}';
-          var image = await http.MultipartFile.fromPath(fieldName, imageFile.path);
+          String fieldName =
+              (i == imageFiles.length - 1) ? 'profile_photo' : 'image${i + 1}';
+          var image =
+              await http.MultipartFile.fromPath(fieldName, imageFile.path);
           request.files.add(image);
         }
       }
