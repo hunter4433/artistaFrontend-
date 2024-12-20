@@ -10,6 +10,7 @@ import 'package:test1/page-1/customer_support.dart';
 import 'package:test1/page-1/edit_team_members.dart';
 import 'package:test1/page-1/edit_user_info.dart';
 import 'package:test1/page-1/legal.dart';
+import 'package:test1/page-1/party_addons.dart';
 import 'package:test1/page-1/phone_varification.dart';
 import 'package:test1/page-1/review.dart';
 
@@ -616,7 +617,7 @@ print(' data is $userData');
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => SupportScreen()),
+                      MaterialPageRoute(builder: (context) => CustomizeSoundSystemPage()),
                     );
                   },
                   child: Container(

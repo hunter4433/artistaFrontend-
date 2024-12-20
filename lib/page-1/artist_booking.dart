@@ -1,5 +1,6 @@
 import 'dart:ffi';
 import 'package:geolocator/geolocator.dart';
+import 'package:test1/page-1/party_addons.dart';
 import 'bottom_nav.dart';
 import 'location_service.dart';
 import 'package:flutter/gestures.dart';
@@ -1456,7 +1457,30 @@ print('soundsystem is $hasSoundSystem');
                     color: Color(0xffffffff),
                   ),
                 ),
-              ],
+          ElevatedButton(
+            onPressed: () {
+              // Navigate to the CustomizeSoundSystemPage
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CustomizeSoundSystemPage(),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue, // Replace with your brand color
+            ),
+            child: Text(
+              'Customize Sound System',
+              style: TextStyle(color: Colors.white),
+            ),
+          )
+
+          ],
+
+
+
+
             ),
           ),
         ),
