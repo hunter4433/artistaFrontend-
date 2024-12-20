@@ -10,6 +10,7 @@ import 'api/firebase_api.dart';
 import 'firebase_options.dart';
 // <<<<<<< HEAD
 import 'package:test1/page-1/page0.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 final FlutterSecureStorage secureStorage = FlutterSecureStorage();
@@ -40,12 +41,15 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeApp();
 
+
+
+
   try {
     // Initialize Firebase and notifications
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-    await FirebaseApi().initNotification();
+    // await FirebaseApi().initNotification();
   } catch (e) {
 
     print("Error initializing Firebase: $e");

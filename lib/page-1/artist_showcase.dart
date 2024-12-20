@@ -11,7 +11,7 @@ import 'dart:convert';
 import 'package:flutter_pannable_rating_bar/flutter_pannable_rating_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:chewie/chewie.dart';
-
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 
 class ArtistProfile extends StatefulWidget {
@@ -166,7 +166,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
             if (video1 != null) VideoPathsFromBackend.add(video1!);
             if (video2 != null) VideoPathsFromBackend.add(video2!);
             if (video3 != null) VideoPathsFromBackend.add(video3!);
-            // if (video4 != null) VideoPathsFromBackend.add(video4!);
+             if (video4 != null) VideoPathsFromBackend.add(video4!);
           });
         }
         List<String> parsedBackendSkills = artistRole!.split(', ').map((skill) => skill.trim()).toList();
@@ -995,49 +995,66 @@ class _ArtistProfileState extends State<ArtistProfile> {
                   ),
                   SizedBox(height: 12 * fem),
                   // GridView builder for the gallery
-              SizedBox(
-                height: 200 * fem, // Set a fixed height for the carousel
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal, // Set scroll direction to horizontal
-                  itemCount: VideoPathsFromBackend.length, // Total count
-                  itemBuilder: (context, index) {
-                    if (index < VideoPathsFromBackend.length) {
-                      // Display video player in the carousel
-                      return GestureDetector(
-                        onTap: () {
-                          // Navigate to fullscreen video view on tap
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => FullScreenVideoView(
-                                videoUrl: VideoPathsFromBackend[index],
+                  SizedBox(
+                    height: 200 * fem,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: VideoPathsFromBackend.length,
+                      itemBuilder: (context, index) {
+                        if (index < VideoPathsFromBackend.length) {
+                          return Container(
+                            width: 170 * fem,
+                            margin: EdgeInsets.symmetric(horizontal: 5.0 * fem),
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => Scaffold(
+                                      backgroundColor: Colors.black,
+                                      body: SafeArea(
+                                        child: Stack(
+                                          children: [
+                                            Center(
+                                              child: VideoPlayerWidget(
+                                                url: VideoPathsFromBackend[index],
+                                                autoPlay: true,
+                                              ),
+                                            ),
+                                            Positioned(
+                                              top: 16,
+                                              left: 16,
+                                              child: IconButton(
+                                                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                                                onPressed: () => Navigator.of(context).pop(),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(9 * fem),
+                                child: VideoPlayerWidget(url: VideoPathsFromBackend[index]),
                               ),
                             ),
                           );
-                        },
-                        child: Container(
-                          width: 170 * fem, // Set width of each item in the carousel
-                          margin: EdgeInsets.symmetric(horizontal: 5.0 * fem), // Add margin between items
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(9 * fem), // Example border radius
-                            child: VideoPlayerWidget(url: VideoPathsFromBackend[index]),
-                          ),
-                        ),
-                      );
-                    } else {
-                      // Placeholder when index exceeds the video list
-                      return Container(
-                        width: 160 * fem, // Placeholder width
-                        margin: EdgeInsets.symmetric(horizontal: 5.5 * fem), // Placeholder margin
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(9 * fem), // Example border radius
-                          color: Colors.grey[200], // Placeholder color
-                        ),
-                      );
-                    }
-                  },
-                ),
-              ),
+                        } else {
+                          return Container(
+                            width: 160 * fem,
+                            margin: EdgeInsets.symmetric(horizontal: 5.5 * fem),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(9 * fem),
+                              color: Colors.grey[200],
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -1223,10 +1240,16 @@ class FullScreenView extends StatelessWidget {
   }
 }
 
-class VideoPlayerWidget extends StatefulWidget {
-  final String url; // Video URL (could be .mp4 or .m3u8)
 
-  const VideoPlayerWidget({required this.url});
+
+class VideoPlayerWidget extends StatefulWidget {
+  final String url;
+  final bool autoPlay;
+  const VideoPlayerWidget({
+    Key? key,
+    required this.url,
+    this.autoPlay = false,
+  }) : super(key: key);
 
   @override
   _VideoPlayerWidgetState createState() => _VideoPlayerWidgetState();
@@ -1235,96 +1258,158 @@ class VideoPlayerWidget extends StatefulWidget {
 class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   late VideoPlayerController _videoPlayerController;
   ChewieController? _chewieController;
-  bool _isError = false;
-  bool _isBuffering = true;
+  YoutubePlayerController? _youtubePlayerController;
+  bool _isYouTube = false;
+  bool _isPlaying = false;
 
   @override
   void initState() {
     super.initState();
+    _isYouTube = YoutubePlayer.convertUrlToId(widget.url) != null;
+    _initializePlayer();
+  }
 
-    // Initialize the VideoPlayerController
-    _videoPlayerController = VideoPlayerController.network(widget.url)
-      ..initialize().then((_) {
-        setState(() {
-          _chewieController = ChewieController(
-            videoPlayerController: _videoPlayerController,
-            aspectRatio: _videoPlayerController.value.aspectRatio,
-            autoPlay: false, // Disable autoplay for lazy loading
-            looping: false,
-            errorBuilder: (context, errorMessage) {
-              return Center(
-                child: Text(
-                  'Error loading video',
-                  style: TextStyle(color: Colors.white),
-                ),
-              );
-            },
-          );
-          _isBuffering = false;
+  void _initializePlayer() {
+    if (_isYouTube) {
+      _youtubePlayerController = YoutubePlayerController(
+        initialVideoId: YoutubePlayer.convertUrlToId(widget.url)!,
+        flags: YoutubePlayerFlags(
+          autoPlay: widget.autoPlay,
+          mute: false,
+        ),
+      );
+    } else {
+      _videoPlayerController = VideoPlayerController.networkUrl(widget.url as Uri)
+        ..initialize().then((_) {
+          setState(() {
+            _chewieController = ChewieController(
+              videoPlayerController: _videoPlayerController,
+              aspectRatio: _videoPlayerController.value.aspectRatio,
+              autoPlay: widget.autoPlay,
+              looping: false,
+              showControls: true,
+              placeholder: Center(child: CircularProgressIndicator()),
+              allowMuting: true,
+            );
+          });
         });
-      }).catchError((error) {
-        setState(() {
-          _isError = true;
-          _isBuffering = false;
-        });
-      });
+
+      // Add listener for play state
+      _videoPlayerController.addListener(_onPlayStateChanged);
+    }
+  }
+
+  void _onPlayStateChanged() {
+    if (_videoPlayerController.value.isPlaying && !_isPlaying) {
+      _isPlaying = true;
+      // Navigate to full screen page
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => FullScreenVideoView(
+            videoUrl: widget.url,
+            startPosition: _videoPlayerController.value.position,
+          ),
+        ),
+      );
+    }
   }
 
   @override
   void dispose() {
-    _videoPlayerController.dispose();
-    _chewieController?.dispose();
+    _videoPlayerController.removeListener(_onPlayStateChanged);
+    if (!_isYouTube) {
+      _videoPlayerController.dispose();
+      _chewieController?.dispose();
+    } else {
+      _youtubePlayerController?.dispose();
+    }
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Error handling UI
-    if (_isError) {
-      return Container(
-        color: Colors.black,
-        child: Center(
-          child: Text(
-            'Error loading video',
-            style: TextStyle(color: Colors.white),
-          ),
+    if (_isYouTube && _youtubePlayerController != null) {
+      return GestureDetector(
+        onTap: () {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => FullScreenVideoView(
+                videoUrl: widget.url,
+                startPosition: Duration.zero,
+              ),
+            ),
+          );
+        },
+        child: YoutubePlayer(
+          controller: _youtubePlayerController!,
+          showVideoProgressIndicator: true,
         ),
       );
-    }
-
-    // Show loader while the video is buffering or not initialized
-    if (_isBuffering || _chewieController == null) {
-      return Container(
-        color: Colors.black,
-        child: Center(child: CircularProgressIndicator()),
+    } else if (_chewieController != null) {
+      return Chewie(
+        controller: _chewieController!,
       );
+    } else {
+      return const Center(child: CircularProgressIndicator());
     }
-
-    // Video player widget with Chewie
-    return Chewie(
-      controller: _chewieController!,
-    );
   }
 }
 
 class FullScreenVideoView extends StatelessWidget {
   final String videoUrl;
+  final Duration startPosition;
 
-  FullScreenVideoView({required this.videoUrl});
+  const FullScreenVideoView({
+    Key? key,
+    required this.videoUrl,
+    required this.startPosition,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Full Screen Video'),
-      ),
-      body: Center(
-        child: VideoPlayerWidget(url: videoUrl),
+    return WillPopScope(
+      onWillPop: () async {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => Scaffold(
+              body: VideoPlayerWidget(url: videoUrl),
+            ),
+          ),
+        );
+        return false;
+      },
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: SafeArea(
+          child: Stack(
+            children: [
+              Center(
+                child: VideoPlayerWidget(
+                  url: videoUrl,
+                  autoPlay: true,
+                ),
+              ),
+              Positioned(
+                top: 16,
+                left: 16,
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  onPressed: () => Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(
+                      builder: (context) => Scaffold(
+                        body: VideoPlayerWidget(url: videoUrl),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 }
-
 
 
 class ReviewsSection extends StatelessWidget {

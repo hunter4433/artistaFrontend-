@@ -48,6 +48,9 @@ dependencies:
   chewie: ^1.8.5
   ffmpeg_kit_flutter: 6.0.3
   connectivity_plus: ^6.1.0
+  win32: ^5.5.0 # Replace this with a version compatible with your Flutter SDK
+  youtube_player_flutter: ^9.1.1
+  flutter_inappwebview: ^6.1.5
 
 
   # The following adds the Cupertino Icons font to your application.

@@ -14,6 +14,7 @@ import 'package:test1/page-1/phone_varification.dart';
 import 'package:test1/page-1/review.dart';
 
 import 'package:test1/page-1/sign_in.dart';
+import 'package:test1/page-1/skills_artist.dart';
 import 'package:test1/page-1/skjs.dart';
 
 import '../config.dart';
@@ -115,8 +116,8 @@ print(' data is $userData');
          // Extract relevant data
          if (kind=='hire'){
            String firstName = userData['first_name'] ?? '';
-           String lastName = userData['last_name'] ?? '';
-           userName = '$firstName $lastName'.trim();
+           // String lastName = userData['last_name'] ?? '';
+           userName = firstName;
          }
          else {
            userName = userData['data']['attributes']['name'];
@@ -503,6 +504,8 @@ print(' data is $userData');
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => AccountManagementPage1()),
+
+
                     );
                   },
                   child: Container(

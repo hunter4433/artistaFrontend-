@@ -45,6 +45,8 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
   TextEditingController _accountNumberController = TextEditingController();
   TextEditingController _ifscController = TextEditingController();
   TextEditingController _accountHolderNameController = TextEditingController();
+  TextEditingController _youtubeLink1Controller = TextEditingController();
+  TextEditingController _youtubeLink2Controller = TextEditingController();
   bool _isLoading1 = false;
   bool _isLoading2 = false;
   bool _isLoading3 = false;
@@ -88,7 +90,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
   Future<Map<String, dynamic?>> getAllSharedPreferences() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return {
-      'age': prefs.getString('age'),
+      'alternate_number': prefs.getString('age'),
       'name': prefs.getString('name'),
       'address': prefs.getString('address'),
       'latitude': prefs.getDouble('latitude')?.toString(),
@@ -104,7 +106,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
   Future<void> storeBankDetails() async {
     final url = Uri.parse('${Config().apiDomain}/artist-bank-details');
     String? artist_id= await storage.read(key: 'artist_id');
-
+     print('artist_id  is $artist_id');
     // Collect data from controllers
     final Map<String, dynamic> bankData = {
       'UPI_id': _upiController.text,
@@ -112,6 +114,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
       'IFSC_code':  _ifscController.text,
       'account_holder_name': _accountHolderNameController.text,
       'artist_id': artist_id ?? '',
+      'team_id':0,
       // 'team_id': int.tryParse(_teamIdController.text) ?? null,
     };
 
@@ -129,6 +132,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
         );
       } else {
         // Failure
+        print(response.body);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to save bank details.')),
         );
@@ -159,7 +163,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
       }
 
       List<File?> imageFiles = [_image1, _image2, _image3, widget.profilePhoto];
-      List<File?> videoFiles = [_video1, _video2, _video3, _video4];
+      List<File?> videoFiles = [_video1, _video2];
 
       // Run upload functions in parallel with ID
       final results = await Future.wait([
@@ -196,19 +200,21 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
       Map<String, String?> profilePreferencesData = await profileSharedPreferences();
 
       // Get authentication token and FCM token
-      String? token = await _getToken();
+
       String? fCMToken = await _getFCMToken();
 
       // Prepare data to send to the backend
       Map<String, String> artistData = {
         'phone_number': phoneNumber!,
-
-        'about_yourself': _experienceController.text,
+        'skills':_selectedSubSkills.join(','),
+        'about_yourself': '${_experienceController.text}, ${_pastController.text}',
         'price_per_hour': _hourlyPriceController.text,
         'skill_category': _selectedSkill,
         'special_message': _messageController.text,
         'fcm_token': fCMToken ?? '',
-        'sound_system':'0',
+        'sound_system': _selectedEquipment.join(', '),
+        'video3': _youtubeLink1Controller.text,
+        'video4': _youtubeLink2Controller.text,
       };
 
       // Merge sharedPreferencesData with artistData
@@ -741,6 +747,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                                                             _selectedSubSkills.remove(subSkill);
                                                           }
                                                         });
+
                                                       },
                                                     );
                                                   }).toList(),
@@ -1108,7 +1115,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                       const Padding(
                         padding: EdgeInsets.fromLTRB(0, 10, 0, 10),
                         child: Text(
-                          'Keep the video duration within 20 seconds.',
+                          'Keep the video duration within 30 seconds.',
                           textAlign: TextAlign.left,
                           style: TextStyle(
                             fontSize: 16,
@@ -1164,26 +1171,26 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                                     : Icon(Icons.add, color: Colors.white),
                               ),
                             ),
-                            GestureDetector(
-                              onTap: _pickVideo3,
-                              child: Container(
-                                width: 150 * fem,
-                                height: 170 * fem,
-                                margin: EdgeInsets.only(right: 16.0),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10 * fem),
-                                  border: Border.all(color: Colors.grey),
-                                ),
-                                child: _isLoading3
-                                    ? Center(child: CircularProgressIndicator()) // Show loading for video 3
-                                    : _controller3 != null && _controller3!.value.isInitialized
-                                    ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(10 * fem),
-                                  child: VideoPlayer(_controller3!),
-                                )
-                                    : Icon(Icons.add, color: Colors.white),
-                              ),
-                            ),
+                            // GestureDetector(
+                            //   onTap: _pickVideo3,
+                            //   child: Container(
+                            //     width: 150 * fem,
+                            //     height: 170 * fem,
+                            //     margin: EdgeInsets.only(right: 16.0),
+                            //     decoration: BoxDecoration(
+                            //       borderRadius: BorderRadius.circular(10 * fem),
+                            //       border: Border.all(color: Colors.grey),
+                            //     ),
+                            //     child: _isLoading3
+                            //         ? Center(child: CircularProgressIndicator()) // Show loading for video 3
+                            //         : _controller3 != null && _controller3!.value.isInitialized
+                            //         ? ClipRRect(
+                            //       borderRadius: BorderRadius.circular(10 * fem),
+                            //       child: VideoPlayer(_controller3!),
+                            //     )
+                            //         : Icon(Icons.add, color: Colors.white),
+                            //   ),
+                            // ),
                           ],
                         ),
                       ),
@@ -1207,7 +1214,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                         Container(
                           margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 9 * fem),
                           child: Text(
-                            'For video longer than 20 seconds',
+                            'For video longer than 30 seconds',
                             style: SafeGoogleFont(
                               'Be Vietnam Pro',
                               fontSize: 16 * ffem,
@@ -1218,22 +1225,41 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
                           ),
                         ),
                         Container(
-
                           width: double.infinity,
-                          // Adjusted height to match the height of the outer container
                           height: 60 * fem,
-
                           child: TextField(
+                            controller: _youtubeLink1Controller, // Add this controller
                             decoration: InputDecoration(
                               hintText: 'Please paste the YouTube video link here.',
-                              hintStyle: TextStyle(color:  Color(0xFF9E9EB8)),
+                              hintStyle: TextStyle(color: Color(0xFF9E9EB8)),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10 * fem),
-                                borderSide: BorderSide(width: 1.25, color:Color(0xFF9E9EB8),),
+                                borderSide: BorderSide(width: 1.25, color:Color(0xFF9E9EB8)),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10 * fem),
-                                borderSide: BorderSide(width: 1.25, color: Colors.white ),
+                                borderSide: BorderSide(width: 1.25, color: Colors.white),
+                              ),
+                            ),
+                            style: TextStyle(color: Colors.white, fontSize: 16),
+                          ),
+                        ),
+                        SizedBox(height: 5),
+                        Container(
+                          width: double.infinity,
+                          height: 60 * fem,
+                          child: TextField(
+                            controller: _youtubeLink2Controller, // Add this controller
+                            decoration: InputDecoration(
+                              hintText: 'Please paste the YouTube video link here.',
+                              hintStyle: TextStyle(color: Color(0xFF9E9EB8)),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10 * fem),
+                                borderSide: BorderSide(width: 1.25, color:Color(0xFF9E9EB8)),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10 * fem),
+                                borderSide: BorderSide(width: 1.25, color: Colors.white),
                               ),
                             ),
                             style: TextStyle(color: Colors.white, fontSize: 16),
@@ -1670,34 +1696,72 @@ if (wait) {
 
   Future<bool> uploadImages(List<File?> imageFiles, String id) async {
     try {
-      var uploadUrl = Uri.parse('${Config().apiDomain}/upload-images/$id');
-      var request = http.MultipartRequest('POST', uploadUrl);
+      var uploadUrl = Uri.parse('${Config().apiDomain}/api/upload-images/$id');
+      print('Upload URL: $uploadUrl');
 
-      for (int i = 0; i < imageFiles.length; i++) {
-        var imageFile = imageFiles[i];
-        if (imageFile != null) {
-          // Use 'profile_photo' for the last image, otherwise use 'image{i + 1}'
-          String fieldName = (i == imageFiles.length - 1) ? 'profile_photo' : 'image${i + 1}';
-          var image = await http.MultipartFile.fromPath(fieldName, imageFile.path);
-          request.files.add(image);
+      // Create form data
+      var formData = http.MultipartRequest('POST', uploadUrl);
+
+      // Add usertype
+      formData.fields['usertype'] = 'artist'; // or 'team' based on your need
+
+      // Add images
+      for (int i = 0; i < imageFiles.length - 1; i++) {
+        if (imageFiles[i] != null) {
+          var stream = http.ByteStream(imageFiles[i]!.openRead());
+          var length = await imageFiles[i]!.length();
+
+          var multipartFile = http.MultipartFile(
+              'image${i + 1}',
+              stream,
+              length,
+              filename: 'image${i + 1}.jpg'
+          );
+          formData.files.add(multipartFile);
         }
       }
 
-      var streamedResponse = await request.send();
+      // Add profile photo (last image in the list)
+      if (imageFiles.last != null) {
+        var stream = http.ByteStream(imageFiles.last!.openRead());
+        var length = await imageFiles.last!.length();
 
-      if (streamedResponse.statusCode == 200) {
-        var response = await streamedResponse.stream.bytesToString();
-        print('Upload successful: $response');
+        var multipartFile = http.MultipartFile(
+            'profile_photo',
+            stream,
+            length,
+            filename: 'profile_photo.jpg'
+        );
+        formData.files.add(multipartFile);
+      }
+
+      // Add headers if needed
+      formData.headers.addAll({
+        'Accept': 'application/json',
+        // Add any other headers your API requires
+      });
+
+      // Send request
+      var response = await formData.send();
+      var responseData = await response.stream.bytesToString();
+      print('Response Status Code: ${response.statusCode}');
+      print('Response Body: $responseData');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print('Upload successful');
         return true;
       } else {
-        print('Upload failed with status: ${streamedResponse.statusCode}');
+        print('Upload failed with status: ${response.statusCode}');
+        print('Error details: $responseData');
         return false;
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
       print('Error uploading images: $e');
+      print('Stack trace: $stackTrace');
       return false;
     }
   }
+
 
 
 }
