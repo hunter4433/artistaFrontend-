@@ -278,6 +278,7 @@ class _artist_credState extends State<artist_cred> {
                                                   onChanged: (bool? value) {
                                                     setModalState(() {
                                                       if (value == true) {
+
                                                         _selectedCities.add(city);
 
                                                         // Check if Chandigarh is selected and convert to lat/long

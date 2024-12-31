@@ -4,6 +4,7 @@ import 'dart:io';
 // import 'package:ffmpeg_kit_flutter/return_code.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
 import '../config.dart';
@@ -15,7 +16,7 @@ import 'dart:convert';
 // import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
-
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 class ArtistCredentials2 extends StatefulWidget {
   final File? profilePhoto;
@@ -32,7 +33,7 @@ class ArtistCredentials2 extends StatefulWidget {
 
 
 
-class _ArtistCredentials2State extends State<ArtistCredentials2> {
+class _ArtistCredentials2State extends State<ArtistCredentials2> with WidgetsBindingObserver  {
   TextEditingController _subskillController = TextEditingController();
   TextEditingController _experienceController = TextEditingController();
   TextEditingController _hourlyPriceController = TextEditingController();
@@ -50,6 +51,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
   bool _isLoading1 = false;
   bool _isLoading2 = false;
   bool _isLoading3 = false;
+  bool _isUploading = false;
 
   String _selectedSkill = ''; // Selected skill
   List<String> _skills = ['Musician', 'Comedian', 'Visual Artist', 'Dancer', 'Chef', 'Magician'];
@@ -69,7 +71,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
 
 
   bool _isLoading = false;
-  bool _isCompressing = false;
+
   // double _progress = 0.0;
   StreamSubscription? _subscription;
 
@@ -103,7 +105,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
   Future<String?> _getToken() async {
     return await storage.read(key: 'token'); // Assuming you stored the token with key 'token'
   }
-  Future<void> storeBankDetails() async {
+  Future<bool> storeBankDetails() async {
     final url = Uri.parse('${Config().apiDomain}/artist-bank-details');
     String? artist_id= await storage.read(key: 'artist_id');
      print('artist_id  is $artist_id');
@@ -130,65 +132,239 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Bank details saved successfully!')),
         );
+        return true;
       } else {
         // Failure
         print(response.body);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to save bank details.')),
         );
+        return false;
       }
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('An error occurred: $error')),
       );
+      return false ;
+
+    }
+
+  }
+
+  @override
+  void initState() {
+    _selectedSkill = _skills.first;
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    _subskillController.dispose();
+    _experienceController.dispose();
+    _hourlyPriceController.dispose();
+    _messageController.dispose();
+
+    super.dispose();
+    WidgetsBinding.instance.removeObserver(this);
+    _disableWakeLock();
+    super.dispose();
+  }
+
+  Future<void> _enableWakeLock() async {
+    try {
+      await WakelockPlus.enable();
+    } catch (e) {
+      print('Failed to enable wakelock: $e');
     }
   }
 
+  Future<void> _disableWakeLock() async {
+    try {
+      if (_isUploading) {
+        await WakelockPlus.disable();
+      }
+    } catch (e) {
+      print('Failed to disable wakelock: $e');
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (_isUploading) {
+      switch (state) {
+        case AppLifecycleState.paused:
+          _showUploadNotification();
+          break;
+        case AppLifecycleState.resumed:
+          _cancelUploadNotification();
+          break;
+        default:
+          break;
+      }
+    }
+  }
+
+  void _showUploadNotification() {
+    NotificationService.showUploadInProgressNotification();
+  }
+
+  void _cancelUploadNotification() {
+    NotificationService.cancelUploadNotification();
+  }
 
   Future<bool> _onFinishButtonClicked() async {
-    try {
-      // Send data to the backend and get the ID
-      bool dataSent = await _sendDataToBackend();
-         await  storeBankDetails();
-      // if (!dataSent) {
-      //   print('Failed to send data to backend. mohit ');
-      //   return false;
-      // }
+    setState(() => _isUploading = true);
+    await _enableWakeLock();
 
-      // Retrieve the stored ID
-      String? id = await storage.read(key: 'artist_id');
-      if (id == null) {
-        print('Failed to retrieve ID from storage.');
+    String? artistId;
+    bool success = false;
+
+    // Show progress dialog
+    if (!mounted) return false;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return WillPopScope(
+          onWillPop: () async => false,
+          child: Dialog(
+            backgroundColor: Colors.white,
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 20),
+                  Text(
+                    'Uploading Data...',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    'Please keep the app open.\nThis may take a few minutes.',
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
+    try {
+      // Your existing implementation
+      bool dataSent = await _sendDataToBackend();
+      if (!dataSent) {
+        await _showErrorDialog('Failed to send initial data to server. Please try again.');
+        return false;
+      }
+
+      artistId = await storage.read(key: 'artist_id');
+      if (artistId == null) {
+        await _showErrorDialog('Failed to retrieve artist ID. Please try again.');
+        return false;
+      }
+
+      bool bankDetailsStored = await storeBankDetails();
+      if (!bankDetailsStored) {
+        await _deleteArtistInformation(artistId);
+        await _showErrorDialog('Failed to store bank details. Please check your bank information and try again.');
         return false;
       }
 
       List<File?> imageFiles = [_image1, _image2, _image3, widget.profilePhoto];
       List<File?> videoFiles = [_video1, _video2];
 
-      // Run upload functions in parallel with ID
       final results = await Future.wait([
-        uploadImages(imageFiles, id),      // Upload images with ID
-        uploadVideos(videoFiles, id)         // Upload videos with ID
-      ]);
+        uploadImages(imageFiles, artistId),
+        uploadVideos(videoFiles, artistId)
+      ]).catchError((error) async {
+        await _deleteArtistInformation(artistId!);
+        await _showErrorDialog('Error uploading files: ${error.toString()}');
+        throw error;
+      });
 
-      bool imagesUploaded = results[0] as bool; // Result from _uploadImages
-      bool videosUploaded = results[1] as bool; // Result from uploadVideo
+      bool imagesUploaded = results[0] as bool;
+      bool videosUploaded = results[1] as bool;
 
-      // Handle the results
-     if (imagesUploaded && videosUploaded) {
-    //   if (imagesUploaded){
+      if (imagesUploaded && videosUploaded) {
+        success = true;
         print('All operations completed successfully.');
-        return true;
       } else {
-        print('Some operations failed.');
+        await _deleteArtistInformation(artistId);
+        if (!imagesUploaded && !videosUploaded) {
+          await _showErrorDialog('Failed to upload both images and videos. Please check your files and try again.');
+        } else if (!imagesUploaded) {
+          await _showErrorDialog('Failed to upload images. Please check your image files and try again.');
+        } else {
+          await _showErrorDialog('Failed to upload videos. Please check your video files and try again.');
+        }
       }
+
     } catch (e) {
-      // Handle any errors that occur during the process
-      print('An error occurred: $e');
+      if (artistId != null) {
+        await _deleteArtistInformation(artistId);
+      }
+      await _showErrorDialog('An unexpected error occurred: ${e.toString()}');
+    } finally {
+      setState(() => _isUploading = false);
+      await _disableWakeLock();
+      _cancelUploadNotification();
+      if (mounted) {
+        Navigator.of(context).pop(); // Remove progress dialog
+      }
     }
-    return false;
+
+    return success;
+  }
+// Helper function to show error dialog
+  Future<void> _showErrorDialog(String message) async {
+    return showDialog(
+      context: context,
+      barrierDismissible: false, // User must tap button to close dialog
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Error'),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
+// Delete artist information function
+  Future<void> _deleteArtistInformation(String artistId) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('${Config().apiDomain}/artist/info/$artistId'),
+        headers: <String, String>{
+          'Content-Type': 'application/vnd.api+json',
+          'Accept': 'application/vnd.api+json',
+
+        },
+      );
+
+      if (response.statusCode != 204) {
+        await _showErrorDialog(
+            'Warning: Failed to clean up artist data. Please contact support. Status: ${response.statusCode}'
+        );
+      }
+    } catch (e) {
+      await _showErrorDialog(
+          'Warning: Failed to clean up artist data. Please contact support. Error: ${e.toString()}'
+      );
+    }
+  }
 
   Future<bool> _sendDataToBackend() async {
     String? profilePhotoPath = widget.profilePhoto?.path;
@@ -295,50 +471,7 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
     }
   }
 
-  // Future<File> trimVideoIfNeeded(File videoFile) async {
-  //   String inputPath = videoFile.path;
-  //   String outputPath =
-  //       '${(await getTemporaryDirectory()).path}/trimmed_${videoFile.path.split('/').last}';
-  //
-  //   try {
-  //     // FFmpeg command to retrieve video duration in seconds.
-  //     String durationCommand = '-i $inputPath -v error -select_streams v:0 -show_entries stream=duration -of default=noprint_wrappers=1:nokey=1';
-  //
-  //     // Execute the FFmpeg command.
-  //     var session = await FFmpegKit.execute(durationCommand);
-  //
-  //     // Check the result of the session.
-  //     final returnCode = await session.getReturnCode();
-  //
-  //     if (ReturnCode.isSuccess(returnCode)) {
-  //       // Extract the output from FFmpeg session.
-  //       final output = await session.getOutput();
-  //       double duration = double.tryParse(output!.trim()) ?? 0.0;
-  //
-  //       print('Video duration is $duration seconds.');
-  //
-  //       if (duration > 20) {
-  //         print('Trimming video to 20 seconds...');
-  //
-  //         // FFmpeg command to trim the video to 20 seconds.
-  //         String trimCommand = '-i $inputPath -t 20 -c copy $outputPath';
-  //         await FFmpegKit.execute(trimCommand);
-  //
-  //         print('Video trimmed to 20 seconds: $outputPath');
-  //         return File(outputPath);
-  //       } else {
-  //         print('No trimming needed.');
-  //         return videoFile; // Return original video if no trimming is required.
-  //       }
-  //     } else {
-  //       print('Failed to get video information. FFmpeg return code: $returnCode');
-  //       return videoFile;
-  //     }
-  //   } catch (e) {
-  //     print('Error while processing video: $e');
-  //     return videoFile;
-  //   }
-  // }
+
 
   Future<bool> uploadVideo(File videoFile, String id) async {
     try {
@@ -377,12 +510,12 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
 
 
 
-  @override
-  void initState() {
-    super.initState();
-    _selectedSkill = _skills.first; // Initialize selected skill with the first item in the list
-     // Update sub-skills based on the selected skill
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   _selectedSkill = _skills.first; // Initialize selected skill with the first item in the list
+  //    // Update sub-skills based on the selected skill
+  // }
 
   File? _image1;
   File? _image3;
@@ -593,15 +726,15 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> {
 
 
 
-  @override
-  void dispose() {
-    _subskillController.dispose();
-    _experienceController.dispose();
-    _hourlyPriceController.dispose();
-    _messageController.dispose();
-
-    super.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   _subskillController.dispose();
+  //   _experienceController.dispose();
+  //   _hourlyPriceController.dispose();
+  //   _messageController.dispose();
+  //
+  //   super.dispose();
+  // }
 
 
 
@@ -1764,4 +1897,42 @@ if (wait) {
 
 
 
+}
+
+class NotificationService {
+  static final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
+  static const _notificationId = 1;
+
+  static Future<void> initialize() async {
+    final android = AndroidInitializationSettings('@mipmap/ic_launcher');
+    final iOS = DarwinInitializationSettings();
+    final settings = InitializationSettings(android: android, iOS: iOS);
+    await _notifications.initialize(settings);
+  }
+
+  static Future<void> showUploadInProgressNotification() async {
+    const androidDetails = AndroidNotificationDetails(
+      'upload_channel',
+      'Upload Status',
+      channelDescription: 'Shows upload progress',
+      importance: Importance.high,
+      priority: Priority.high,
+      ongoing: true,
+      autoCancel: false,
+    );
+
+    const iOSDetails = DarwinNotificationDetails();
+    const details = NotificationDetails(android: androidDetails, iOS: iOSDetails);
+
+    await _notifications.show(
+      _notificationId,
+      'Upload in Progress',
+      'Please return to the app to complete the upload process.',
+      details,
+    );
+  }
+
+  static Future<void> cancelUploadNotification() async {
+    await _notifications.cancel(_notificationId);
+  }
 }

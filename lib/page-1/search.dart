@@ -98,6 +98,8 @@ class _SearchState extends State<Search> with WidgetsBindingObserver {
       'music artist': 'musician',
       'comedy artist': 'comedian',
       'guitar artist': 'guitarist',
+      'Dhol artist': 'dhol',
+      'Anchor':'Anchor',
     };
 
     // Normalize input and return mapped skill or original term if not found.

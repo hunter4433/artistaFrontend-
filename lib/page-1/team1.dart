@@ -82,7 +82,8 @@ class _team1signupState extends State<team1signup> {
         // Add image file (if exists) to the multipart request with the right array-like key
         if (member.imageFile != null) {
           request.files.add(await http.MultipartFile.fromPath(
-            'team_members[$i][profile_photo]',  // Ensure the file field matches the array structure
+            'team_members[$i][profile_photo]',
+            // Ensure the file field matches the array structure
             member.imageFile!.path,
           ));
           print('sending file for ${member.name}: ${member.imageFile!.path}');
@@ -260,20 +261,20 @@ class _team1signupState extends State<team1signup> {
                                     onChanged: (value) {
                                       teamMembersData[index].name = value;
                                     },
+                                    style: TextStyle(
+                                      color: Colors.white, // Set the text color to white
+                                    ),
                                     decoration: InputDecoration(
                                       hintText: 'Name..',
                                       hintStyle: TextStyle(
-                                        color: Color(0xFF9E9EB8),
+                                        color: Color(0xFF9E9EB8), // Hint text color
                                       ),
                                       border: OutlineInputBorder(
-                                        borderRadius:
-                                        BorderRadius.circular(12 * fem),
+                                        borderRadius: BorderRadius.circular(12 * fem),
                                       ),
                                       focusedBorder: OutlineInputBorder(
-                                        borderSide:
-                                        BorderSide(color: Colors.white),
-                                        borderRadius:
-                                        BorderRadius.circular(12 * fem),
+                                        borderSide: BorderSide(color: Colors.white),
+                                        borderRadius: BorderRadius.circular(12 * fem),
                                       ),
                                     ),
                                   ),
@@ -282,6 +283,9 @@ class _team1signupState extends State<team1signup> {
                                     onChanged: (value) {
                                       teamMembersData[index].email = value;
                                     },
+                                    style: TextStyle(
+                                      color: Colors.white, // Set the text color to white
+                                    ),
                                     decoration: InputDecoration(
                                       hintText: 'Email..',
                                       hintStyle: TextStyle(
@@ -304,6 +308,9 @@ class _team1signupState extends State<team1signup> {
                                     onChanged: (value) {
                                       teamMembersData[index].role = value;
                                     },
+                                    style: TextStyle(
+                                      color: Colors.white, // Set the text color to white
+                                    ),
                                     decoration: InputDecoration(
                                       hintText: 'Role..',
                                       hintStyle: TextStyle(

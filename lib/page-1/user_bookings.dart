@@ -13,8 +13,9 @@ bool isCacheLoaded = false;
 Map<String, List<dynamic>>? cachedData;
 class UserBookings extends StatefulWidget {
   String? isteam;
-
-  UserBookings({this.isteam});
+   // Add this parameter
+  
+  UserBookings({this.isteam,});
 
   @override
   _UserBookingsState createState() => _UserBookingsState();
@@ -58,14 +59,14 @@ class _UserBookingsState extends State<UserBookings> with AutomaticKeepAliveClie
 
       if (response.statusCode == 200) {
         final decodedList = json.decode(response.body) as List<dynamic>;
-        print('bokings are $decodedList ');
+        print('api called  $decodedList ');
 
         setState(() {
           cachedData = {'bookings': decodedList.map((e) => Map<String, dynamic>.from(e)).toList()};
           isCacheLoaded = true;
           isLoading = false;
         });
-        print(decodedList);
+
       } else {
         _handleError('Failed to load bookings');
       }
@@ -448,13 +449,13 @@ class _UserBookingsState extends State<UserBookings> with AutomaticKeepAliveClie
         itemCount: bookings.length,
         itemBuilder: (context, index) {
           final booking = bookings[index];
-          print('booking data :$booking');
+
           final idToUse = booking['artist_id'] ?? booking['team_id'];
            String isteam =
           (booking['team_id'] != '0' && booking['team_id'] != null)
               ? 'true'
               : 'false';
-print('isteam nsdj : ${widget.isteam}');
+
           return _buildRequestCard(
             booking['category'],
             booking['booking_date'],

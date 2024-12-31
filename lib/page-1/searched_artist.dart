@@ -142,7 +142,7 @@ class SearchedArtist extends StatelessWidget {
                                 children: [
                                   // Skill text
                                   Text(
-                                    'Skill: ${filteredArtistData[index]['skills']}',
+                                    'Skill: ${filteredArtistData[index]['skill_category']}',
                                     style: TextStyle(
                                       fontSize: 17 * ffem,
                                       fontWeight: FontWeight.w400,

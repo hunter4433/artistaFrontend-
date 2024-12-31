@@ -1,4 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import '../config.dart';
+import 'artist_booking.dart';
+
 
 class CustomizeSoundSystemPage extends StatefulWidget {
   @override
@@ -8,122 +14,187 @@ class CustomizeSoundSystemPage extends StatefulWidget {
 
 class _CustomizeSoundSystemPageState extends State<CustomizeSoundSystemPage> {
   final List<Map<String, dynamic>> items = [
-    {
-      'name': 'Smoke Machine with extra Liquid',
-      'price': 2000,
-      'quantity': 0,
-      'image': 'assets/page-1/images/smoke_gunreal.jpg',
-    },
-    {
-      'name': 'LED Wall 8X20',
-      'price': 12000,
-      'quantity': 0,
-      'image': 'assets/page-1/images/dance_floor.jpg',
-    },
-    {
-      'name': 'Cordless Mic',
-      'price': 650,
-      'quantity': 0,
-      'image': 'assets/page-1/images/dance_floor.jpg',
-    },
-    {
-      'name': 'Wired Mic',
-      'price': 400,
-      'quantity': 0,
-      'image': 'assets/page-1/images/dance_floor.jpg',
-    },
-    {
-      'name': 'LED Light',
-      'price': '300/per piece',
-      'quantity': 0,
-      'image': 'assets/page-1/images/dance_floor.jpg',
-    },
-    {
-      'name': 'Sharpy Light',
-      'price': '650/per piece',
-      'quantity': 0,
-      'image': 'assets/page-1/images/dance_floor.jpg',
-    },
-    {
-      'name': 'LED Floor 12X16',
-      'price': 6500,
-      'quantity': 0,
-      'image': 'assets/page-1/images/dance_floor.jpg',
-    },
-    {
-      'name': 'Floor 12X12',
-      'price': 3500,
-      'quantity': 0,
-      'image': 'assets/page-1/images/dance_floor.jpg',
-    },
-    {
-      'name': 'Floor 12X16',
-      'price': 4000,
-      'quantity': 0,
-      'image': 'assets/page-1/images/dance_floor.jpg',
-    },
+    // {
+    //   'name': 'Smoke Machine with extra Liquid',
+    //   'price': 2000,
+    //   'quantity': 0,
+    //   'image': 'assets/page-1/images/smoke_gunreal.jpg',
+    // },
+    // {
+    //   'name': 'LED Wall 8X20',
+    //   'price': 12000,
+    //   'quantity': 0,
+    //   'image': 'assets/page-1/images/dance_floor.jpg',
+    // },
+    // {
+    //   'name': 'Cordless Mic',
+    //   'price': 650,
+    //   'quantity': 0,
+    //   'image': 'assets/page-1/images/dance_floor.jpg',
+    // },
+    // {
+    //   'name': 'Wired Mic',
+    //   'price': 400,
+    //   'quantity': 0,
+    //   'image': 'assets/page-1/images/dance_floor.jpg',
+    // },
+    // {
+    //   'name': 'LED Light',
+    //   'price': '300/per piece',
+    //   'quantity': 0,
+    //   'image': 'assets/page-1/images/dance_floor.jpg',
+    // },
+    // {
+    //   'name': 'Sharpy Light',
+    //   'price': '650/per piece',
+    //   'quantity': 0,
+    //   'image': 'assets/page-1/images/dance_floor.jpg',
+    // },
+    // {
+    //   'name': 'LED Floor 12X16',
+    //   'price': 6500,
+    //   'quantity': 0,
+    //   'image': 'assets/page-1/images/dance_floor.jpg',
+    // },
+    // {
+    //   'name': 'Floor 12X12',
+    //   'price': 3500,
+    //   'quantity': 0,
+    //   'image': 'assets/page-1/images/dance_floor.jpg',
+    // },
+    // {
+    //   'name': 'Floor 12X16',
+    //   'price': 4000,
+    //   'quantity': 0,
+    //   'image': 'assets/page-1/images/dance_floor.jpg',
+    // },
 
   ];
+
+  final List<Map<String, dynamic>> selectedkits = [];
+  List<Map<String, dynamic>> selectedItems = [];
+  bool _isLoading = true; // To track the loading state
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeData();
+  }
+
+  Future<void> _initializeData() async {
+    await fetchEquipmentsAndKits();
+    setState(() {
+      _isLoading = false; // Update the loading state once data is fetched
+    });
+  }
 
   final List<Map<String, dynamic>> plans = [
-    {
-      'name': 'Signature Kit',
-      'price': 25000,
-      'image': 'assets/page-1/images/dance_floor.jpg',
-      'includedItems': [
-        {'name': 'Operator', 'quantity': 'For entire event', 'image': 'assets/page-1/images/dance_floor.jpg'},
-        {'name': 'LED Walls', 'quantity': '8X20', 'image': 'assets/page-1/images/smoke_gunreal.jpg'},
-        {'name': 'LED Floor', 'quantity': '12X16', 'image': 'assets/page-1/images/dance_floor.jpg'},
-        {'name': 'Single Trust', 'quantity': 1, 'image': 'assets/page-1/images/dance_floor.jpg'},
-        {'name': 'Base', 'quantity': 2, 'image': 'assets/page-1/images/smoke_gunreal.jpg'},
-        {'name': 'Top', 'quantity': 4, 'image': 'assets/page-1/images/dance_floor.jpg'},
-        {'name': 'Sharpy Lights', 'quantity': 4, 'image': 'assets/page-1/images/dance_floor.jpg'},
-        {'name': 'Wireless Mic', 'quantity': 1, 'image': 'assets/page-1/images/dance_floor.jpg'},
-      ],
-    },
-    {
-      'name': 'Prime Kit',
-      'price': 15000,
-      'image': 'assets/page-1/images/dance_floor.jpg',
-      'includedItems': [
-        {'name': 'Operator', 'quantity': 'For entire event', 'image': 'assets/page-1/images/dance_floor.jpg'},
-        {'name': 'LED Floor', 'quantity': '12X16', 'image': 'assets/page-1/images/dance_floor.jpg'},
-        {'name': 'Single Trust', 'quantity': 1, 'image': 'assets/page-1/images/dance_floor.jpg'},
-        {'name': 'Base', 'quantity': 2, 'image': 'assets/page-1/images/smoke_gunreal.jpg'},
-        {'name': 'Top', 'quantity': 4, 'image': 'assets/page-1/images/dance_floor.jpg'},
-        {'name': 'Sharpy Lights', 'quantity': 4, 'image': 'assets/page-1/images/dance_floor.jpg'},
-        {'name': 'Wireless Mic', 'quantity': 1, 'image': 'assets/page-1/images/dance_floor.jpg'},
-      ],
-    },
-    {
-      'name': 'Standard Kit',
-      'price': 8000,
-      'image': 'assets/page-1/images/dance_floor.jpg',
-      'includedItems': [
-        {'name': 'Operator', 'quantity': 'For entire event', 'image': 'assets/page-1/images/dance_floor.jpg'},
-        {'name': 'Base', 'quantity': 2, 'image': 'assets/page-1/images/smoke_gunreal.jpg'},
-        {'name': 'Top', 'quantity': 4, 'image': 'assets/page-1/images/dance_floor.jpg'},
-        {'name': 'Floor', 'quantity': '12x12', 'image': 'assets/page-1/images/dance_floor.jpg'},
-        {'name': 'LED Lights', 'quantity': 5, 'image': 'assets/page-1/images/dance_floor.jpg'},
-        {'name': 'Wireless Mic', 'quantity': 1, 'image': 'assets/page-1/images/dance_floor.jpg'},
-      ],
-    },
-    {
-      'name': 'Basic Kit',
-      'price': 6000,
-      'image': 'assets/page-1/images/dance_floor.jpg',
-      'includedItems': [
-        {'name': 'Operator', 'quantity': 'For entire event', 'image': 'assets/page-1/images/dance_floor.jpg'},
-        {'name': 'Base', 'quantity': 2, 'image': 'assets/page-1/images/smoke_gunreal.jpg'},
-        {'name': 'Top', 'quantity': 2, 'image': 'assets/page-1/images/dance_floor.jpg'},
-        {'name': 'Floor', 'quantity': '12x12', 'image': 'assets/page-1/images/dance_floor.jpg'},
-        {'name': 'LED Lights', 'quantity': 5, 'image': 'assets/page-1/images/dance_floor.jpg'},
-        {'name': 'Wireless Mic', 'quantity': 1, 'image': 'assets/page-1/images/dance_floor.jpg'},
-      ],
-    },
+    // {
+    //   'name': 'Signature Kit',
+    //   'price': 25000,
+    //   'image': 'assets/page-1/images/dance_floor.jpg',
+    //   'includedItems': [
+    //     {'name': 'Operator', 'quantity': 'For entire event', 'image': 'assets/page-1/images/dance_floor.jpg'},
+    //     {'name': 'LED Walls', 'quantity': '8X20', 'image': 'assets/page-1/images/smoke_gunreal.jpg'},
+    //     {'name': 'LED Floor', 'quantity': '12X16', 'image': 'assets/page-1/images/dance_floor.jpg'},
+    //     {'name': 'Single Trust', 'quantity': 1, 'image': 'assets/page-1/images/dance_floor.jpg'},
+    //     {'name': 'Base', 'quantity': 2, 'image': 'assets/page-1/images/smoke_gunreal.jpg'},
+    //     {'name': 'Top', 'quantity': 4, 'image': 'assets/page-1/images/dance_floor.jpg'},
+    //     {'name': 'Sharpy Lights', 'quantity': 4, 'image': 'assets/page-1/images/dance_floor.jpg'},
+    //     {'name': 'Wireless Mic', 'quantity': 1, 'image': 'assets/page-1/images/dance_floor.jpg'},
+    //   ],
+    // },
+    // {
+    //   'name': 'Prime Kit',
+    //   'price': 15000,
+    //   'image': 'assets/page-1/images/dance_floor.jpg',
+    //   'includedItems': [
+    //     {'name': 'Operator', 'quantity': 'For entire event', 'image': 'assets/page-1/images/dance_floor.jpg'},
+    //     {'name': 'LED Floor', 'quantity': '12X16', 'image': 'assets/page-1/images/dance_floor.jpg'},
+    //     {'name': 'Single Trust', 'quantity': 1, 'image': 'assets/page-1/images/dance_floor.jpg'},
+    //     {'name': 'Base', 'quantity': 2, 'image': 'assets/page-1/images/smoke_gunreal.jpg'},
+    //     {'name': 'Top', 'quantity': 4, 'image': 'assets/page-1/images/dance_floor.jpg'},
+    //     {'name': 'Sharpy Lights', 'quantity': 4, 'image': 'assets/page-1/images/dance_floor.jpg'},
+    //     {'name': 'Wireless Mic', 'quantity': 1, 'image': 'assets/page-1/images/dance_floor.jpg'},
+    //   ],
+    // },
+    // {
+    //   'name': 'Standard Kit',
+    //   'price': 8000,
+    //   'image': 'assets/page-1/images/dance_floor.jpg',
+    //   'includedItems': [
+    //     {'name': 'Operator', 'quantity': 'For entire event', 'image': 'assets/page-1/images/dance_floor.jpg'},
+    //     {'name': 'Base', 'quantity': 2, 'image': 'assets/page-1/images/smoke_gunreal.jpg'},
+    //     {'name': 'Top', 'quantity': 4, 'image': 'assets/page-1/images/dance_floor.jpg'},
+    //     {'name': 'Floor', 'quantity': '12x12', 'image': 'assets/page-1/images/dance_floor.jpg'},
+    //     {'name': 'LED Lights', 'quantity': 5, 'image': 'assets/page-1/images/dance_floor.jpg'},
+    //     {'name': 'Wireless Mic', 'quantity': 1, 'image': 'assets/page-1/images/dance_floor.jpg'},
+    //   ],
+    // },
+    // {
+    //   'name': 'Basic Kit',
+    //   'price': 6000,
+    //   'image': 'assets/page-1/images/dance_floor.jpg',
+    //   'includedItems': [
+    //     {'name': 'Operator', 'quantity': 'For entire event', 'image': 'assets/page-1/images/dance_floor.jpg'},
+    //     {'name': 'Base', 'quantity': 2, 'image': 'assets/page-1/images/smoke_gunreal.jpg'},
+    //     {'name': 'Top', 'quantity': 2, 'image': 'assets/page-1/images/dance_floor.jpg'},
+    //     {'name': 'Floor', 'quantity': '12x12', 'image': 'assets/page-1/images/dance_floor.jpg'},
+    //     {'name': 'LED Lights', 'quantity': 5, 'image': 'assets/page-1/images/dance_floor.jpg'},
+    //     {'name': 'Wireless Mic', 'quantity': 1, 'image': 'assets/page-1/images/dance_floor.jpg'},
+    //   ],
+    // },
   ];
 
+  Future<void> fetchEquipmentsAndKits() async {
+     String apiUrl = '${Config().apiDomain}/equipments-and-kits'; // Replace with your API endpoint
 
+    try {
+      final response = await http.get(Uri.parse(apiUrl));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        // Extract and print equipments
+        List<dynamic> equipments = data['equipments'];
+        // print('Equipments: $equipments');
+        // Update the `items` list
+        items.addAll(equipments.map((equipment) {
+          return {
+            'name': equipment['name'],
+            'price': equipment['price'],
+            'quantity': equipment['quantity'],
+            'image': equipment['image'],
+          };
+        }).toList());
+         print(items);
+        // Extract and print kits
+        List<dynamic> kits = data['kits'];
+        print('Kits:');
+        // Update the `plans` list
+        plans.addAll(kits.map((kit) {
+          return {
+            'name': kit['name'],
+            'price': kit['price'],
+            'image': kit['image'],
+            'includedItems': kit['includedItems'].map((item) {
+              return {
+                'name': item['name'],
+                'quantity': item['quantity'],
+                'image': item['image'],
+              };
+            }).toList(),
+          };
+        }).toList());
+
+        // TODO: Update the state of your Flutter app with this data
+      } else {
+        print('Failed to fetch data. Status Code: ${response.statusCode}');
+      }
+    } catch (error) {
+      print('Error fetching data: $error');
+    }
+  }
 
   void showFullScreenImage(String imagePath) {
     showDialog(
@@ -138,7 +209,7 @@ class _CustomizeSoundSystemPageState extends State<CustomizeSoundSystemPage> {
             child: Container(
               decoration: BoxDecoration(
                 image: DecorationImage(
-                  image: AssetImage(imagePath),
+                  image: NetworkImage(imagePath),
                   fit: BoxFit.contain,
                 ),
               ),
@@ -169,7 +240,7 @@ class _CustomizeSoundSystemPageState extends State<CustomizeSoundSystemPage> {
                 SizedBox(height: 10),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: Image.asset(
+                  child: Image.network(
                     plan['image'],
                     height: 150,
                     width: double.infinity,
@@ -189,7 +260,7 @@ class _CustomizeSoundSystemPageState extends State<CustomizeSoundSystemPage> {
                           children: [
                             ClipRRect(
                               borderRadius: BorderRadius.circular(8.0),
-                              child: Image.asset(
+                              child: Image.network(
                                 item['image'],
                                 width: 80,
                                 height: 90,
@@ -258,7 +329,7 @@ class _CustomizeSoundSystemPageState extends State<CustomizeSoundSystemPage> {
                   ClipRRect(
                     borderRadius:
                     BorderRadius.vertical(top: Radius.circular(12.0)),
-                    child: Image.asset(
+                    child: Image.network(
                       plan['image'],
                       height: 120,
                       width: double.infinity,
@@ -284,10 +355,24 @@ class _CustomizeSoundSystemPageState extends State<CustomizeSoundSystemPage> {
                   SizedBox(height: 10),
                   ElevatedButton(
                     onPressed: () {
+                      // setState(() {
+                      //   plan['isAdded'] = !isAdded;
+                      //   isAdded = plan['isAdded'];
+                      // });
+
                       setState(() {
                         plan['isAdded'] = !isAdded;
                         isAdded = plan['isAdded'];
+
+                        // Add or remove from selected plans list
+                        if (isAdded) {
+                          selectedkits.add(plan);
+                        } else {
+                          selectedkits.removeWhere(
+                                  (selectedPlan) => selectedPlan['name'] == plan['name']);
+                        }
                       });
+                      print(selectedkits);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor:
@@ -404,7 +489,7 @@ class _CustomizeSoundSystemPageState extends State<CustomizeSoundSystemPage> {
                               },
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(12.0),
-                                child: Image.asset(
+                                child: Image.network(
                                   item['image'],
                                   width: 115,
                                   height: 125,
@@ -441,6 +526,9 @@ class _CustomizeSoundSystemPageState extends State<CustomizeSoundSystemPage> {
                                             if (item['quantity'] > 0) {
                                               item['quantity']--;
                                             }
+                                            if (item['quantity'] == 0) {
+                                              selectedItems.remove(item);
+                                            }
                                           });
                                         },
                                         style: ElevatedButton.styleFrom(
@@ -475,7 +563,13 @@ class _CustomizeSoundSystemPageState extends State<CustomizeSoundSystemPage> {
                                         onPressed: () {
                                           setState(() {
                                             item['quantity']++;
+                                            if (item['quantity'] > 0) {
+                                              if (!selectedItems.contains(item)) {
+                                                selectedItems.add(item);
+                                              }
+                                            }
                                           });
+                                          print(selectedItems);
                                         },
                                         style: ElevatedButton.styleFrom(
                                           minimumSize: Size(32, 32),
@@ -512,8 +606,22 @@ class _CustomizeSoundSystemPageState extends State<CustomizeSoundSystemPage> {
             padding: const EdgeInsets.fromLTRB(40, 10, 40, 30),
             child: ElevatedButton(
               onPressed: () {
-                Navigator.of(context).pop();
-              },
+                // Navigator.push(
+                //   context,
+                //   MaterialPageRoute(
+                //     builder: (context) => booking_artist(
+                //       selectedItems: selectedItems,
+                //       selectedkits : selectedkits,
+                //        artist_id : '',
+                //     ),
+                //   ),
+                // );
+                Navigator.of(context).pop({
+                  'selectedItems': selectedItems,
+                  'selectedKits': selectedkits,
+                });
+               },
+
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color(0xffe5195e),
                 padding: EdgeInsets.symmetric(vertical: 10.0),

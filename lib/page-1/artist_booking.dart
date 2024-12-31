@@ -1,6 +1,7 @@
 import 'dart:ffi';
 import 'package:geolocator/geolocator.dart';
 import 'package:test1/page-1/party_addons.dart';
+import 'package:test1/page-1/user_bookings.dart';
 import 'bottom_nav.dart';
 import 'location_service.dart';
 import 'package:flutter/gestures.dart';
@@ -20,7 +21,9 @@ import 'customer_support.dart';
 class booking_artist extends StatefulWidget {
   late String  artist_id;
   String? isteam;
-  booking_artist({required this.artist_id , this.isteam});
+  late  List<Map<String, dynamic>> selectedItems;
+  late  List<Map<String, dynamic>> selectedkits;
+  booking_artist({required this.artist_id , this.isteam, this.selectedItems = const [], this.selectedkits= const[]});
   @override
   _BookingArtistState createState() => _BookingArtistState();
 }
@@ -50,8 +53,12 @@ class _BookingArtistState extends State<booking_artist> {
   String? crowdSize;
 double? soundSystemPrice=0.0;
   bool hasSoundSystem = true ;
+  late Map<String, dynamic> equipments;
   double? totalAmount=0.0;
   String? selectedAudienceSize;
+  late double totalEquipmentCost;
+  double? baseEquipmentPrice;
+  late Map<String, dynamic> baseEquipment ;
   // bool remove = true;
   // Place this outside the build method in your widget tree
 
@@ -122,14 +129,82 @@ print('minute is $minutes');
     });
 
   }
-  // void getLocation() async {
-  //   try {
-  //     String address = await _locationService.getCurrentLocationAndAddress();
-  //     print("Current address: $address");
-  //   } catch (e) {
-  //     print(e);
-  //   }
-  // }
+  double? calculateTotalPrice() {
+    // Start with base sound system price
+    double? totalPrice = soundSystemPrice;
+
+    // Check if selectedItems is not empty and not null
+    if (widget.selectedItems != null && widget.selectedItems.isNotEmpty) {
+      for (var item in widget.selectedItems) {
+        if (item.containsKey('price')) {
+          totalPrice = totalPrice! +(item['price'] ?? 0).toDouble();
+        }
+      }
+    }
+
+    // Check if selectedkits is not empty and not null
+    if (widget.selectedkits != null && widget.selectedkits.isNotEmpty) {
+      for (var kit in widget.selectedkits) {
+        if (kit.containsKey('price')) {
+          totalPrice = totalPrice! + (kit['price'] ?? 0).toDouble();
+        }
+      }
+      totalPrice= totalPrice! - baseEquipmentPrice!;
+    }
+    // Update netAmount state
+    setState(() {
+      netAmount = totalPrice! + totalAmount!;
+    });
+
+    // final Map<String, dynamic> customisedData = {
+    //   if (widget.selectedItems != null && widget.selectedItems.isNotEmpty)
+    //     'customisedequipements': widget.selectedItems
+    //         .map((item) => item['name'] ?? '')
+    //         .where((name) => name.isNotEmpty)
+    //         .toList(),
+    //   if (widget.selectedkits != null && widget.selectedkits.isNotEmpty)
+    //     'customisedKit': widget.selectedkits
+    //         .map((kit) => kit['name'] ?? '')
+    //         .where((name) => name.isNotEmpty)
+    //         .toList(),
+    //   if ( widget.selectedkits.isEmpty )
+    //     // 'baseKit': baseEquipment!.keys
+    //     //     .map((key) => '$key' )
+    //     //     .toList(),
+    //   if (equipments != null)
+    //     'artistRequiredEquipments': equipments!.entries
+    //         .where((entry) => entry.key != 'total_equipment_cost') // Exclude total_equipment_cost
+    //         .map((entry) => '${entry.key} (${entry.value})')
+    //         .toList(),
+    // };
+    // // Extract quantities
+    // final String quantities = [
+    //   if (widget.selectedItems != null && widget.selectedItems.isNotEmpty)
+    //     ...widget.selectedItems
+    //         .map((item) => item['quantity']?.toString() ?? '')
+    //         .where((quantity) => quantity.isNotEmpty),
+    //   if (widget.selectedkits != null && widget.selectedkits.isNotEmpty)
+    //     ...widget.selectedkits
+    //         .map((kit) => kit['quantity']?.toString() ?? '')
+    //         .where((quantity) => quantity.isNotEmpty),
+    //   // if (baseEquipment != null && baseEquipment.isNotEmpty)
+    //   //   ...baseEquipment!.values
+    //   //       .map((value) => value['quantity']?.toString() ?? '')
+    //   //       .where((quantity) => quantity.isNotEmpty),
+    //   if (equipments != null)
+    //     ...equipments!.entries
+    //         .where((entry) => entry.key != 'total_equipment_cost')
+    //         .map((entry) => entry.value.toString())
+    // ].join(', ');
+
+
+
+
+
+
+    return totalPrice;
+  }
+
 
   @override
   void dispose(){
@@ -299,15 +374,18 @@ print('minute is $minutes');
         Map<String, dynamic> data  = json.decode(response.body);
         // Assuming 'data' is the decoded JSON response
 
+         baseEquipment = data['equipment'];
         int? soundSystemPriceInt = data['sound_system_price'];
+        baseEquipmentPrice =  soundSystemPriceInt!.toDouble();
         setState(() {
-          soundSystemPrice = soundSystemPriceInt?.toDouble();
+          soundSystemPrice = (soundSystemPriceInt!.toDouble() +  totalEquipmentCost)!;
           netAmount = totalAmount! +  soundSystemPrice! ;
         });
 
-        print('Audience Size: ${data['audience_size']}');
-        print('Sound System Price (int): $soundSystemPriceInt');
-        print('Sound System Price (double): $soundSystemPrice');
+
+        // print('Audience Size: ${data['audience_size']}');
+        // print('Sound System Price (int): $soundSystemPriceInt');
+        // print('Sound System Price (double): $soundSystemPrice');
         return json.decode(response.body);// Return the response body as a Map
 
       } else {
@@ -358,10 +436,11 @@ print(userDataList );
             price = (userData['price_per_hour']).toString() ?? ''; // Assign String to price
             image = '${userData['profile_photo']}' ;
             fcm_token=userData['fcm_token'] ?? '';
-            // hasSoundSystem=userData['sound_system'] == 1 ? true: false ;
+            equipments=userData['sound_system'] ?? '';
 
           });
-print('soundsystem is $hasSoundSystem');
+           totalEquipmentCost = equipments['total_equipment_cost']?.toDouble() ?? 0.0;
+print('soundsystem is $equipments');
         }
       } else {
         print('Failed to fetch user information. Status code: ${response.body}');
@@ -1177,8 +1256,9 @@ print('soundsystem is $hasSoundSystem');
                     ),
                     recognizer: TapGestureRecognizer()
                       ..onTap = () {
+                        storeSoundEquipment();
                         // Navigate to Refund Policy screen
-                        Navigator.push(context,MaterialPageRoute(builder: (context)=>SupportScreen()));
+                        // Navigator.push(context,MaterialPageRoute(builder: (context)=>SupportScreen()));
                       },
                   ),
                   TextSpan(
@@ -1231,7 +1311,7 @@ print('soundsystem is $hasSoundSystem');
                                                     ),
                                                   ),
                                                   Text(
-                                                    '₹${soundSystemPrice}',
+                                                    '₹${calculateTotalPrice()?.toStringAsFixed(2)}',
                                                     style: TextStyle(
                                                       fontSize: 17.0,
                                                       fontWeight: FontWeight.w600,
@@ -1269,16 +1349,42 @@ print('soundsystem is $hasSoundSystem');
                                                                 color: Color(0xFF121217), // Title text color matches your brand theme
                                                               ),
                                                             ),
-                                                            content: Text(
-                                                              'The sound system includes:\n\n'
-                                                                  '- Microphones\n'
-                                                                  '- Speakers\n'
-                                                                  '- Amplifiers\n'
-                                                                  '- Mixer',
-                                                              style: TextStyle(
-                                                                fontSize: 16.0,
-                                                                color: Colors.black, // Content text color
-                                                              ),
+                                                            content: Builder(
+                                                                builder: (context) {
+
+                                                                  // Convert equipment map entries to formatted strings
+                                                                  String equipmentList = '';
+                                                                  if (equipments is Map<String, dynamic>) {
+                                                                    equipments.forEach((key, value) {
+                                                                      // Skip the total_equipment_cost entry
+                                                                      if (key != 'total_equipment_cost') {
+                                                                        // Format each equipment with its price
+                                                                        equipmentList += '- $key: ₹${value.toString()}\n';
+                                                                      }
+                                                                    });
+                                                                  }
+                                                                  Map<String, int> equipmentQuantities = {};
+                                                                  if (widget.selectedkits == null || widget.selectedkits.isEmpty) {
+                                                                    // Only add baseEquipment if selectedkits is empty or null
+                                                                    baseEquipment?.forEach((key, value) {
+                                                                      equipmentQuantities[key] = value['quantity'];
+                                                                    });
+                                                                  }
+                                                                  // print(equipmentQuantities);
+
+                                                                  return Text(
+
+                                                                    'Base Equipment: \n $equipmentQuantities \n\n'
+                                                                        'The sound system includes:\n\n$equipmentList\n\n'
+                                                                        'Selected Items:\n${widget.selectedItems.map((item) => item['name'] ?? '').join(', ')}\n\n'
+                                                                        'Selected Kits:\n${widget.selectedkits.map((kit) => kit['name'] ?? '').join(', ')}'
+                                                                    ,
+                                                                    style: TextStyle(
+                                                                      fontSize: 16.0,
+                                                                      color: Colors.black,
+                                                                    ),
+                                                                  );
+                                                                }
                                                             ),
                                                             actions: [
                                                               TextButton(
@@ -1458,14 +1564,31 @@ print('soundsystem is $hasSoundSystem');
                   ),
                 ),
           ElevatedButton(
-            onPressed: () {
-              // Navigate to the CustomizeSoundSystemPage
-              Navigator.push(
+            onPressed: () async  {
+
+              final result = await Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => CustomizeSoundSystemPage(),
+                  builder: (context) =>CustomizeSoundSystemPage(), // Replace with your page widget
                 ),
               );
+
+              if (result != null && result is Map) {
+                setState(() {
+                  widget.selectedItems = result['selectedItems'] ?? [];
+                  widget.selectedkits = result['selectedKits'] ?? [];
+                });
+                // Call the calculateTotalPrice function
+                double? totalPrice = calculateTotalPrice();
+                print("Total Price: $totalPrice");
+              }
+              // Navigate to the CustomizeSoundSystemPage
+              // Navigator.push(
+              //   context,
+              //   MaterialPageRoute(
+              //     builder: (context) => CustomizeSoundSystemPage(),
+              //   ),
+              // );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.blue, // Replace with your brand color
@@ -1652,13 +1775,16 @@ print('soundsystem is $hasSoundSystem');
         return;
       }
 
+      // First reset the cache variables wherever they are defined (likely in your UserBookings page)
+      isCacheLoaded = false;
+      cachedData = null;
       // Navigate to the booked page on success
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => BottomNav(
             initialPageIndex: 2, // Set the index to 2 for UserBookings
-            isteam: widget.isteam, // Pass any required data if needed
+            isteam: widget.isteam // Pass any required data if needed
           ),
         ),
       );
@@ -1795,6 +1921,136 @@ print('soundsystem is $hasSoundSystem');
       }
     }
 
+  Future<void> storeSoundEquipment() async {
+    Future<String?> _getUserId() async {
+      return await storage.read(key: 'user_id');
+    }
+
+    Future<String?> _getBookingId() async {
+      return await storage.read(key: 'booking_id');
+    }
+     String apiUrl = '${Config().apiDomain}/customised-equipments'; // Replace with your backend endpoint.
+     String? user_id = await _getUserId();
+    String? booking_id = await _getBookingId();
+
+    final Map<String, dynamic> customisedData = {
+      if (widget.selectedItems != null && widget.selectedItems.isNotEmpty)
+        'customisedequipements': widget.selectedItems
+            .map((item) => item['name'] ?? '')
+            .where((name) => name.isNotEmpty)
+            .toList(),
+      if (widget.selectedkits != null && widget.selectedkits.isNotEmpty)
+        'customisedKit': widget.selectedkits
+            .map((kit) => kit['name'] ?? '')
+            .where((name) => name.isNotEmpty)
+            .toList(),
+      if ( widget.selectedkits.isEmpty )
+      'baseKit': baseEquipment!.keys
+          .map((key) => '$key' )
+          .toList(),
+        if (equipments != null)
+          'artistRequiredEquipments': equipments!.entries
+              .where((entry) => entry.key != 'total_equipment_cost') // Exclude total_equipment_cost
+              .map((entry) => '${entry.key} (${entry.value})')
+              .toList(),
+    };
+    // Separate price variable
+    final Map<String, dynamic> prices = {
+      if (widget.selectedItems != null && widget.selectedItems.isNotEmpty)
+        'customisedequipements': widget.selectedItems
+            .map((item) => item['price'] ?? 0)
+            .toList(),
+      if (widget.selectedkits != null && widget.selectedkits.isNotEmpty)
+        'customisedKit': widget.selectedkits
+            .map((kit) => kit['price'] ?? 0)
+            .toList(),
+      if (widget.selectedkits.isEmpty )
+        'baseKit': baseEquipmentPrice is List
+            ? baseEquipmentPrice
+            : [baseEquipmentPrice ?? 0],
+
+      if (equipments != null)
+        'artistRequiredEquipments': equipments!.entries
+            .where((entry) => entry.key != 'total_equipment_cost') // Exclude total_equipment_cost
+            .map((entry) => entry.value)
+            .toList(),
+    };
+    print('thi is it $baseEquipment');
+
+// Extract quantities
+    final Map<String, String> quantitiesData = {
+      if (widget.selectedItems != null && widget.selectedItems.isNotEmpty)
+        'customisedequipements': widget.selectedItems
+            .map((item) => item['quantity']?.toString() ?? '')
+            .where((quantity) => quantity.isNotEmpty)
+            .join(', '),
+      if (widget.selectedkits != null && widget.selectedkits.isNotEmpty)
+        'customisedKit': widget.selectedkits
+            .map((kit) => kit['quantity']?.toString() ?? '')
+            .where((quantity) => quantity.isNotEmpty)
+            .join(', '),
+      if (widget.selectedkits.isEmpty)
+        'baseKit': baseEquipment!.values
+            .map((value) => value['quantity']?.toString() ?? '')
+            .where((quantity) => quantity.isNotEmpty)
+            .join(', '),
+      // if (equipments != null)
+      //   'artistRequiredEquipments': equipments!.entries
+      //       .where((entry) => entry.key != 'total_equipment_cost')
+      //       .map((entry) => entry.value.toString())
+      //       .join(', '),
+    };
+
+// Combine the quantities into a single string if needed
+//     final String quantities = quantitiesData.entries
+//         .map((entry) => '${entry.key}: ${entry.value}')
+//         .join('\n');
+
+
+
+
+
+    double totalPrice = 0.0;
+
+// Iterate through all the entries in priceData
+    prices.forEach((key, priceList) {
+      // Add the sum of each price list to totalPrice
+      totalPrice += priceList.fold(0.0, (sum, price) => sum + price);
+    });
+    print(customisedData);
+    // Convert nested data structures to JSON strings
+    final Map<String, dynamic> requestData = {
+      'user_id': user_id,
+      'artist_id': widget.isteam == 'true' ? null : widget.artist_id,
+      'team_id': widget.isteam == 'true' ? widget.artist_id : null,
+      'booking_id': booking_id,
+      'item_names': jsonEncode(customisedData),
+      'quantity': jsonEncode(quantitiesData) ,
+      'price_per_unit': jsonEncode(prices),
+      'total_price': totalPrice,
+    };
+
+    print(requestData);
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode(requestData),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print('Sound equipment added successfully!');
+      } else {
+        print('Failed to add sound equipment. Error: ${response.body}');
+      }
+    } catch (error) {
+      print('An error occurred: $error');
+    }
+  }
 
 
     Future<void> selectDate(BuildContext context) async {

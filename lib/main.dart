@@ -49,7 +49,7 @@ void main() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-    // await FirebaseApi().initNotification();
+     await FirebaseApi().initNotification();
   } catch (e) {
 
     print("Error initializing Firebase: $e");

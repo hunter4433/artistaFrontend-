@@ -202,39 +202,39 @@ class _artist_credState extends State<team_info> {
                         ),
                       ),
                       SizedBox(height: 18 * fem),
-                      Container(
-                        width: double.infinity,
-                        height: 80 * fem,
-                        child: GestureDetector(
-                          onTap: () {
-                            _showLocationDialog(context);
-                          },
-                          child: AbsorbPointer(
-                            child: TextField(
-                              controller: _addressController,
-                              onChanged: (value) {
-                                setState(() {
-                                  _addressBorderColor = value.isEmpty ? Colors.red : Color(0xffeac6d3);
-                                });
-                              },
-                              decoration: InputDecoration(
-                                suffixIcon: Icon(Icons.home_outlined, color: Color(0xFF9E9EB8)),
-                                hintText: 'Address',
-                                hintStyle: TextStyle(color:  Color(0xFF9E9EB8)),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12 * fem),
-                                  borderSide: BorderSide(width: 1.25, color: Color(0xFF9E9EB8)),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12 * fem),
-                                  borderSide: BorderSide(width: 1.25, color: Colors.white),
-                                ),
-                              ),
-                              style: TextStyle(color: Colors.white, fontSize: 17),
-                            ),
-                          ),
-                        ),
-                      ),
+                      // Container(
+                      //   width: double.infinity,
+                      //   height: 80 * fem,
+                      //   child: GestureDetector(
+                      //     onTap: () {
+                      //       _showLocationDialog(context);
+                      //     },
+                      //     child: AbsorbPointer(
+                      //       child: TextField(
+                      //         controller: _addressController,
+                      //         onChanged: (value) {
+                      //           setState(() {
+                      //             _addressBorderColor = value.isEmpty ? Colors.red : Color(0xffeac6d3);
+                      //           });
+                      //         },
+                      //         decoration: InputDecoration(
+                      //           suffixIcon: Icon(Icons.home_outlined, color: Color(0xFF9E9EB8)),
+                      //           hintText: 'Address',
+                      //           hintStyle: TextStyle(color:  Color(0xFF9E9EB8)),
+                      //           enabledBorder: OutlineInputBorder(
+                      //             borderRadius: BorderRadius.circular(12 * fem),
+                      //             borderSide: BorderSide(width: 1.25, color: Color(0xFF9E9EB8)),
+                      //           ),
+                      //           focusedBorder: OutlineInputBorder(
+                      //             borderRadius: BorderRadius.circular(12 * fem),
+                      //             borderSide: BorderSide(width: 1.25, color: Colors.white),
+                      //           ),
+                      //         ),
+                      //         style: TextStyle(color: Colors.white, fontSize: 17),
+                      //       ),
+                      //     ),
+                      //   ),
+                      // ),
                       SizedBox(height: 16 * fem),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -283,10 +283,15 @@ class _artist_credState extends State<team_info> {
                                                   onChanged: (bool? value) {
                                                     setModalState(() {
                                                       if (value == true) {
-                                                        _selectedCities.add(city);
-                                                      } else {
-                                                        _selectedCities.remove(city);
-                                                      }
+                                                    _selectedCities.add(city);
+
+                                             // Check if Chandigarh is selected and convert to lat/long
+                                                  if (city == 'Chandigarh (Tricity)') {
+                                                convertAddressToLatLng('Chandigarh');
+                                                  }
+                                                  } else {
+                                              _selectedCities.remove(city);
+                                                   }
                                                     });
                                                     setState(() {}); // Update UI after selection
                                                   },
@@ -348,7 +353,7 @@ class _artist_credState extends State<team_info> {
                       ElevatedButton(
                         onPressed: () async {
                           if (_nameController.text.isEmpty ||
-                              _addressController.text.isEmpty ||
+                              _selectedCities.isEmpty||
                               _alternatephoneController.text.isEmpty) {
                             // Show a snackbar indicating that all fields are required
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -366,9 +371,11 @@ class _artist_credState extends State<team_info> {
                             SharedPreferences prefs = await SharedPreferences.getInstance();
                             prefs.setString('alt_phone_number', _alternatephoneController.text);
                             prefs.setString('name',_nameController.text);
-                            prefs.setString('phone_number',_phoneController.text);
-                            prefs.setString('address',_addressController.text);
+                            // prefs.setString('phone_number',_phoneController.text);
+                            prefs.setString('address',_selectedCities.join(','));
                             prefs.setString('profile_photo', _imageFile!.path);
+                            prefs.setDouble('latitude',_latitude!);
+                            prefs.setDouble('longitude',_longitude!);
 
                             // String artist_name = _nameController.text;
                             // print('name of artist= $artist_name ');
@@ -409,211 +416,7 @@ class _artist_credState extends State<team_info> {
     );
   }
 
-  void _showLocationDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        bool isLoading = false; // Local state for loading inside dialog
-        return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setState) {
-            return AlertDialog(
-              backgroundColor: Color(0xfffff5f8),
-              title: Text('Address'),
-              content: SizedBox(
-                width: 300, // Set a fixed width for the dialog box
-                height: 100, // Set a fixed height for the dialog box
-                child: Center(
-                  child: isLoading
-                      ? CircularProgressIndicator() // Show loading spinner
-                      : Text(
-                    'How would you like to enter your Address?',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 17, color: Colors.black),
-                  ),
-                ),
-              ),
-              actions: isLoading
-                  ? [] // Disable buttons if loading
-                  : [
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    _showManualEntryDialog(context);
-                  },
-                  child: Text(
-                    'Enter Manually',
-                    style: TextStyle(fontSize: 16, color: Colors.black),
-                  ),
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    setState(() {
-                      isLoading = true; // Show loading bar
-                    });
 
-                    await _useCurrentLocation();
-
-                    setState(() {
-                      isLoading = false; // Hide loading bar
-                    });
-
-                    Navigator.of(context).pop(); // Close the dialog
-                  },
-                  child: Text(
-                    'Use Current Location',
-                    style: TextStyle(fontSize: 16, color: Colors.black),
-                  ),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
-
-
-
-  //manual entry dialog box
-  void _showManualEntryDialog(BuildContext context) {
-    TextEditingController flatController = TextEditingController();
-    TextEditingController areaController = TextEditingController();
-    TextEditingController cityController = TextEditingController();
-    TextEditingController stateController = TextEditingController();
-    TextEditingController pincodeController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Color(0xfffff5f8),
-          title: Text(
-            'Enter Address',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w400,
-              color: Colors.black,
-            ),
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              children: [
-                // House No / Apartment TextField
-                TextField(
-                  controller: flatController,
-                  decoration: InputDecoration(
-                    hintText: 'House No/Apartment, Building',
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.pink), // Focused line color
-                    ),
-                    enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey), // Unfocused line color
-                    ),
-                  ),
-                ),
-                // Landmark / Street TextField
-                TextField(
-                  controller: areaController,
-                  decoration: InputDecoration(
-                    hintText: 'Landmark, Street, Sector',
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.pink),
-                    ),
-                    enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey),
-                    ),
-                  ),
-                ),
-                // City TextField
-                TextField(
-                  controller: cityController,
-                  decoration: InputDecoration(
-                    hintText: 'City',
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.pink),
-                    ),
-                    enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey),
-                    ),
-                  ),
-                ),
-                // State TextField
-                TextField(
-                  controller: stateController,
-                  decoration: InputDecoration(
-                    hintText: 'State',
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.pink),
-                    ),
-                    enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey),
-                    ),
-                  ),
-                ),
-                // Pincode TextField
-                TextField(
-                  controller: pincodeController,
-                  decoration: InputDecoration(
-                    hintText: 'Pincode',
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.pink),
-                    ),
-                    enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            ElevatedButton(
-              onPressed: () {
-                _addressController.text =
-                "${flatController.text}, ${areaController.text}, ${cityController.text}, ${stateController.text}, ${pincodeController.text}";
-                convertAddressToLatLng(pincodeController.text);
-                Navigator.of(context).pop();
-              },
-              child: Text(
-                'Enter',
-                style: TextStyle(fontSize: 16, color: Colors.black),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  // usecurrent location function
-  Future<void> _useCurrentLocation() async {
-    setState(() {
-      isLoading = true;
-    });
-
-    LocationService _locationService = LocationService();
-    _currentPosition = await _locationService.getCurrentLocation();
-    print(_currentPosition);
-    _latitude=_currentPosition!.latitude;
-    _longitude=_currentPosition!.longitude;
-
-
-    if (_currentPosition != null) {
-      print('Latitude is : ${_currentPosition!.latitude}, Longitude: ${_currentPosition!.longitude}');
-      _address = await MyCustomScrollBehavior.getAddressFromLatLng(_currentPosition!);
-      print(_address);
-
-      if (_address != null) {
-        _addressController.text = _address!;
-      }
-    }
-
-    setState(() {
-      isLoading = false;
-    });
-
-
-  }
 
   //pincode to latLng
   Future<void> convertAddressToLatLng(String textEditingController) async {

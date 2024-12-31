@@ -51,6 +51,7 @@ dependencies:
   win32: ^5.5.0 # Replace this with a version compatible with your Flutter SDK
   youtube_player_flutter: ^9.1.1
   flutter_inappwebview: ^6.1.5
+  wakelock_plus: ^1.2.10
 
 
   # The following adds the Cupertino Icons font to your application.

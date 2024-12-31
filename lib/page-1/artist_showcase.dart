@@ -66,7 +66,10 @@ class _ArtistProfileState extends State<ArtistProfile> {
   late Future<List<dynamic>> _teamMembersFuture;
   late Future<String> _availabilityStatusFuture;
  List<String>?  bookedDates;
-
+  String? artist_previous;
+  String? team_previous;
+  String? trimmedArtistAbout;
+  String? trimmedTeamAbout;
   bool _isLoading = true;
 
 
@@ -144,7 +147,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
             artistSpecialMessage = artistData['special_message'] ?? '';
             profilePhoto = artistData['profile_photo'] ?? '';
 
-            hasSoundSystem=artistData['sound_system'] == 1 ? true: false ;
+            // hasSoundSystem=artistData['sound_system'] == 1 ? true: false ;
 
             // Image and video URLs
             image1 = artistData['image1'];
@@ -169,7 +172,13 @@ class _ArtistProfileState extends State<ArtistProfile> {
              if (video4 != null) VideoPathsFromBackend.add(video4!);
           });
         }
-        List<String> parsedBackendSkills = artistRole!.split(', ').map((skill) => skill.trim()).toList();
+
+         artist_previous = artistAboutText?.split(',')[1].trim();
+        team_previous = teamAbout?.split(',')[1].trim() ?? null;
+
+        trimmedArtistAbout = artistAboutText?.split(',')[0].trim();
+        trimmedTeamAbout = teamAbout?.split(',')[0].trim();
+        List<String> parsedBackendSkills = artistRole!.split(',').map((skill) => skill.trim()).toList();
         // Combine both lists and remove duplicates
         // Add backend skills to demoSkills, avoiding duplicates
         for (String skill in parsedBackendSkills) {
@@ -179,6 +188,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
         }
         print(demoSkills);
         print('skills is $skills');
+        print('video is $video1,$video2, $video3,$video4');
         print('skill category is $teamRole');
         print('special message $artistSpecialMessage');
       } else {
@@ -768,8 +778,6 @@ class _ArtistProfileState extends State<ArtistProfile> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
 
-
-
                               Expanded(
                                 child: Wrap(
                                   spacing: 10.0,
@@ -816,7 +824,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
                               // Display Experience from backend
                               Expanded( // Ensures proper wrapping of text
                                 child: Text(
-                                  artistAboutText ?? teamAbout ?? '',
+                                  trimmedArtistAbout?? trimmedTeamAbout ?? '',
                                   style: TextStyle(
                                     fontWeight: FontWeight.w400,
                                     fontSize: 17.0,
@@ -825,7 +833,39 @@ class _ArtistProfileState extends State<ArtistProfile> {
                               ),
                             ],
                           ),
-
+                          SizedBox(height: 10.0*fem),
+                        // Row for previous bookings
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Icon on the left
+                              Icon(
+                                Icons.event, // Use any icon that fits your design
+                                size: 24.0,
+                                color: Colors.grey, // Adjust color to match your theme
+                              ),
+                              SizedBox(width: 8.0), // Space between icon and text
+                              // Subheading for Experience
+                              Text(
+                                'Previous Bookings : ',
+                                style: TextStyle(
+                                  fontSize: 18.0 * fem,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              SizedBox(width: 8.0),
+                              // Display Experience from backend
+                              Expanded( // Ensures proper wrapping of text
+                                child: Text(
+                                  artist_previous ?? team_previous ?? '',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w400,
+                                    fontSize: 17.0,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                           SizedBox(height: 10.0*fem),
 
                           // Row for Sound System
@@ -995,6 +1035,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
                   ),
                   SizedBox(height: 12 * fem),
                   // GridView builder for the gallery
+                  // Usage in ListView
                   SizedBox(
                     height: 200 * fem,
                     child: ListView.builder(
@@ -1002,45 +1043,9 @@ class _ArtistProfileState extends State<ArtistProfile> {
                       itemCount: VideoPathsFromBackend.length,
                       itemBuilder: (context, index) {
                         if (index < VideoPathsFromBackend.length) {
-                          return Container(
-                            width: 170 * fem,
-                            margin: EdgeInsets.symmetric(horizontal: 5.0 * fem),
-                            child: GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => Scaffold(
-                                      backgroundColor: Colors.black,
-                                      body: SafeArea(
-                                        child: Stack(
-                                          children: [
-                                            Center(
-                                              child: VideoPlayerWidget(
-                                                url: VideoPathsFromBackend[index],
-                                                autoPlay: true,
-                                              ),
-                                            ),
-                                            Positioned(
-                                              top: 16,
-                                              left: 16,
-                                              child: IconButton(
-                                                icon: const Icon(Icons.arrow_back, color: Colors.white),
-                                                onPressed: () => Navigator.of(context).pop(),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(9 * fem),
-                                child: VideoPlayerWidget(url: VideoPathsFromBackend[index]),
-                              ),
-                            ),
+                          return CarouselVideoItem(
+                            videoUrl: VideoPathsFromBackend[index],
+                            fem: fem,
                           );
                         } else {
                           return Container(
@@ -1055,7 +1060,8 @@ class _ArtistProfileState extends State<ArtistProfile> {
                       },
                     ),
                   ),
-                ],
+
+          ],
               ),
             ),
 
@@ -1245,109 +1251,98 @@ class FullScreenView extends StatelessWidget {
 class VideoPlayerWidget extends StatefulWidget {
   final String url;
   final bool autoPlay;
+  final bool isCarouselMode;
+  final double aspectRatio;
+
   const VideoPlayerWidget({
     Key? key,
     required this.url,
     this.autoPlay = false,
+    this.isCarouselMode = false,
+    this.aspectRatio = 16 / 9,
   }) : super(key: key);
 
   @override
-  _VideoPlayerWidgetState createState() => _VideoPlayerWidgetState();
+  VideoPlayerWidgetState createState() => VideoPlayerWidgetState();
 }
 
-class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
-  late VideoPlayerController _videoPlayerController;
-  ChewieController? _chewieController;
-  YoutubePlayerController? _youtubePlayerController;
-  bool _isYouTube = false;
-  bool _isPlaying = false;
+class VideoPlayerWidgetState extends State<VideoPlayerWidget> {
+  late VideoPlayerController videoPlayerController;
+  ChewieController? chewieController;
+  YoutubePlayerController? youtubePlayerController;
+  bool isYouTube = false;
 
   @override
   void initState() {
     super.initState();
-    _isYouTube = YoutubePlayer.convertUrlToId(widget.url) != null;
-    _initializePlayer();
+    isYouTube = YoutubePlayer.convertUrlToId(widget.url) != null;
+    initializePlayer();
   }
 
-  void _initializePlayer() {
-    if (_isYouTube) {
-      _youtubePlayerController = YoutubePlayerController(
+  void initializePlayer() {
+    if (isYouTube) {
+      youtubePlayerController = YoutubePlayerController(
         initialVideoId: YoutubePlayer.convertUrlToId(widget.url)!,
         flags: YoutubePlayerFlags(
           autoPlay: widget.autoPlay,
-          mute: false,
+          mute: widget.isCarouselMode,
+          disableDragSeek: widget.isCarouselMode, // Disable seeking in carousel
+          enableCaption: !widget.isCarouselMode,
         ),
       );
     } else {
-      _videoPlayerController = VideoPlayerController.networkUrl(widget.url as Uri)
+      videoPlayerController = VideoPlayerController.networkUrl(Uri.parse(widget.url))
         ..initialize().then((_) {
           setState(() {
-            _chewieController = ChewieController(
-              videoPlayerController: _videoPlayerController,
-              aspectRatio: _videoPlayerController.value.aspectRatio,
+            chewieController = ChewieController(
+              videoPlayerController: videoPlayerController,
+              aspectRatio: widget.aspectRatio,
               autoPlay: widget.autoPlay,
               looping: false,
-              showControls: true,
-              placeholder: Center(child: CircularProgressIndicator()),
+              showControls: !widget.isCarouselMode,
+              placeholder: const Center(child: CircularProgressIndicator()),
               allowMuting: true,
             );
           });
         });
-
-      // Add listener for play state
-      _videoPlayerController.addListener(_onPlayStateChanged);
-    }
-  }
-
-  void _onPlayStateChanged() {
-    if (_videoPlayerController.value.isPlaying && !_isPlaying) {
-      _isPlaying = true;
-      // Navigate to full screen page
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => FullScreenVideoView(
-            videoUrl: widget.url,
-            startPosition: _videoPlayerController.value.position,
-          ),
-        ),
-      );
     }
   }
 
   @override
   void dispose() {
-    _videoPlayerController.removeListener(_onPlayStateChanged);
-    if (!_isYouTube) {
-      _videoPlayerController.dispose();
-      _chewieController?.dispose();
+    if (!isYouTube) {
+      videoPlayerController.dispose();
+      chewieController?.dispose();
     } else {
-      _youtubePlayerController?.dispose();
+      youtubePlayerController?.dispose();
     }
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isYouTube && _youtubePlayerController != null) {
-      return GestureDetector(
-        onTap: () {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => FullScreenVideoView(
-                videoUrl: widget.url,
-                startPosition: Duration.zero,
-              ),
-            ),
-          );
-        },
-        child: YoutubePlayer(
-          controller: _youtubePlayerController!,
-          showVideoProgressIndicator: true,
-        ),
+    return AspectRatio(
+      aspectRatio: widget.aspectRatio,
+      child: Container(
+        color: Colors.black,
+        child: widget.isCarouselMode
+            ? AbsorbPointer(  // Prevent video controls in carousel mode
+          child: _buildPlayer(),
+        )
+            : _buildPlayer(),
+      ),
+    );
+  }
+
+  Widget _buildPlayer() {
+    if (isYouTube && youtubePlayerController != null) {
+      return YoutubePlayer(
+        controller: youtubePlayerController!,
+        showVideoProgressIndicator: !widget.isCarouselMode,
       );
-    } else if (_chewieController != null) {
+    } else if (chewieController != null) {
       return Chewie(
-        controller: _chewieController!,
+        controller: chewieController!,
       );
     } else {
       return const Center(child: CircularProgressIndicator());
@@ -1355,61 +1350,120 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   }
 }
 
-class FullScreenVideoView extends StatelessWidget {
+// Modified video carousel item
+class CarouselVideoItem extends StatelessWidget {
   final String videoUrl;
-  final Duration startPosition;
+  final double fem;
 
-  const FullScreenVideoView({
+  const CarouselVideoItem({
     Key? key,
     required this.videoUrl,
-    required this.startPosition,
+    required this.fem,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        Navigator.of(context).pushReplacement(
+    return GestureDetector(
+      onTap: () {
+        // Navigate to full screen for both YouTube and local videos
+        Navigator.push(
+          context,
           MaterialPageRoute(
-            builder: (context) => Scaffold(
-              body: VideoPlayerWidget(url: videoUrl),
+            builder: (context) => FullScreenVideoView(
+              videoUrl: videoUrl,
             ),
           ),
         );
-        return false;
       },
-      child: Scaffold(
-        backgroundColor: Colors.black,
-        body: SafeArea(
-          child: Stack(
-            children: [
-              Center(
-                child: VideoPlayerWidget(
-                  url: videoUrl,
-                  autoPlay: true,
-                ),
-              ),
-              Positioned(
-                top: 16,
-                left: 16,
-                child: IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () => Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(
-                      builder: (context) => Scaffold(
-                        body: VideoPlayerWidget(url: videoUrl),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
+      child: Container(
+        width: 170 * fem,
+        margin: EdgeInsets.symmetric(horizontal: 5.0 * fem),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(9 * fem),
+          child: VideoPlayerWidget(
+            url: videoUrl,
+            isCarouselMode: true,
+            autoPlay: false,
+            aspectRatio: 16 / 9,
           ),
         ),
       ),
     );
   }
 }
+
+
+// FullScreenVideoView.dart
+class FullScreenVideoView extends StatelessWidget {
+  final String videoUrl;
+
+  const FullScreenVideoView({
+    Key? key,
+    required this.videoUrl,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Full Screen Video'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
+      body: Center(
+        child: VideoPlayerWidget(
+          url: videoUrl,
+          isCarouselMode: false,
+          autoPlay: true,
+        ),
+      ),
+    );
+  }
+}
+
+// VideoCarousel.dart
+class VideoCarousel extends StatelessWidget {
+  final List<String> VideoPathsFromBackend;
+  final double fem;
+
+  const VideoCarousel({
+    Key? key,
+    required this.VideoPathsFromBackend,
+    required this.fem,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 200 * fem,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: VideoPathsFromBackend.length,
+        itemBuilder: (context, index) {
+          if (index < VideoPathsFromBackend.length) {
+            return CarouselVideoItem(
+              videoUrl: VideoPathsFromBackend[index],
+              fem: fem,
+            );
+          } else {
+            return Container(
+              width: 160 * fem,
+              margin: EdgeInsets.symmetric(horizontal: 5.5 * fem),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(9 * fem),
+                color: Colors.grey[200],
+              ),
+            );
+          }
+        },
+      ),
+    );
+  }
+}
+
+
 
 
 class ReviewsSection extends StatelessWidget {

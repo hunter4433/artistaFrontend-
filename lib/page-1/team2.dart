@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
 import 'package:audioplayers/audioplayers.dart';
@@ -15,7 +16,7 @@ import 'dart:convert';
 import 'package:test1/page-1/team1.dart';
 // import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:path_provider/path_provider.dart';
-
+import 'package:wakelock_plus/wakelock_plus.dart';
 import 'bottomNav_artist.dart';
 
 class team2signup extends StatefulWidget {
@@ -28,7 +29,7 @@ class team2signup extends StatefulWidget {
   _ArtistCredentials2State createState() => _ArtistCredentials2State();
 }
 
-class _ArtistCredentials2State extends State<team2signup> {
+class _ArtistCredentials2State extends State<team2signup> with WidgetsBindingObserver {
   TextEditingController _subskillController = TextEditingController();
   TextEditingController _experienceController = TextEditingController();
   TextEditingController _hourlyPriceController = TextEditingController();
@@ -41,7 +42,9 @@ class _ArtistCredentials2State extends State<team2signup> {
   TextEditingController _accountNumberController = TextEditingController();
   TextEditingController _ifscController = TextEditingController();
   TextEditingController _accountHolderNameController = TextEditingController();
-
+  TextEditingController _youtubeLink1Controller = TextEditingController();
+  TextEditingController _youtubeLink2Controller = TextEditingController();
+  bool _isUploading = false;
   String _selectedSkill = ''; // Selected skill
   List<String> _skills = [
     'Musician',
@@ -125,7 +128,7 @@ class _ArtistCredentials2State extends State<team2signup> {
   //
   // File profilePhotoFile = File(profilePhotoPath!);
 
-  Future<void> storeBankDetails() async {
+  Future<bool> storeBankDetails() async {
     final url = Uri.parse('${Config().apiDomain}/artist-bank-details');
     String? team_id = await storage.read(key: 'team_id');
 
@@ -136,6 +139,7 @@ class _ArtistCredentials2State extends State<team2signup> {
       'IFSC_code': _ifscController.text,
       'account_holder_name': _accountHolderNameController.text,
       'artist_id': team_id ?? '',
+      'team_id':0,
       // 'team_id': int.tryParse(_teamIdController.text) ?? null,
     };
 
@@ -151,62 +155,284 @@ class _ArtistCredentials2State extends State<team2signup> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Bank details saved successfully!')),
         );
+        return true;
       } else {
         // Failure
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to save bank details.')),
         );
+        return false;
       }
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('An error occurred: $error')),
       );
     }
+    return false;
   }
 
-  Future<bool> _onFinishButtonClicked() async {
-    try {
-      // Send data to the backend and get the ID
-      bool dataSent = await _sendDataToBackend();
-      await storeBankDetails();
-      // if (!dataSent) {
-      //   print('Failed to send data to backend. mohit ');
-      //   return false;
-      // }
 
-      // Retrieve the stored ID
-      String? id = await storage.read(key: 'team_id');
-      print(id);
-      if (id == null) {
-        print('Failed to retrieve ID from storage.');
+
+  @override
+  void initState() {
+    _selectedSkill = _skills.first;
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    _subskillController.dispose();
+    _experienceController.dispose();
+    _hourlyPriceController.dispose();
+    _messageController.dispose();
+
+    super.dispose();
+    WidgetsBinding.instance.removeObserver(this);
+    _disableWakeLock();
+    super.dispose();
+  }
+
+  Future<void> _enableWakeLock() async {
+    try {
+      await WakelockPlus.enable();
+    } catch (e) {
+      print('Failed to enable wakelock: $e');
+    }
+  }
+
+  Future<void> _disableWakeLock() async {
+    try {
+      if (_isUploading) {
+        await WakelockPlus.disable();
+      }
+    } catch (e) {
+      print('Failed to disable wakelock: $e');
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (_isUploading) {
+      switch (state) {
+        case AppLifecycleState.paused:
+          _showUploadNotification();
+          break;
+        case AppLifecycleState.resumed:
+          _cancelUploadNotification();
+          break;
+        default:
+          break;
+      }
+    }
+  }
+
+  void _showUploadNotification() {
+    NotificationService.showUploadInProgressNotification();
+  }
+
+  void _cancelUploadNotification() {
+    NotificationService.cancelUploadNotification();
+  }
+
+
+
+  Future<bool> _onFinishButtonClicked() async {
+    setState(() => _isUploading = true);
+    await _enableWakeLock();
+
+    String? teamId;
+    bool success = false;
+
+    // Show progress dialog
+    if (!mounted) return false;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return WillPopScope(
+          onWillPop: () async => false,
+          child: Dialog(
+            backgroundColor: Colors.white,
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 20),
+                  Text(
+                    'Uploading Data...',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    'Please keep the app open.\nThis may take a few minutes.',
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
+    try {
+      // Your existing implementation
+      bool dataSent = await _sendDataToBackend();
+      if (!dataSent) {
+        await _showErrorDialog('Failed to send initial data to server. Please try again.');
+        return false;
+      }
+
+      teamId = await storage.read(key: 'team_id');
+      if (teamId == null) {
+        await _showErrorDialog('Failed to retrieve artist ID. Please try again.');
+        return false;
+      }
+
+      bool bankDetailsStored = await storeBankDetails();
+      if (!bankDetailsStored) {
+        await _deleteArtistInformation(teamId);
+        await _showErrorDialog('Failed to store bank details. Please check your bank information and try again.');
         return false;
       }
 
       List<File?> imageFiles = [_image1, _image2, _image3, widget.profilePhoto];
-      List<File?> videoFiles = [_video1, _video2, _video3, _video4];
+      List<File?> videoFiles = [_video1, _video2];
 
-      // Run upload functions in parallel with ID
       final results = await Future.wait([
-        uploadImages(imageFiles, id), // Upload images with ID
-        uploadVideos(videoFiles, id) // Upload videos with ID
-      ]);
+        uploadImages(imageFiles, teamId),
+        uploadVideos(videoFiles, teamId)
+      ]).catchError((error) async {
+        await _deleteArtistInformation(teamId!);
+        await _showErrorDialog('Error uploading files: ${error.toString()}');
+        throw error;
+      });
 
-      bool imagesUploaded = results[0] as bool; // Result from _uploadImages
-      bool videosUploaded = results[1] as bool; // Result from uploadVideo
+      bool imagesUploaded = results[0] as bool;
+      bool videosUploaded = results[1] as bool;
 
-      // Handle the results
       if (imagesUploaded && videosUploaded) {
+        success = true;
         print('All operations completed successfully.');
-        return true;
       } else {
-        print('Some operations failed.');
+        await _deleteArtistInformation(teamId);
+        if (!imagesUploaded && !videosUploaded) {
+          await _showErrorDialog('Failed to upload both images and videos. Please check your files and try again.');
+        } else if (!imagesUploaded) {
+          await _showErrorDialog('Failed to upload images. Please check your image files and try again.');
+        } else {
+          await _showErrorDialog('Failed to upload videos. Please check your video files and try again.');
+        }
+      }
+
+    } catch (e) {
+      if (teamId != null) {
+        await _deleteArtistInformation(teamId);
+      }
+      await _showErrorDialog('An unexpected error occurred: ${e.toString()}');
+    } finally {
+      setState(() => _isUploading = false);
+      await _disableWakeLock();
+      _cancelUploadNotification();
+      if (mounted) {
+        Navigator.of(context).pop(); // Remove progress dialog
+      }
+    }
+
+    return success;
+  }
+// Helper function to show error dialog
+  Future<void> _showErrorDialog(String message) async {
+    return showDialog(
+      context: context,
+      barrierDismissible: false, // User must tap button to close dialog
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Error'),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+// Delete artist information function
+  Future<void> _deleteArtistInformation(String teamId) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('${Config().apiDomain}/artist/info/$teamId'),
+        headers: <String, String>{
+          'Content-Type': 'application/vnd.api+json',
+          'Accept': 'application/vnd.api+json',
+
+        },
+      );
+
+      if (response.statusCode != 204) {
+        await _showErrorDialog(
+            'Warning: Failed to clean up artist data. Please contact support. Status: ${response.statusCode}'
+        );
       }
     } catch (e) {
-      // Handle any errors that occur during the process
-      print('An error occurred: $e');
+      await _showErrorDialog(
+          'Warning: Failed to clean up artist data. Please contact support. Error: ${e.toString()}'
+      );
     }
-    return false;
   }
+
+  // Future<bool> _onFinishButtonClicked() async {
+  //   try {
+  //     // Send data to the backend and get the ID
+  //     bool dataSent = await _sendDataToBackend();
+  //     await storeBankDetails();
+  //     // if (!dataSent) {
+  //     //   print('Failed to send data to backend. mohit ');
+  //     //   return false;
+  //     // }
+  //
+  //     // Retrieve the stored ID
+  //     String? id = await storage.read(key: 'team_id');
+  //     print(id);
+  //     if (id == null) {
+  //       print('Failed to retrieve ID from storage.');
+  //       return false;
+  //     }
+  //
+  //     List<File?> imageFiles = [_image1, _image2, _image3, widget.profilePhoto];
+  //     List<File?> videoFiles = [_video1, _video2];
+  //
+  //     // Run upload functions in parallel with ID
+  //     final results = await Future.wait([
+  //       uploadImages(imageFiles, id), // Upload images with ID
+  //       uploadVideos(videoFiles, id) // Upload videos with ID
+  //     ]);
+  //
+  //     bool imagesUploaded = results[0] as bool; // Result from _uploadImages
+  //     bool videosUploaded = results[1] as bool; // Result from uploadVideo
+  //
+  //     // Handle the results
+  //     if (imagesUploaded && videosUploaded) {
+  //       print('All operations completed successfully.');
+  //       return true;
+  //     } else {
+  //       print('Some operations failed.');
+  //     }
+  //   } catch (e) {
+  //     // Handle any errors that occur during the process
+  //     print('An error occurred: $e');
+  //   }
+  //   return false;
+  // }
 
   Future<bool> _sendDataToBackend() async {
     String? profilePhotoPath = widget.profilePhoto?.path;
@@ -229,11 +455,15 @@ class _ArtistCredentials2State extends State<team2signup> {
       Map<String, String> artistData = {
         'phone_number': phoneNumber!,
         'price_per_hour': _hourlyPriceController.text,
-
+        'skill_category': _selectedSkill,
+        'skills':_selectedSubSkills.join(','),
+        'about_team': '${_experienceController.text}, ${_pastController.text}',
         'special_message': _messageController.text,
         'fcm_token': fCMToken!,
+        'video3': _youtubeLink1Controller.text,
+        'video4': _youtubeLink2Controller.text,
         // Convert "Yes" to "1" and "No" to "0" as strings
-        'sound_system': selectedOption == 'Yes' ? '1' : '0',
+        'sound_system': _selectedEquipment.join(', '),
       };
 
       // Merge sharedPreferencesData with artistData
@@ -314,25 +544,7 @@ class _ArtistCredentials2State extends State<team2signup> {
     }
   }
 
-  // Future<File> trimVideoIfNeeded(File videoFile) async {
-  //   String inputPath = videoFile.path;
-  //   String outputPath = '${(await getTemporaryDirectory()).path}/trimmed_${videoFile.path.split('/').last}';
-  //
-  //   // FFmpeg command to get the first 20 seconds of the video
-  //   String trimCommand = '-i $inputPath -t 20 -c copy $outputPath';
-  //
-  //   await FFmpegKit.execute(trimCommand);
-  //
-  //   // Check if the output file exists; if not, return the original file
-  //   File outputFile = File(outputPath);
-  //   if (outputFile.existsSync()) {
-  //     print('Video trimmed to 20 seconds: $outputPath');
-  //     return outputFile;
-  //   } else {
-  //     print('No trimming needed or trimming failed.');
-  //     return videoFile; // Use original if trimming fails
-  //   }
-  // }
+
 
   Future<bool> uploadVideo(File videoFile, String id) async {
     try {
@@ -368,14 +580,14 @@ class _ArtistCredentials2State extends State<team2signup> {
     }
   }
 
-  @override
-  void dispose() {
-    _experienceController.dispose();
-    _hourlyPriceController.dispose();
-    _messageController.dispose();
-    _audioPlayer.dispose();
-    super.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   _experienceController.dispose();
+  //   _hourlyPriceController.dispose();
+  //   _messageController.dispose();
+  //   _audioPlayer.dispose();
+  //   super.dispose();
+  // }
 
   Future<void> _playAudio() async {
     if (_audioFile != null) {
@@ -1070,9 +1282,9 @@ class _ArtistCredentials2State extends State<team2signup> {
                         ),
                       ),
                       const Padding(
-                        padding: EdgeInsets.fromLTRB(0, 30, 0, 0),
+                        padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
                         child: SizedBox(
-                          height: 40,
+                          height: 25,
                           child: Text(
                             'Upload Your Videos Here',
                             textAlign: TextAlign.left,
@@ -1085,6 +1297,21 @@ class _ArtistCredentials2State extends State<team2signup> {
                           ),
                         ),
                       ),
+
+                      const Padding(
+                        padding: EdgeInsets.fromLTRB(0, 10, 0, 10),
+                        child: Text(
+                          'Keep the video duration within 30 seconds.',
+                          textAlign: TextAlign.left,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
+                            color: Color(0xffe5195e),
+                            fontFamily: 'Be Vietnam Pro',
+                          ),
+                        ),
+                      ),
+
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: Row(
@@ -1129,25 +1356,7 @@ class _ArtistCredentials2State extends State<team2signup> {
                                     : Icon(Icons.add, color: Colors.white),
                               ),
                             ),
-                            GestureDetector(
-                              onTap: _pickVideo3,
-                              child: Container(
-                                width: 150 * fem,
-                                height: 170 * fem,
-                                margin: EdgeInsets.only(right: 16.0),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10 * fem),
-                                  border: Border.all(color: Colors.grey),
-                                ),
-                                child: _controller3 != null
-                                    ? ClipRRect(
-                                        borderRadius:
-                                            BorderRadius.circular(10 * fem),
-                                        child: VideoPlayer(_controller3!),
-                                      )
-                                    : Icon(Icons.add, color: Colors.white),
-                              ),
-                            ),
+
                           ],
                         ),
                       ),
@@ -1165,7 +1374,7 @@ class _ArtistCredentials2State extends State<team2signup> {
                         Container(
                           margin: EdgeInsets.fromLTRB(0 * fem, 0 * fem, 0 * fem, 9 * fem),
                           child: Text(
-                            'For videos longer than 20 seconds',
+                            'For videos longer than 30 seconds',
                             style: SafeGoogleFont(
                               'Be Vietnam Pro',
                               fontSize: 16 * ffem,
@@ -1175,54 +1384,49 @@ class _ArtistCredentials2State extends State<team2signup> {
                             ),
                           ),
                         ),
-                        Container(
 
-                          width: double.infinity,
-                          // Adjusted height to match the height of the outer container
-                          height: 60 * fem,
 
-                          child: TextField(
-                            decoration: InputDecoration(
-                              hintText: 'Please paste the YouTube video link here.',
-                              hintStyle: TextStyle(color:  Color(0xFF9E9EB8)),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10 * fem),
-                                borderSide: BorderSide(width: 1.25, color:Color(0xFF9E9EB8),),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10 * fem),
-                                borderSide: BorderSide(width: 1.25, color: Colors.white ),
-                              ),
-                            ),
-                            style: TextStyle(color: Colors.white, fontSize: 16),
-                          ),
-                        ),
-
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(0,10,0,0),
-                          child: Container(
-
+                          Container(
                             width: double.infinity,
-                            // Adjusted height to match the height of the outer container
                             height: 60 * fem,
-
                             child: TextField(
+                              controller: _youtubeLink1Controller, // Add this controller
                               decoration: InputDecoration(
                                 hintText: 'Please paste the YouTube video link here.',
-                                hintStyle: TextStyle(color:  Color(0xFF9E9EB8)),
+                                hintStyle: TextStyle(color: Color(0xFF9E9EB8)),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10 * fem),
-                                  borderSide: BorderSide(width: 1.25, color:Color(0xFF9E9EB8),),
+                                  borderSide: BorderSide(width: 1.25, color:Color(0xFF9E9EB8)),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10 * fem),
-                                  borderSide: BorderSide(width: 1.25, color: Colors.white ),
+                                  borderSide: BorderSide(width: 1.25, color: Colors.white),
                                 ),
                               ),
                               style: TextStyle(color: Colors.white, fontSize: 16),
                             ),
                           ),
-                        ),
+                          SizedBox(height: 5),
+                          Container(
+                            width: double.infinity,
+                            height: 60 * fem,
+                            child: TextField(
+                              controller: _youtubeLink2Controller, // Add this controller
+                              decoration: InputDecoration(
+                                hintText: 'Please paste the YouTube video link here.',
+                                hintStyle: TextStyle(color: Color(0xFF9E9EB8)),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10 * fem),
+                                  borderSide: BorderSide(width: 1.25, color:Color(0xFF9E9EB8)),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10 * fem),
+                                  borderSide: BorderSide(width: 1.25, color: Colors.white),
+                                ),
+                              ),
+                              style: TextStyle(color: Colors.white, fontSize: 16),
+                            ),
+                          ),
 
                         Container(
                           margin: EdgeInsets.fromLTRB(
@@ -1691,44 +1895,155 @@ class _ArtistCredentials2State extends State<team2signup> {
     );
   }
 
+
   Future<bool> uploadImages(List<File?> imageFiles, String id) async {
     try {
-      // Your image upload API endpoint
-      var uploadUrl = Uri.parse('${Config().apiDomain}/images_upload/$id');
-      var request = http.MultipartRequest('POST', uploadUrl);
+      var uploadUrl = Uri.parse('${Config().apiDomain}/api/upload-images/$id');
+      print('Upload URL: $uploadUrl');
 
-      // Add user type as a field in the request
-      request.fields['usertype'] = 'team';
+      // Create form data
+      var formData = http.MultipartRequest('POST', uploadUrl);
 
-      // Add images to the request
-      for (int i = 0; i < imageFiles.length; i++) {
-        var imageFile = imageFiles[i];
-        if (imageFile != null) {
-          // Use 'profile_photo' for the last image, otherwise use 'image{i + 1}'
-          String fieldName =
-              (i == imageFiles.length - 1) ? 'profile_photo' : 'image${i + 1}';
-          var image =
-              await http.MultipartFile.fromPath(fieldName, imageFile.path);
-          request.files.add(image);
+      // Add usertype
+      formData.fields['usertype'] = 'team'; // or 'team' based on your need
+
+      // Add images
+      for (int i = 0; i < imageFiles.length - 1; i++) {
+        if (imageFiles[i] != null) {
+          var stream = http.ByteStream(imageFiles[i]!.openRead());
+          var length = await imageFiles[i]!.length();
+
+          var multipartFile = http.MultipartFile(
+              'image${i + 1}',
+              stream,
+              length,
+              filename: 'image${i + 1}.jpg'
+          );
+          formData.files.add(multipartFile);
         }
       }
 
-      // Send the request to upload the images
-      var streamedResponse = await request.send();
+      // Add profile photo (last image in the list)
+      if (imageFiles.last != null) {
+        var stream = http.ByteStream(imageFiles.last!.openRead());
+        var length = await imageFiles.last!.length();
 
-      // Check if the image upload was successful
-      if (streamedResponse.statusCode == 200) {
-        var response = await streamedResponse.stream.bytesToString();
-        print('Upload successful: $response');
+        var multipartFile = http.MultipartFile(
+            'profile_photo',
+            stream,
+            length,
+            filename: 'profile_photo.jpg'
+        );
+        formData.files.add(multipartFile);
+      }
+
+      // Add headers if needed
+      formData.headers.addAll({
+        'Accept': 'application/json',
+        // Add any other headers your API requires
+      });
+
+      // Send request
+      var response = await formData.send();
+      var responseData = await response.stream.bytesToString();
+      print('Response Status Code: ${response.statusCode}');
+      print('Response Body: $responseData');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print('Upload successful');
         return true;
       } else {
-        print('Upload failed with status: ${streamedResponse.statusCode}');
+        print('Upload failed with status: ${response.statusCode}');
+        print('Error details: $responseData');
         return false;
       }
-    } catch (e) {
-      // Handle errors if needed
+    } catch (e, stackTrace) {
       print('Error uploading images: $e');
+      print('Stack trace: $stackTrace');
       return false;
     }
+  }
+
+
+
+
+
+  // Future<bool> uploadImages(List<File?> imageFiles, String id) async {
+  //   try {
+  //     // Your image upload API endpoint
+  //     var uploadUrl = Uri.parse('${Config().apiDomain}/images_upload/$id');
+  //     var request = http.MultipartRequest('POST', uploadUrl);
+  //
+  //     // Add user type as a field in the request
+  //     request.fields['usertype'] = 'team';
+  //
+  //     // Add images to the request
+  //     for (int i = 0; i < imageFiles.length; i++) {
+  //       var imageFile = imageFiles[i];
+  //       if (imageFile != null) {
+  //         // Use 'profile_photo' for the last image, otherwise use 'image{i + 1}'
+  //         String fieldName =
+  //             (i == imageFiles.length - 1) ? 'profile_photo' : 'image${i + 1}';
+  //         var image =
+  //             await http.MultipartFile.fromPath(fieldName, imageFile.path);
+  //         request.files.add(image);
+  //       }
+  //     }
+  //
+  //     // Send the request to upload the images
+  //     var streamedResponse = await request.send();
+  //
+  //     // Check if the image upload was successful
+  //     if (streamedResponse.statusCode == 200) {
+  //       var response = await streamedResponse.stream.bytesToString();
+  //       print('Upload successful: $response');
+  //       return true;
+  //     } else {
+  //       print('Upload failed with status: ${streamedResponse.statusCode}');
+  //       return false;
+  //     }
+  //   } catch (e) {
+  //     // Handle errors if needed
+  //     print('Error uploading images: $e');
+  //     return false;
+  //   }
+  // }
+}
+
+class NotificationService {
+  static final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
+  static const _notificationId = 1;
+
+  static Future<void> initialize() async {
+    final android = AndroidInitializationSettings('@mipmap/ic_launcher');
+    final iOS = DarwinInitializationSettings();
+    final settings = InitializationSettings(android: android, iOS: iOS);
+    await _notifications.initialize(settings);
+  }
+
+  static Future<void> showUploadInProgressNotification() async {
+    const androidDetails = AndroidNotificationDetails(
+      'upload_channel',
+      'Upload Status',
+      channelDescription: 'Shows upload progress',
+      importance: Importance.high,
+      priority: Priority.high,
+      ongoing: true,
+      autoCancel: false,
+    );
+
+    const iOSDetails = DarwinNotificationDetails();
+    const details = NotificationDetails(android: androidDetails, iOS: iOSDetails);
+
+    await _notifications.show(
+      _notificationId,
+      'Upload in Progress',
+      'Please return to the app to complete the upload process.',
+      details,
+    );
+  }
+
+  static Future<void> cancelUploadNotification() async {
+    await _notifications.cancel(_notificationId);
   }
 }
