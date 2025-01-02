@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:test1/page-1/artist_showcase.dart';
+import 'package:test1/page-1/party_addons.dart';
 import 'package:test1/page-1/searched_artist.dart';
 import 'package:test1/page-1/team_showcase.dart';
 import 'package:http/http.dart' as http;
@@ -55,6 +56,40 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
       'name': 'Make your little one’s birthday magical.',
       'type': 'video',
       'url': 'assets/page-1/images/mehandi.mov',
+      'nav':'Comedian, Dancer'
+
+    },
+    {
+      'name': 'Exclusive Haldi Entertainment to Complement Your Traditional Celebration',
+      'type': 'video',
+      'url': 'assets/page-1/images/b6d72c6ab8ae0d23b322e019cab0b565.mp4',
+      'nav':'Dancer'
+
+    },
+
+  ];
+
+  final List<Map<String, dynamic>> random = [
+    {
+
+      'name':'Infuse your gathering with the singer.',
+      'type': 'video',
+      'url': 'assets/videos/6273824-uhd_2160_3840_30fps.MOV',
+      'nav':'Singer'
+    },
+
+    {
+      'name': 'Treat your elite guests to culinary perfection.',
+      'type': 'image',
+      'url': 'assets/page-1/images/0091cab0989eb9eb56ae106b3d5e4181.HEIC',
+      'nav': 'Dancer'
+
+
+    },
+    {
+      'name': 'Make your little one’s birthday magical.',
+      'type': 'video',
+      'url': 'assets/videos/e5ccca38898b29f3851c4588c8327c44.MOV',
       'nav':'Comedian, Dancer'
 
     },
@@ -534,7 +569,7 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
                               child: Container(
                                 decoration: BoxDecoration(
                                   image: DecorationImage(
-                                    image: AssetImage('assets/page-1/images/bulbs.jpg'), // Replace with your background image path
+                                    image: AssetImage('assets/page-1/images/pexels-steve-johnson-1655046970-29666286.HEIC'), // Replace with your background image path
                                     fit: BoxFit.cover,
                                   ),
                                 ),
@@ -565,9 +600,9 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
                                   child: PageView.builder(
                                     controller: PageController(viewportFraction: 0.87, keepPage: true),
                                     scrollDirection: Axis.horizontal,
-                                    itemCount:  bestArtists.length,
+                                    itemCount:  random.length,
                                     itemBuilder: (context, index) {
-                                      final artist =  bestArtists[index];
+                                      final artist =  random[index];
                                       if (artist == null) {
                                         return SizedBox(); // Return an empty SizedBox if the artist is null
                                       }
@@ -698,12 +733,19 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
                                        String isteam= featuredArtist?[index]['team'] ?? '';
                                        print('isteam $isteam');
                                         // Navigate to the ArtistProfile screen
+                                        // Navigator.push(
+                                        //   context,
+                                        //   MaterialPageRoute(
+                                        //     builder: (context) =>
+                                        //         ArtistProfile(
+                                        //           artist_id: id.toString(), isteam : isteam ),
+                                        //   ),
+                                        // );
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
                                             builder: (context) =>
-                                                ArtistProfile(
-                                                  artist_id: id.toString(), isteam : isteam ),
+                                                CustomizeSoundSystemPage(),
                                           ),
                                         );
                                       },

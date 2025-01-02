@@ -1258,7 +1258,7 @@ print('soundsystem is $equipments');
                       ..onTap = () {
                         storeSoundEquipment();
                         // Navigate to Refund Policy screen
-                        // Navigator.push(context,MaterialPageRoute(builder: (context)=>SupportScreen()));
+                        Navigator.push(context,MaterialPageRoute(builder: (context)=>SupportScreen()));
                       },
                   ),
                   TextSpan(
@@ -1569,7 +1569,9 @@ print('soundsystem is $equipments');
               final result = await Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) =>CustomizeSoundSystemPage(), // Replace with your page widget
+                  builder: (context) =>CustomizeSoundSystemPage(
+                    sourceScreen: 'bookingpage',
+                  ), // Replace with your page widget
                 ),
               );
 
@@ -1772,6 +1774,14 @@ print('soundsystem is $equipments');
       } catch (e) {
         // Handle payment sending error
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error sending payment details: $e')));
+        return;
+      }
+
+      try {
+        await storeSoundEquipment();
+      }catch (e) {
+        // Handle payment sending error
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error storing sound system : $e')));
         return;
       }
 

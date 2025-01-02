@@ -2,11 +2,16 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:test1/page-1/sound_booking.dart';
 import '../config.dart';
 import 'artist_booking.dart';
 
 
 class CustomizeSoundSystemPage extends StatefulWidget {
+  final String? sourceScreen;
+   CustomizeSoundSystemPage({
+    this.sourceScreen,
+   });
   @override
   _CustomizeSoundSystemPageState createState() =>
       _CustomizeSoundSystemPageState();
@@ -14,60 +19,6 @@ class CustomizeSoundSystemPage extends StatefulWidget {
 
 class _CustomizeSoundSystemPageState extends State<CustomizeSoundSystemPage> {
   final List<Map<String, dynamic>> items = [
-    // {
-    //   'name': 'Smoke Machine with extra Liquid',
-    //   'price': 2000,
-    //   'quantity': 0,
-    //   'image': 'assets/page-1/images/smoke_gunreal.jpg',
-    // },
-    // {
-    //   'name': 'LED Wall 8X20',
-    //   'price': 12000,
-    //   'quantity': 0,
-    //   'image': 'assets/page-1/images/dance_floor.jpg',
-    // },
-    // {
-    //   'name': 'Cordless Mic',
-    //   'price': 650,
-    //   'quantity': 0,
-    //   'image': 'assets/page-1/images/dance_floor.jpg',
-    // },
-    // {
-    //   'name': 'Wired Mic',
-    //   'price': 400,
-    //   'quantity': 0,
-    //   'image': 'assets/page-1/images/dance_floor.jpg',
-    // },
-    // {
-    //   'name': 'LED Light',
-    //   'price': '300/per piece',
-    //   'quantity': 0,
-    //   'image': 'assets/page-1/images/dance_floor.jpg',
-    // },
-    // {
-    //   'name': 'Sharpy Light',
-    //   'price': '650/per piece',
-    //   'quantity': 0,
-    //   'image': 'assets/page-1/images/dance_floor.jpg',
-    // },
-    // {
-    //   'name': 'LED Floor 12X16',
-    //   'price': 6500,
-    //   'quantity': 0,
-    //   'image': 'assets/page-1/images/dance_floor.jpg',
-    // },
-    // {
-    //   'name': 'Floor 12X12',
-    //   'price': 3500,
-    //   'quantity': 0,
-    //   'image': 'assets/page-1/images/dance_floor.jpg',
-    // },
-    // {
-    //   'name': 'Floor 12X16',
-    //   'price': 4000,
-    //   'quantity': 0,
-    //   'image': 'assets/page-1/images/dance_floor.jpg',
-    // },
 
   ];
 
@@ -89,60 +40,7 @@ class _CustomizeSoundSystemPageState extends State<CustomizeSoundSystemPage> {
   }
 
   final List<Map<String, dynamic>> plans = [
-    // {
-    //   'name': 'Signature Kit',
-    //   'price': 25000,
-    //   'image': 'assets/page-1/images/dance_floor.jpg',
-    //   'includedItems': [
-    //     {'name': 'Operator', 'quantity': 'For entire event', 'image': 'assets/page-1/images/dance_floor.jpg'},
-    //     {'name': 'LED Walls', 'quantity': '8X20', 'image': 'assets/page-1/images/smoke_gunreal.jpg'},
-    //     {'name': 'LED Floor', 'quantity': '12X16', 'image': 'assets/page-1/images/dance_floor.jpg'},
-    //     {'name': 'Single Trust', 'quantity': 1, 'image': 'assets/page-1/images/dance_floor.jpg'},
-    //     {'name': 'Base', 'quantity': 2, 'image': 'assets/page-1/images/smoke_gunreal.jpg'},
-    //     {'name': 'Top', 'quantity': 4, 'image': 'assets/page-1/images/dance_floor.jpg'},
-    //     {'name': 'Sharpy Lights', 'quantity': 4, 'image': 'assets/page-1/images/dance_floor.jpg'},
-    //     {'name': 'Wireless Mic', 'quantity': 1, 'image': 'assets/page-1/images/dance_floor.jpg'},
-    //   ],
-    // },
-    // {
-    //   'name': 'Prime Kit',
-    //   'price': 15000,
-    //   'image': 'assets/page-1/images/dance_floor.jpg',
-    //   'includedItems': [
-    //     {'name': 'Operator', 'quantity': 'For entire event', 'image': 'assets/page-1/images/dance_floor.jpg'},
-    //     {'name': 'LED Floor', 'quantity': '12X16', 'image': 'assets/page-1/images/dance_floor.jpg'},
-    //     {'name': 'Single Trust', 'quantity': 1, 'image': 'assets/page-1/images/dance_floor.jpg'},
-    //     {'name': 'Base', 'quantity': 2, 'image': 'assets/page-1/images/smoke_gunreal.jpg'},
-    //     {'name': 'Top', 'quantity': 4, 'image': 'assets/page-1/images/dance_floor.jpg'},
-    //     {'name': 'Sharpy Lights', 'quantity': 4, 'image': 'assets/page-1/images/dance_floor.jpg'},
-    //     {'name': 'Wireless Mic', 'quantity': 1, 'image': 'assets/page-1/images/dance_floor.jpg'},
-    //   ],
-    // },
-    // {
-    //   'name': 'Standard Kit',
-    //   'price': 8000,
-    //   'image': 'assets/page-1/images/dance_floor.jpg',
-    //   'includedItems': [
-    //     {'name': 'Operator', 'quantity': 'For entire event', 'image': 'assets/page-1/images/dance_floor.jpg'},
-    //     {'name': 'Base', 'quantity': 2, 'image': 'assets/page-1/images/smoke_gunreal.jpg'},
-    //     {'name': 'Top', 'quantity': 4, 'image': 'assets/page-1/images/dance_floor.jpg'},
-    //     {'name': 'Floor', 'quantity': '12x12', 'image': 'assets/page-1/images/dance_floor.jpg'},
-    //     {'name': 'LED Lights', 'quantity': 5, 'image': 'assets/page-1/images/dance_floor.jpg'},
-    //     {'name': 'Wireless Mic', 'quantity': 1, 'image': 'assets/page-1/images/dance_floor.jpg'},
-    //   ],
-    // },
-    // {
-    //   'name': 'Basic Kit',
-    //   'price': 6000,
-    //   'image': 'assets/page-1/images/dance_floor.jpg',
-    //   'includedItems': [
-    //     {'name': 'Operator', 'quantity': 'For entire event', 'image': 'assets/page-1/images/dance_floor.jpg'},
-    //     {'name': 'Base', 'quantity': 2, 'image': 'assets/page-1/images/smoke_gunreal.jpg'},
-    //     {'name': 'Top', 'quantity': 2, 'image': 'assets/page-1/images/dance_floor.jpg'},
-    //     {'name': 'Floor', 'quantity': '12x12', 'image': 'assets/page-1/images/dance_floor.jpg'},
-    //     {'name': 'LED Lights', 'quantity': 5, 'image': 'assets/page-1/images/dance_floor.jpg'},
-    //     {'name': 'Wireless Mic', 'quantity': 1, 'image': 'assets/page-1/images/dance_floor.jpg'},
-    //   ],
+
     // },
   ];
 
@@ -616,10 +514,24 @@ class _CustomizeSoundSystemPageState extends State<CustomizeSoundSystemPage> {
                 //     ),
                 //   ),
                 // );
-                Navigator.of(context).pop({
-                  'selectedItems': selectedItems,
-                  'selectedKits': selectedkits,
-                });
+                if (widget.sourceScreen == 'bookingpage') {
+                  Navigator.of(context).pop({
+                    'selectedItems': selectedItems,
+                    'selectedKits': selectedkits,
+                  });
+                }
+                else{
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => sound_booking(
+                        selectedItems: selectedItems,
+                        selectedkits: selectedkits,
+                      ),
+                    ),
+                  );
+                }
                },
 
               style: ElevatedButton.styleFrom(

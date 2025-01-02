@@ -159,15 +159,17 @@ class _BookedState extends State<Booked> {
   }
 
 
-  Future<String> calculateTotalAmount(String pricePerHour, int hours, int minutes) async {
+  Future<String> calculateTotalAmount(String pricePerHour, int? hours, int? minutes) async {
     // Convert total time to hours
+    if (hours == null || minutes == null) return '0';
+
     double totalTimeInHours = hours + (minutes / 60.0);
 
     // Convert pricePerHour to double
     double pricePerHourDouble = double.tryParse(pricePerHour) ?? 0.0;
-    double? sound_price=sound_system_price?.toDouble();
+    // double? sound_price=sound_system_price?.toDouble();
     // Calculate the total amount
-    double totalAmount = totalTimeInHours * pricePerHourDouble + sound_price!;
+    double totalAmount = totalTimeInHours * pricePerHourDouble ;
 
     // Format the amount to two decimal places
     String formattedAmount = totalAmount.toStringAsFixed(2) ;
@@ -207,11 +209,11 @@ class _BookedState extends State<Booked> {
           _locationController.text = userData['location'] ?? '';
           _dateTextController.text = userData['booking_date'] ?? '';
           _timeTextController.text = userData['booked_from'] ?? '';
-          status= userData['status'] ?? '';
-          sound_system_price= userData['sound_system_price'] ?? '';
+          // status= userData['status'] ?? '';
+          sound_system_price= userData['sound_system_price'] ;
 
         });
-        print(status);
+        print(' price isb  $sound_system_price');
         // Split the string by spaces
         List<String>? parts = _durationText?.split(' ');
 
@@ -246,7 +248,7 @@ class _BookedState extends State<Booked> {
         print('Failed to fetch user information. Status code: ${response.body}');
       }
     } catch (e) {
-      print('Error fetching user information: $e');
+      print('Error fetching user sssssssinformation: $e');
     }
     return null;
   }
@@ -292,7 +294,7 @@ class _BookedState extends State<Booked> {
             image = '${userData['profile_photo']}' ;
             phone_number=userData['phone_number'] ?? '';
             fcm_token=userData['fcm_token']??'';
-            skill= userData['skills']?? userData['skill_category'] ?? '';
+            skill=  userData['skill_category'] ?? '';
             print('token is $fcm_token');
             // });
           }
@@ -383,6 +385,13 @@ class _BookedState extends State<Booked> {
   //   throw UnimplementedError();
   // }
   // }
+
+  Future<String> _calculateTotalPrice() async {
+    if (hour == null || minute == null) {
+      return '0';  // Default value while waiting for data
+    }
+    return calculateTotalAmount(price ?? '', hour!, minute!);
+  }
 
 
 
@@ -766,7 +775,7 @@ class _BookedState extends State<Booked> {
                               SizedBox(height: 10 * fem,),
                               // Use FutureBuilder to handle async calculation
                               FutureBuilder<String>(
-                                future: calculateTotalAmount(price ?? '' , hour!, minute!), // Call the async function
+                                future: _calculateTotalPrice(), // Call the async function
                                 builder: (context, snapshot) {
                                   // Check for different states
                                   if (snapshot.connectionState == ConnectionState.waiting) {
