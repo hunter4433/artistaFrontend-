@@ -42,7 +42,6 @@ class _UserBookingsState extends State<UserBookings> with AutomaticKeepAliveClie
 
   Future<void> _loadBookings({bool forceReload = false}) async {
     if (isCacheLoaded && !forceReload) {
-      // Use cached data
       setState(() {
         isLoading = false;
       });
@@ -55,20 +54,33 @@ class _UserBookingsState extends State<UserBookings> with AutomaticKeepAliveClie
         throw Exception('User ID not found');
       }
 
-      final response = await http.get(Uri.parse('${Config().apiDomain}/user/bookings/$userId'));
+      // First API call for bookings
+      final bookingsResponse = await http.get(
+          Uri.parse('${Config().apiDomain}/user/bookings/$userId')
+      );
 
-      if (response.statusCode == 200) {
-        final decodedList = json.decode(response.body) as List<dynamic>;
-        print('api called  $decodedList ');
+      // Second API call for equipment
+      final equipmentsResponse = await http.get(
+          Uri.parse('${Config().apiDomain}/book-equipments/')
+      );
+
+      if (bookingsResponse.statusCode == 200 && equipmentsResponse.statusCode == 200) {
+        final decodedBookings = json.decode(bookingsResponse.body) as List<dynamic>;
+        final decodedEquipments = json.decode(equipmentsResponse.body) as List<dynamic>;  // Changed to List<dynamic>
+
+        print('Raw equipment response: ${equipmentsResponse.body}');
+        print('Decoded equipment: $decodedEquipments');
 
         setState(() {
-          cachedData = {'bookings': decodedList.map((e) => Map<String, dynamic>.from(e)).toList()};
+          cachedData = {
+            'bookings': decodedBookings.map((e) => Map<String, dynamic>.from(e)).toList(),
+            'equipments': decodedEquipments.map((e) => Map<String, dynamic>.from(e)).toList()
+          };
           isCacheLoaded = true;
           isLoading = false;
         });
-
       } else {
-        _handleError('Failed to load bookings');
+        _handleError('Failed to load data');
       }
     } catch (e) {
       _handleError(e.toString());
@@ -382,9 +394,9 @@ class _UserBookingsState extends State<UserBookings> with AutomaticKeepAliveClie
   }
 
   Widget build(BuildContext context) {
-    super.build(context); // Ensure AutomaticKeepAliveClientMixin works
-
+    super.build(context);
     final bookings = cachedData?['bookings'] ?? [];
+    final equipments = cachedData?['equipments'] ?? [];
 
     // Sort bookings by creation date in descending order
     bookings.sort((a, b) {
@@ -409,63 +421,120 @@ class _UserBookingsState extends State<UserBookings> with AutomaticKeepAliveClie
         ),
         backgroundColor: const Color(0xFF121217),
       ),
-// <<<<<<< HEAD
-//       body: isLoading
-//           ? const Center(
-//         child: CircularProgressIndicator(),
-//       )
-//           : bookings.isEmpty
-//           ? const Center(
-//         child: Text(
-//           'No bookings done yet',
-//           style: TextStyle(color: Colors.white, fontSize: 20),
-//         ),
-//       )
-// =======
-      body: bookings.isEmpty
+      body: (bookings.isEmpty && equipments.isEmpty)
           ? Center(
-          child: isLoading
-        ? CircularProgressIndicator()
-        : Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset(
-                'assets/page-1/images/booking.png', // Replace with your image path
-                height: 220, // Adjust height as needed
-              ),
-              SizedBox(height: 10), // Add spacing between the image and text
-              Text(
-                'You haven’t made any bookings yet',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                ),
-              ),
-            ],
-          ),)
-// >>>>>>> c29e89df1aac051be8cea2d6749ef204c90acc8e
-          : ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: bookings.length,
-        itemBuilder: (context, index) {
-          final booking = bookings[index];
+        child: isLoading
+            ? CircularProgressIndicator()
+            : Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+          Image.asset(
+          'assets/page-1/images/booking.png',
+          height: 220,
+        ),
+        SizedBox(height: 10),
+        Text(
+          "You haven't made any bookings yet",
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 20,
+        ),
+      ),
+      ],
+    ),
+    )
+        : ListView(
+    padding: const EdgeInsets.all(16),
+    children: [
+    // Display equipment bookings
+    if (equipments.isNotEmpty) ...[
+    Text(
+    'Equipment Bookings',
+    style: TextStyle(
+    color: Colors.white,
+    fontSize: 18,
+    fontWeight: FontWeight.w500,
+    ),
+    ),
+    SizedBox(height: 10),
+    ...equipments.map((equipment) => _buildEquipmentCard(equipment)).toList(),
+    SizedBox(height: 20),
+    ],
 
-          final idToUse = booking['artist_id'] ?? booking['team_id'];
-           String isteam =
-          (booking['team_id'] != '0' && booking['team_id'] != null)
-              ? 'true'
-              : 'false';
+    // Display artist/team bookings
+    if (bookings.isNotEmpty) ...[
+    Text(
+    'Artist Bookings',
+    style: TextStyle(
+    color: Colors.white,
+    fontSize: 18,
+    fontWeight: FontWeight.w500,
+    ),
+    ),
+    SizedBox(height: 10),
+    ...bookings.asMap().entries.map((entry) {
+    final index = entry.key;
+    final booking = entry.value;
+    final idToUse = booking['artist_id'] ?? booking['team_id'];
+    String isteam = (booking['team_id'] != '0' && booking['team_id'] != null)
+    ? 'true'
+        : 'false';
+    return _buildRequestCard(
+    booking['category'],
+    booking['booking_date'],
+    booking['booked_from'],
+    booking['id'],
+    idToUse,
+    isteam,
+    index,
+    );
+    }).toList(),
+    ],
+    ],
+    ),
+    );
 
-          return _buildRequestCard(
-            booking['category'],
-            booking['booking_date'],
-            booking['booked_from'],
-            booking['id'],
-            idToUse,
-            isteam,
-            index,
-          );
-        },
+  }
+
+
+
+
+  // Add a new method to build equipment cards
+  Widget _buildEquipmentCard(Map<String, dynamic> equipment) {
+    return Card(
+      color: Color(0xFF292938),
+      margin: EdgeInsets.fromLTRB(5, 0, 5, 20),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+      ),
+      elevation: 0,
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Equipment: ${equipment['name'] ?? 'Unknown'}',
+              style: GoogleFonts.epilogue(
+                fontWeight: FontWeight.w500,
+                fontSize: 18,
+                height: 1.5,
+                color: Colors.white,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Booking Date: ${equipment['booking_date'] ?? 'Not specified'}',
+              style: GoogleFonts.epilogue(
+                fontWeight: FontWeight.w500,
+                fontSize: 16,
+                height: 1.5,
+                color: Color(0xFFB4B4DF),
+              ),
+            ),
+            // Add more equipment details as needed
+          ],
+        ),
       ),
     );
   }
