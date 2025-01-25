@@ -14,6 +14,8 @@ import 'package:chewie/chewie.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 
+
+
 class ArtistProfile extends StatefulWidget {
      late String  artist_id;
 // <<<<<<< HEAD
@@ -71,6 +73,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
   String? trimmedArtistAbout;
   String? trimmedTeamAbout;
   bool _isLoading = true;
+  String? _error;
 
 
   Future<String?> _getKind() async {
@@ -132,7 +135,6 @@ class _ArtistProfileState extends State<ArtistProfile> {
         // Clear existing paths to avoid duplicates
         imagePathsFromBackend.clear();
         VideoPathsFromBackend.clear();
-
         // Process each artist's data
         for (var artistData in artistDataList) {
           setState(() {
@@ -141,12 +143,11 @@ class _ArtistProfileState extends State<ArtistProfile> {
             artistRole = artistData['skills'] ;
             teamRole = artistData['skill_category'] ;
             // skills = artistData['skills'];
-            artistPrice = artistData['price_per_hour']?.toString() ?? '';
+            artistPrice = (artistData['price_per_hour'] ?? 0.0).toStringAsFixed(2);
             artistAboutText = artistData['about_yourself'] ;
             teamAbout = artistData['about_team'] ;
             artistSpecialMessage = artistData['special_message'] ?? '';
             profilePhoto = artistData['profile_photo'] ?? '';
-
             // hasSoundSystem=artistData['sound_system'] == 1 ? true: false ;
 
             // Image and video URLs
@@ -158,6 +159,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
             video2 = artistData['video2'];
             video3 = artistData['video3'];
             video4 = artistData['video4'];
+            print('videos $video1,$video2,$video3,$video4');
 
             // Add non-null image URLs to the list
             if (image1 != null) imagePathsFromBackend.add(image1!);
@@ -173,6 +175,8 @@ class _ArtistProfileState extends State<ArtistProfile> {
           });
         }
 
+        print('special message $artistSpecialMessage');
+
          artist_previous = artistAboutText?.split(',')[1].trim();
         team_previous = teamAbout?.split(',')[1].trim() ?? null;
 
@@ -186,11 +190,12 @@ class _ArtistProfileState extends State<ArtistProfile> {
             demoSkills.add(skill);
           }
         }
-        print(demoSkills);
+        // print(demoSkills);
+
         print('skills is $skills');
         print('video is $video1,$video2, $video3,$video4');
         print('skill category is $teamRole');
-        print('special message $artistSpecialMessage');
+
       } else {
         print('Failed to fetch artist information. Status code: ${response.statusCode}');
       }
@@ -216,79 +221,110 @@ class _ArtistProfileState extends State<ArtistProfile> {
       if (response.statusCode == 200) {
         Map<String, dynamic> responseData = json.decode(response.body);
 
-
-        // Ensure count is not zero before dividing, to prevent division by zero.
         double safeDivide(int numerator, int denominator) {
           return denominator != 0 ? (numerator / denominator).toDouble() : 0.0;
         }
 
-     setState(() {
+        setState(() {
           _isLoading = false;
-
-          avg = (responseData['average_rating']).toDouble();
-         count= responseData['total_ratings'];
+          avg = double.parse(responseData['average_rating'].toDouble().toStringAsFixed(1));
+          count = responseData['total_ratings'];
           four = safeDivide(responseData['four_star_ratings'], count!);
           five = safeDivide(responseData['five_star_ratings'], count!);
           three = safeDivide(responseData['three_star_ratings'], count!);
           two = safeDivide(responseData['two_star_ratings'], count!);
           one = safeDivide(responseData['one_star_ratings'], count!);
-
-      });
-
-
+        });
       } else {
-        print('Failed to fetch data. Status code: ${response.statusCode}');
-        // return 'Error fetching availability status';
+        Map<String, dynamic> errorResponse = json.decode(response.body);
+        if (errorResponse['error'] == 'No reviews found for this artist') {
+          setState(() {
+            _isLoading = false;
+            _error = errorResponse['error'];
+          });
+        }
+        print('Failed to fetch data. Status code: ${response.body}');
       }
     } catch (e) {
       print('Error fetching data: $e');
-      // return 'Error fetching availability status';
     }
   }
+
   Future<String> callSecondApi(String artistId) async {
-    String apiUrl = '${Config().apiDomain}/artist/booking-date/$artistId';
-    print('Calling second API: $apiUrl');
+
+    String apiUrl;
+
+    // Choose the correct API URL based on whether it's a team or an individual artist
+    if (widget.isteam == 'true') {
+      apiUrl = '${Config().apiDomain}/team/booking-date/$artistId';
+    } else {
+      apiUrl = '${Config().apiDomain}/artist/booking-date/$artistId';
+    }
+
+    // String apiUrl = '${Config().apiDomain}/artist/booking-date/$artistId';
+    // print('Calling availability API: $apiUrl');
 
     try {
       var response = await http.get(
         Uri.parse(apiUrl),
         headers: <String, String>{
-          'Content-Type': 'application/vnd.api+json',
-          'Accept': 'application/vnd.api+json',
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
       );
 
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
       if (response.statusCode == 200) {
         var responseData = json.decode(response.body);
-        print('dtaes are $responseData');
 
-        // Process response and format dates into a single string
-        if (responseData is List) {
-          List<String> bookingDates = responseData.map((booking) => booking['booking_date'].toString()).toList();
-          print('booking dates are $bookingDates');
-          return bookingDates.isNotEmpty ? 'Booked Dates: ${bookingDates.join(', ')}' : 'No Booked Dates Available';
-        } else if (responseData.containsKey('data') && responseData['data'] is List) {
-          List<dynamic> bookings = responseData['data'];
-          print('booking are $bookings');
-          List<String> bookingDates = bookings.map((booking) => booking['booking_date'].toString()).toList();
-          return bookingDates.isNotEmpty ? 'Booked Dates: ${bookingDates.join(', ')}' : 'No Booked Dates Available';
-        } else {
-          print('Unexpected response structure.');
-          return 'No Booked Dates Available';
+        // Check status from response
+        String status = responseData['status'];
+
+        switch (status) {
+          case 'unavailable':
+            return 'Not Available';
+
+          case 'available':
+            return 'Available for Bookings';
+
+          case 'has_bookings':
+            List<dynamic> bookingDates = responseData['data'];
+            if (bookingDates.isEmpty) {
+              return 'Available for Bookings';
+            }
+            return 'Booked On: ${bookingDates.join(', ')}';
+
+          default:
+            print('Unexpected status: $status');
+            return 'Unable to fetch availability';
         }
+      } else if (response.statusCode == 404) {
+        print('Artist not found');
+        return 'Artist not found';
       } else {
-        print('Failed to fetch second API data. Status code: ${response.statusCode}');
-        return 'Available for Bookings ';
+        print('Failed to fetch availability. Status code: ${response.statusCode}');
+        print('Error response: ${response.body}');
+        return 'Unable to fetch availability';
       }
     } catch (e) {
-      print('Error calling second API: $e');
-      return 'Available for Bookings ';
+      print('Error calling availability API: $e');
+      return 'Unable to fetch availability';
     }
   }
 
   Future<String> fetchAvailabilityStatus() async {
-    String apiUrl = '${Config().apiDomain}/artist/info/${widget.artist_id}';
-    print(apiUrl);
+
+    String apiUrl;
+
+    // Choose the correct API URL based on whether it's a team or an individual artist
+    if (widget.isteam == 'true') {
+      apiUrl = '${Config().apiDomain}/artist/team_info/${widget.artist_id}';
+    } else {
+      apiUrl = '${Config().apiDomain}/artist/info/${widget.artist_id}';
+    }
+
 
     try {
       var response = await http.get(
@@ -442,8 +478,8 @@ class _ArtistProfileState extends State<ArtistProfile> {
     return Scaffold(
       appBar: AppBar(title: Text('Artist Profile',style:
         TextStyle(color: Colors.black,
-        fontWeight: FontWeight.w500,
-        fontSize: 21*fem),),
+        fontWeight: FontWeight.w600,
+        fontSize: 22*fem),),
         leading: IconButton(color: Colors.black,
           icon: Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () {
@@ -493,7 +529,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
                             ),
                             Container(
                               margin: EdgeInsets.fromLTRB(20*fem,0*fem, 0*fem, 10*fem),
-                              padding: EdgeInsets.fromLTRB(0*fem, 10*fem, 0*fem, 0*fem),
+                              padding: EdgeInsets.fromLTRB(0*fem, 5*fem, 0*fem, 0*fem),
                               // depth4frame1YUo (15:2131)
                               width:220*fem,
                               height: 150*fem,
@@ -555,7 +591,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
                                       Text(
                                         'Price Per Hour: ₹ ', // Static text
                                         style: TextStyle(
-                                          fontSize: 17 * ffem,
+                                          fontSize: 16 * ffem,
                                           fontWeight: FontWeight.w500,
                                           color: Colors.black,
                                         ),
@@ -756,7 +792,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
 
                       Container(
 
-                        margin: EdgeInsets.fromLTRB(0*fem, 20*fem, 0*fem, 4*fem),
+                        margin: EdgeInsets.fromLTRB(0*fem, 15*fem, 0*fem, 4*fem),
                         child: Text(
                           'About',
                           style: SafeGoogleFont (
@@ -897,7 +933,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
                                     Text(
                                       hasSoundSystem != null && hasSoundSystem!
                                           ? 'Yes'
-                                          : 'Will be arranged by Homestage',
+                                          : 'Will be arranged by PrimeStage',
                                       style: TextStyle(
                                         fontWeight: FontWeight.w500,
                                         fontSize: 18.0 * fem,
@@ -909,7 +945,6 @@ class _ArtistProfileState extends State<ArtistProfile> {
                               ),
                             ],
                           ),
-
                         ],
                       ),
 
@@ -1126,41 +1161,46 @@ class _ArtistProfileState extends State<ArtistProfile> {
 
 
 // Reviews section heading
-                      Text(
-                        'Reviews',
-                        style: SafeGoogleFont(
-                          'Epilogue',
-                          fontSize: 22 * ffem,
-                          fontWeight: FontWeight.w600,
-                          height: 1.25 * ffem / fem,
-                          letterSpacing: -0.3300000131 * fem,
-                          color: Color(0xff1c0c11),
-                        ),
-                      ),
-                  SizedBox(
-                    height: 10*fem,
+                Text(
+                  'Reviews',
+                  style: SafeGoogleFont(
+                    'Epilogue',
+                    fontSize: 22 * ffem,
+                    fontWeight: FontWeight.w600,
+                    height: 1.25 * ffem / fem,
+                    letterSpacing: -0.33 * fem,
+                    color: Color(0xff1c0c11),
                   ),
+                ),
+                SizedBox(height: 10 * fem),
 
+// Add the ReviewsSection or loading/error widgets here
+                _isLoading
+                    ? Center(
+                  child: CircularProgressIndicator(), // Show loader while fetching data
+                )
+                    : _error != null
+                    ? Center(
+                  child: Text(
+                    "No reviews Yet",
+                    style: TextStyle(color: Colors.red,
+                      fontSize: 22 * ffem),
+                  ),
+                )
+                    : ReviewsSection(
+                  averageRating: avg?.toDouble() ?? 0.0, // Safely provide default value
+                  totalReviews: count ?? 0, // Safely provide default value
+                  ratingDistribution: {
+                    5: five?.toDouble() ?? 0.0, // Safely provide default value
+                    4: four?.toDouble() ?? 0.0, // Safely provide default value
+                    3: three?.toDouble() ?? 0.0, // Safely provide default value
+                    2: two?.toDouble() ?? 0.0, // Safely provide default value
+                    1: one?.toDouble() ?? 0.0, // Safely provide default value
+                  },
+                  artist_id: widget.artist_id,
+                ),
 
-// Add the ReviewsSection widget here
-                      _isLoading
-                          ? Center(
-                        child: CircularProgressIndicator(), // Show loader while fetching data
-                      )
-                      :ReviewsSection(
-                        averageRating: avg!.toDouble(), // Replace with dynamic data
-                        totalReviews: count!, // Replace with dynamic data
-                        ratingDistribution: {
-                          5: five!.toDouble(),  // Convert num to double
-                          4: four!.toDouble(),  // Convert num to double
-                          3: three!.toDouble(), // Convert num to double
-                          2: two!.toDouble(),   // Convert num to double
-                          1: one!.toDouble(),   // Convert num to double
-                        },
-                        artist_id: widget.artist_id,
-                      ),
-
-                      Padding(
+                Padding(
                         padding: EdgeInsets.only(left: 5 * fem, top: 20 * fem, right: 5 * fem, bottom: 45 * fem),
                         child: ElevatedButton(
                           onPressed: () {
@@ -1221,6 +1261,7 @@ class _ArtistProfileState extends State<ArtistProfile> {
     ),),),);
   }
 }
+
 // Fullscreen view for images
 class FullScreenView extends StatelessWidget {
   final String imagePath;
@@ -1232,12 +1273,17 @@ class FullScreenView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Full Screen'),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black), // Back arrow icon
+          onPressed: () {
+            Navigator.pop(context); // Navigate back when pressed
+          },
+        ),
       ),
       body: Center(
         child: GestureDetector(
           onTap: () {
-            // Navigate back when tapped
-            Navigator.pop(context);
+
           },
           child: Image.network(imagePath), // Use Image.network for network images
         ),
@@ -1408,7 +1454,7 @@ class FullScreenVideoView extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Full Screen Video'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back ,  color: Colors.black),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -1820,9 +1866,10 @@ print('user idfs are $userIds');
             SizedBox(height: 10 * fem),
 
             // Review photo and video section (center-aligned)
-            Center(
+            Padding(
+              padding: const EdgeInsets.fromLTRB(70,0,0,0),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.center, // Center-aligns the content horizontally
+                 // Center-aligns the content horizontally
                 children: [
                   // Review photo section (display only if available)
                   if (review['photo'] != null && review['photo'].isNotEmpty)
@@ -1849,25 +1896,25 @@ print('user idfs are $userIds');
                       ),
                     ),
 
-                  // Review video section (display only if available)
-                  if (review['photo'] != null && review['photo'].isNotEmpty)
-                    GestureDetector(
-                      onTap: () {
-                        showMediaFullScreen(context, review['photo'], false);
-                      },
-                      child: Container(
-                        width: 100, // Adjust size as needed
-                        height: 100, // Adjust size as needed
-                        decoration: BoxDecoration(
-                          color: Colors.black,
-                          image: DecorationImage(
-                            image: NetworkImage(review['photo']), // Thumbnail for video
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        child: Icon(Icons.play_circle_filled, color: Colors.white, size: 40), // Play icon over video thumbnail
-                      ),
-                    ),
+                  // // Review video section (display only if available)
+                  // if (review['photo'] != null && review['photo'].isNotEmpty)
+                  //   GestureDetector(
+                  //     onTap: () {
+                  //       showMediaFullScreen(context, review['photo'], false);
+                  //     },
+                  //     child: Container(
+                  //       width: 100, // Adjust size as needed
+                  //       height: 100, // Adjust size as needed
+                  //       decoration: BoxDecoration(
+                  //         color: Colors.black,
+                  //         image: DecorationImage(
+                  //           image: NetworkImage(review['photo']), // Thumbnail for video
+                  //           fit: BoxFit.cover,
+                  //         ),
+                  //       ),
+                  //       child: Icon(Icons.play_circle_filled, color: Colors.white, size: 40), // Play icon over video thumbnail
+                  //     ),
+                  //   ),
                 ],
               ),
             ),
@@ -1899,7 +1946,7 @@ print('user idfs are $userIds');
       appBar: AppBar(
         title: Text(
           'All Reviews',
-          style: TextStyle(color: Colors.black),
+          style: TextStyle(color: Colors.black,fontSize: 22,fontWeight: FontWeight.w500),
         ),
         backgroundColor: Colors.white,
         leading: IconButton(

@@ -109,7 +109,7 @@ class _ArtistCredentials33State extends State<ArtistCredentials33> {
           // _pinCodeController.text = userData['data']['attributes']['pin'] ?? '';
         });
 
-        // After setting the state, you can call the _updateSubSkills function if needed
+        // // After setting the state, you can call the _updateSubSkills function if needed
         _updateSubSkills(_selectedSkill);
       } else {
         print('Failed to fetch user information. Status code: ${response.statusCode}');
@@ -140,6 +140,8 @@ class _ArtistCredentials33State extends State<ArtistCredentials33> {
           break;
         case 'Visual Artist':
           _subSkills.addAll(['Painting', 'Sculpture', 'Drawing']);
+        case 'Dancer':
+          _subSkills.addAll(['hip-hop','freestyle']);
           break;
       }
       _selectedSubSkill = _subSkills.first; // Initialize selected sub-skill with the first item in the list

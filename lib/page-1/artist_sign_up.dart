@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+// import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:test1/page-1/skills_artist.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -19,7 +19,7 @@ class _artist_credState extends State<artist_cred> {
   TextEditingController _nameController = TextEditingController();
   TextEditingController _ageController = TextEditingController();
   TextEditingController _addressController = TextEditingController();
-  LatLng? _selectedCoordinates;
+  // LatLng? _selectedCoordinates;
    double? _latitude;
    double? _longitude;
   late Position _currentPosition;

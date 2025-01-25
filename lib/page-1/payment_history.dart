@@ -1,14 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:test1/page-1/page0.3_booking.dart';
 import 'package:test1/page-1/page_0.3_artist_home.dart';
 import '../utils.dart';
-
-
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:test1/page-1/page0.3_booking.dart';
 import '../config.dart';
 import '../utils.dart';
 import 'package:http/http.dart' as http;
@@ -26,6 +23,7 @@ class _payment_historyState extends State<payment_history>{
   List<Map<String, dynamic>> bookings = [];
   bool isLoading = true;
   // bool isLoading = false;
+  final storage = FlutterSecureStorage();
 
   @override
   void initState() {
@@ -60,6 +58,7 @@ class _payment_historyState extends State<payment_history>{
     } else {
       return;
     }
+    print(apiUrl);
     // final String apiUrl = '${Config().apiDomain}/payments/booking/$artistId';
 
     try {

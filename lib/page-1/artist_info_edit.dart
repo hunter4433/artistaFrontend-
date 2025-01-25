@@ -87,9 +87,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           _nameController.text = userData['data']['attributes']['name'] ?? '';
           _teamNameController.text=userData['data']['attributes']['team_name'] ?? '';
           _phoneController.text = userData['data']['attributes']['phone_number'] ?? '';
-          _ageController.text = userData['data']['attributes']['age']?.toString() ?? '';
+          // _ageController.text = userData['data']['attributes']['age']?.toString() ?? '';
           _addressController.text = userData['data']['attributes']['address'] ?? '';
-          _altPhoneController.text=userData['data']['attributes']['alt_phone_number'] ?? '';
+          _altPhoneController.text=userData['data']['attributes']['alt_phone_number'] ?? userData['data']['attributes']['alternate_number']  ??'';
           _imageUrl=userData['data']['attributes']['profile_photo'];
           // _sController.text = userData['data']['attributes']['state'] ?? '';
           // _pinCodeController.text = userData['data']['attributes']['pin'] ?? '';
@@ -166,7 +166,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               await _saveUserInformation(); // Call function to update profile data
               // After editing the image, call the function to upload it
               if (_image != null) {
-                _uploadImage(_image!);
+                uploadImage(_image!);
               }
               Navigator.pop(context); // Go back to previous screen
             },
@@ -353,7 +353,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       'name': _nameController.text,
       'phone_number': _phoneController.text,
       'address': _addressController.text,
-      'age': _ageController.text,
+      // 'age': _ageController.text,
       'team_name':_teamNameController.text,
       'alt_phone_number': _altPhoneController.text,
       // 'state': _stateController.text,
@@ -392,56 +392,58 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
 
-  void _uploadImage(File imageFile) async {
+  void uploadImage(File imageFile) async {
     String? token = await _getToken();
     String? id = await _getid();
-    String? team_id = await _getTeamid();
+    String? teamId = await _getTeamid();
     String? kind = await _getKind();
 
-    // Initialize API URL for image upload
     String apiUrl;
     if (kind == 'solo_artist') {
       apiUrl = '${Config().apiDomain}/artist/upload_image/$id';
     } else if (kind == 'team') {
-      apiUrl = '${Config().apiDomain}/team/upload_image/$team_id';
+      apiUrl = '${Config().apiDomain}/team/upload_image/$teamId';
     } else {
       return;
     }
 
     try {
-      // Read the image file and encode it as Base64
-      List<int> imageBytes = await imageFile.readAsBytes();
-      String base64Image = base64Encode(imageBytes);
+      // Create multipart request
+      var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
 
-      // Create the request body
-      var body = jsonEncode({
-        'profile_photo': base64Image,
+      // Add headers
+      request.headers.addAll({
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/vnd.api+json',
       });
 
-      // Send the POST request with headers and body
-      var response = await http.post(
-        Uri.parse(apiUrl),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-          'Accept': 'application/vnd.api+json',
-        },
-        body: body,
+      // Add the file
+      var stream = http.ByteStream(imageFile.openRead());
+      var length = await imageFile.length();
+      var multipartFile = http.MultipartFile(
+          'profile_photo',
+          stream,
+          length,
+          filename: imageFile.path.split('/').last
       );
+      request.files.add(multipartFile);
+
+      // Send the request
+      var response = await request.send();
+      var responseData = await response.stream.bytesToString();
 
       // Process the response
       if (response.statusCode == 200) {
         print('Image uploaded successfully');
-        print('Response: ${response.body}');
+        print('Response: $responseData');
       } else {
         print('Failed to upload image. Status: ${response.statusCode}');
-        print('Response: ${response.body}');
+        print('Response: $responseData');
       }
     } catch (e) {
       print('Error uploading image: $e');
     }
   }
-
 
 
 

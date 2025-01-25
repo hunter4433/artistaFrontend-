@@ -8,6 +8,7 @@ import 'package:test1/page-1/bottomNav_artist.dart';
 import 'package:test1/page-1/bottom_nav.dart';
 import 'api/firebase_api.dart';
 import 'firebase_options.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 // <<<<<<< HEAD
 import 'package:test1/page-1/page0.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
@@ -87,6 +88,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+    FlutterNativeSplash.remove();
     _connectivity = Connectivity();
     _initConnectivity();
     // Subscribe to connectivity changes
@@ -198,6 +200,10 @@ class _MyAppState extends State<MyApp> {
 // <<<<<<< HEAD
         scaffoldBackgroundColor: Colors.white,
         useMaterial3: true,
+        progressIndicatorTheme: const ProgressIndicatorThemeData(
+          color: Color(0xffe5195e),  // Primary color of the indicator
+          circularTrackColor: Color(0xffe5195e),  // Track color (background of the circle)
+        ),
         cardTheme: CardTheme(
           color: Color(0xFFFEFEFE),
           shadowColor: Color(0xFFE9E8E6).withOpacity(0.4),

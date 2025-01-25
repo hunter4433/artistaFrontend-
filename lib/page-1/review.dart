@@ -53,7 +53,7 @@ class _ReviewPageState extends State<ReviewPage> {
       _isLoading = true;
     });
 
-    final String backendUrl = '${Config().apiDomain}/upload-image/$Id';
+    final String backendUrl = '${Config().apiDomain}/review/$Id/media';
 
     try {
       var request = http.MultipartRequest('POST', Uri.parse(backendUrl));
@@ -116,7 +116,7 @@ class _ReviewPageState extends State<ReviewPage> {
       _isLoading = true; // Show loading bar
     });
 
-    final String backendUrl = '${Config().apiDomain}/review';
+    final String backendUrl = '${Config().apiDomain}/review/store';
     print(backendUrl);
     String? id = await _getid();
     print('rating is $starRating');

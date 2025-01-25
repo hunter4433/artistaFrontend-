@@ -54,15 +54,42 @@ class _ArtistCredentials2State extends State<ArtistCredentials2> with WidgetsBin
   bool _isUploading = false;
 
   String _selectedSkill = ''; // Selected skill
-  List<String> _skills = ['Musician', 'Comedian', 'Visual Artist', 'Dancer', 'Chef', 'Magician'];
+  // List<String> _skills = ['Musician', 'Comedian', 'Visual Artist', 'Dancer', 'Chef', 'Magician'];
+
+  List<String> _skills = [
+    'Singer',
+    'Musician/Instrumentalist',
+    'DJ',
+    'Dancer',
+    'Chef',
+    'Magician/Illusionist',
+    'Sketch Artist',
+    'Stand-Up Comedian',
+    'Anchor/MC',
+    'Photographer/Videographer',
+    'Kids Entertainment Specialist'
+  ];
   final Map<String, List<String>> _skillToSubSkills = {
-    'Musician': ['Singing', 'Instrumental', 'Songwriting'],
-    'Comedian': ['Stand-Up', 'Improv', 'Sketch Comedy'],
-    'Visual Artist': ['Painting', 'Sketching', 'Digital Art'],
-    'Dancer': ['Ballet', 'Hip-Hop', 'Contemporary'],
-    'Chef': ['Baking', 'Grilling', 'Vegan Cooking'],
-    'Magician': ['Card Tricks', 'Illusions', 'Mentalism'],
+    'Singer': ['Punjabi', 'Bollywood','Devotional' 'Ghazal/Sufi','Indie/Pop','English Covers'],
+    'Musician/Instrumentalist': ['Tabla Player','Sitarist', 'Violinist', 'Guitarist','Dhol Player','Sexophone Player','Harmonium Player','Piano Player','Electronic Keyboard','Harmonica'],
+    'DJ':['House','Techno','EDM','Hip Hop','Retro','Punjabi','Wedding DJ'],
+    'Dancer': ['Bhangra', 'Giddha','Nati', 'Fusion','Classical','Contemporary','Hip Hop',],
+    'Chef': ['Punjabi Cuisine', 'North Indian', 'Fusion Food','Chinese','Italian','Mexican','Continental','Thai Cuisine','Japanese','Dessert Chef'],
+    'Magician/Illusionist': ['Stage Magician', 'Close-Up Magician', 'Mentalist'],
+    'Sketch Artist':['Portrait Artist','Live Painting Artist','Caricature','Henna Artist'],
+    'Stand-Up Comedian':['Mimicry Artist','Roast Comedy','Family Friendly','Punjabi Stand-Up'],
+    'Anchor/MC':['Wedding Anchor', 'Corporate Event Host','Emcees','Emcees for Kids Event'],
+    'Photographer/Videographer':['Wedding','Event','Short film Creator'],
+    'Kids Entertainment Specialist':['Clown','Puppet Shows']
   };
+  // final Map<String, List<String>> _skillToSubSkills = {
+  //   'Musician': ['Singing', 'Instrumental', 'Songwriting'],
+  //   'Comedian': ['Stand-Up', 'Improv', 'Sketch Comedy'],
+  //   'Visual Artist': ['Painting', 'Sketching', 'Digital Art'],
+  //   'Dancer': ['Ballet', 'Hip-Hop', 'Contemporary'],
+  //   'Chef': ['Baking', 'Grilling', 'Vegan Cooking'],
+  //   'Magician': ['Card Tricks', 'Illusions', 'Mentalism'],
+  // };
   List<String> _subSkills = []; // Sub-skills for the selected skill
   List<String> _selectedSubSkills = []; // Selected sub-skills
   // Variables for equipment and selected equipment

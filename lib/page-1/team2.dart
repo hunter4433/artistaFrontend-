@@ -47,20 +47,32 @@ class _ArtistCredentials2State extends State<team2signup> with WidgetsBindingObs
   bool _isUploading = false;
   String _selectedSkill = ''; // Selected skill
   List<String> _skills = [
-    'Musician',
-    'Comedian',
-    'Visual Artist',
-    'Dancer',
-    'Chef',
-    'Magician'
+    'Singers',
+    'Bands',
+    'Musicians/Instrumentalists',
+    'DJ',
+    'Dancers',
+    'Chefs',
+    'Magicians/Illusionists',
+    'Sketch Artists',
+    'Stand-Up Comedians',
+    'Anchors/MC',
+    'Photographers/Videographers',
+    'Kids Entertainment Specialists'
   ];
   final Map<String, List<String>> _skillToSubSkills = {
-    'Musician': ['Singing', 'Instrumental', 'Songwriting'],
-    'Comedian': ['Stand-Up', 'Improv', 'Sketch Comedy'],
-    'Visual Artist': ['Painting', 'Sketching', 'Digital Art'],
-    'Dancer': ['Ballet', 'Hip-Hop', 'Contemporary'],
-    'Chef': ['Baking', 'Grilling', 'Vegan Cooking'],
-    'Magician': ['Card Tricks', 'Illusions', 'Mentalism'],
+    'Singers': ['Punjabi', 'Bollywood', 'Devotional','Ghazal/Sufi','Indie/Pop','English Covers'],
+    'Bands': ['Rock Band', 'Jazz Band', 'Fusion Band'],
+    'Musicians/Instrumentalists': ['Tabla Players','Sitarist', 'Violinist', 'Guitarist','Dhol Players','Sexophone Players','Harmonium Players','Piano Players','Electronic Keyboard','Harmonica'],
+    'DJ':['House','Techno','EDM','Hip Hop','Retro','Punjabi','Wedding DJ'],
+    'Dancers': ['Bhangra', 'Giddha','Nati', 'Fusion','Classical','Contemporary','Hip Hop',],
+    'Chefs': ['Punjabi Cuisine', 'North Indian', 'Fusion Food','Chinese','Italian','Mexican','Continental','Thai Cuisine','Japanese','Dessert Chef'],
+    'Magicians/Illusionists': ['Stage Magicians', 'Close-Up Magicians', 'Mentalists'],
+    'Sketch Artists':['Portrait Artists','Live Painting Artists','Caricature','Henna Artists'],
+    'Stand-Up Comedians':['Mimicry Artists','Roast Comedy','Family Friendly','Punjabi Stand-Up'],
+    'Anchors/MC':['Wedding Anchors', 'Corporate Event Hosts','Emcees','Emcees for Kids Events'],
+    'Photographers/Videographers':['Wedding','Event','Short film Creators'],
+    'Kids Entertainment Specialists':['Clown','Puppet Shows']
   };
   List<String> _subSkills = []; // Sub-skills for the selected skill
   List<String> _selectedSubSkills = [];
@@ -98,6 +110,8 @@ class _ArtistCredentials2State extends State<team2signup> with WidgetsBindingObs
       'alt_phone_number': prefs.getString('alt_phone_number'),
       'team_name': prefs.getString('name'),
       'address': prefs.getString('address'),
+      'latitude':prefs.getDouble('latitude').toString(),
+      'longitude':prefs.getDouble('longitude').toString(),
       // 'phone_number': prefs.getString('phone_number'),
       'profile_photo': prefs.getString('imageFilePath'),
     };
@@ -138,8 +152,8 @@ class _ArtistCredentials2State extends State<team2signup> with WidgetsBindingObs
       'account_number': _accountNumberController.text,
       'IFSC_code': _ifscController.text,
       'account_holder_name': _accountHolderNameController.text,
-      'artist_id': team_id ?? '',
-      'team_id':0,
+      'artist_id':0,
+      'team_id':team_id ?? '',
       // 'team_id': int.tryParse(_teamIdController.text) ?? null,
     };
 
@@ -445,7 +459,7 @@ class _ArtistCredentials2State extends State<team2signup> with WidgetsBindingObs
       Map<String, dynamic?> sharedPreferencesData =
           await getAllSharedPreferences();
       // Map<String, String?> profilePreferencesData = await profileSharedPreferences();
-
+print('shared preference $sharedPreferencesData');
       // Get authentication token and FCM token
       // String? token = await _getToken();
       String? fCMToken = await _getFCMToken();

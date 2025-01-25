@@ -21,7 +21,7 @@ class _CustomizeSoundSystemPageState extends State<CustomizeSoundSystemPage> {
   final List<Map<String, dynamic>> items = [
 
   ];
-
+ int totalSelectedKits=0;
   final List<Map<String, dynamic>> selectedkits = [];
   List<Map<String, dynamic>> selectedItems = [];
   bool _isLoading = true; // To track the loading state
@@ -265,11 +265,17 @@ class _CustomizeSoundSystemPageState extends State<CustomizeSoundSystemPage> {
                         // Add or remove from selected plans list
                         if (isAdded) {
                           selectedkits.add(plan);
+
                         } else {
                           selectedkits.removeWhere(
                                   (selectedPlan) => selectedPlan['name'] == plan['name']);
                         }
                       });
+                      // Update totalSelectedKits
+                      setState(() {
+                        totalSelectedKits = selectedkits.length;
+                      });
+                      print('kit ius $totalSelectedKits');
                       print(selectedkits);
                     },
                     style: ElevatedButton.styleFrom(
@@ -301,19 +307,32 @@ class _CustomizeSoundSystemPageState extends State<CustomizeSoundSystemPage> {
 
   @override
   Widget build(BuildContext context) {
+    int totalQuantity = selectedItems.fold(0, (sum, item) => sum + item['quantity'] as int);
+    totalSelectedKits = selectedkits.length;
     return Scaffold(
       backgroundColor: Color(0xFFF7F6F4),
       appBar: AppBar(
         title: Text(
-          'Party Addons',
+          'Event Addons',
           style: TextStyle(
             color: Colors.black,
-            fontSize: 20,
+            fontSize: 22,
             fontWeight: FontWeight.w600,
           ),
         ),
         backgroundColor: Colors.white,
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios, // iOS back arrow icon
+            color: Colors.black,   // Color of the back arrow
+          ),
+          onPressed: () {
+            Navigator.pop(context); // Pop the current screen and go back
+          },
+        ),
       ),
+
+
       body: Column(
         children: [
           // Large image at the top
@@ -334,7 +353,7 @@ class _CustomizeSoundSystemPageState extends State<CustomizeSoundSystemPage> {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(18, 20, 0, 5),
                   child: Text(
-                    'Pick a Complete Setup for Your Party',
+                    'Pick a Complete Setup for Your Event',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -500,28 +519,17 @@ class _CustomizeSoundSystemPageState extends State<CustomizeSoundSystemPage> {
               ],
             ),
           ),
+
           Padding(
             padding: const EdgeInsets.fromLTRB(40, 10, 40, 30),
             child: ElevatedButton(
               onPressed: () {
-                // Navigator.push(
-                //   context,
-                //   MaterialPageRoute(
-                //     builder: (context) => booking_artist(
-                //       selectedItems: selectedItems,
-                //       selectedkits : selectedkits,
-                //        artist_id : '',
-                //     ),
-                //   ),
-                // );
                 if (widget.sourceScreen == 'bookingpage') {
                   Navigator.of(context).pop({
                     'selectedItems': selectedItems,
                     'selectedKits': selectedkits,
                   });
-                }
-                else{
-
+                } else {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -532,8 +540,7 @@ class _CustomizeSoundSystemPageState extends State<CustomizeSoundSystemPage> {
                     ),
                   );
                 }
-               },
-
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color(0xffe5195e),
                 padding: EdgeInsets.symmetric(vertical: 10.0),
@@ -542,9 +549,26 @@ class _CustomizeSoundSystemPageState extends State<CustomizeSoundSystemPage> {
                 ),
               ),
               child: Center(
-                child: Text(
-                  'ADD',
-                  style: TextStyle(color: Colors.white, fontSize: 18),
+                child: Column(
+                  children: [
+                    // Row(
+                    //   children: [
+                        Text(
+                          'ADD',
+                          style: TextStyle(color: Colors.white, fontSize: 18),
+                        ),
+                    //   ],
+                    // ),
+                    // SizedBox(height: 5),
+                    // Row(
+                    //   children: [
+                        Text(
+                          'Items: $totalQuantity',
+                          style: TextStyle(color: Colors.white, fontSize: 14),
+                        ),
+                    //   ],
+                    // ),
+                  ],
                 ),
               ),
             ),

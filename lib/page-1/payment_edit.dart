@@ -50,6 +50,7 @@ int? detailsID;
         if (kind == 'solo_artist') 'artist_id': artistId,
         if (kind == 'team') 'team_id': teamId,
       };
+      print('request is $requestBody');
 
       // Make the POST request with the request body
       var response = await http.post(
@@ -75,7 +76,7 @@ int? detailsID;
            _accountHolderNameController.text = userData['account_holder_name'] ?? '';
         });
       } else {
-        print('Failed to fetch user information. Status code: ${response.statusCode}');
+        print('Failed to fetch user information. Status code: ${response.body}');
       }
     } catch (e) {
       print('Error fetching user information: $e');

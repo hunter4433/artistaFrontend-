@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../config.dart';
 import '../utils.dart';
 import 'booked_artist.dart';
+import 'booked_equipments.dart';
 
 bool isCacheLoaded = false;
 Map<String, List<dynamic>>? cachedData;
@@ -61,20 +62,28 @@ class _UserBookingsState extends State<UserBookings> with AutomaticKeepAliveClie
 
       // Second API call for equipment
       final equipmentsResponse = await http.get(
-          Uri.parse('${Config().apiDomain}/book-equipments/')
+          Uri.parse('${Config().apiDomain}/show-equipments/$userId')
       );
 
+      // Print raw responses for debugging
+      print('Raw bookings response: ${bookingsResponse.body}');
+      print('Raw equipment response: ${equipmentsResponse.body}');
+
       if (bookingsResponse.statusCode == 200 && equipmentsResponse.statusCode == 200) {
-        final decodedBookings = json.decode(bookingsResponse.body) as List<dynamic>;
-        final decodedEquipments = json.decode(equipmentsResponse.body) as List<dynamic>;  // Changed to List<dynamic>
+        // First try to decode without type casting to see the structure
+        final rawBookings = json.decode(bookingsResponse.body);
+        final rawEquipments = json.decode(equipmentsResponse.body);
 
-        print('Raw equipment response: ${equipmentsResponse.body}');
-        print('Decoded equipment: $decodedEquipments');
+        print('Decoded bookings type: ${rawBookings.runtimeType}');
+        print('Decoded equipments type: ${rawEquipments.runtimeType}');
 
+        // Now handle based on actual types
         setState(() {
           cachedData = {
-            'bookings': decodedBookings.map((e) => Map<String, dynamic>.from(e)).toList(),
-            'equipments': decodedEquipments.map((e) => Map<String, dynamic>.from(e)).toList()
+            'bookings': (rawBookings as List).map((e) => Map<String, dynamic>.from(e)).toList(),
+            'equipments': rawEquipments is List
+                ? rawEquipments.map((e) => Map<String, dynamic>.from(e)).toList()
+                : [rawEquipments], // If it's a single map, wrap it in a list
           };
           isCacheLoaded = true;
           isLoading = false;
@@ -83,10 +92,10 @@ class _UserBookingsState extends State<UserBookings> with AutomaticKeepAliveClie
         _handleError('Failed to load data');
       }
     } catch (e) {
+      print('Error details: $e');  // Detailed error logging
       _handleError(e.toString());
     }
   }
-
   void _handleError(String message) {
     setState(() {
       isLoading = false;
@@ -134,11 +143,12 @@ class _UserBookingsState extends State<UserBookings> with AutomaticKeepAliveClie
       if (response.statusCode == 200) {
         List<dynamic> userDataList = json.decode(response.body);
 
-        if (mounted) {
-          for (var userData in userDataList) {
-            phoneNumber = userData['phone_number'] ?? '';
-          }
-        }
+        // if (mounted) {
+        //   for (var userData in userDataList) {
+        //     phoneNumber = userData['manager_phone_number'] ?? '';
+        //
+        //   }
+        // }
 
         return true;
       } else {
@@ -168,6 +178,7 @@ class _UserBookingsState extends State<UserBookings> with AutomaticKeepAliveClie
       int booking_id, int artist_id, String isteam,  int index) {
     double baseWidth = 390;
     final bookings = cachedData?['bookings'] ?? [];
+
     double fem = MediaQuery
         .of(context)
         .size
@@ -175,6 +186,7 @@ class _UserBookingsState extends State<UserBookings> with AutomaticKeepAliveClie
     double ffem = fem * 0.97;
 
     final booking = bookings[index];
+    phoneNumber = booking['manager_phone_number'] ?? '';
     final status = booking['status']; // Get the status from the booking object
     double progress = 0.0;
 
@@ -319,7 +331,7 @@ class _UserBookingsState extends State<UserBookings> with AutomaticKeepAliveClie
                       ),
                       child: Center(
                         child: Text(
-                          'Call Artist',
+                          'Call Event Manager',
                           style: SafeGoogleFont(
                             'Be Vietnam Pro',
                             fontSize: 16 * ffem,
@@ -413,7 +425,7 @@ class _UserBookingsState extends State<UserBookings> with AutomaticKeepAliveClie
           child: Text(
             'Bookings',
             style: TextStyle(
-              fontSize: 22,
+              fontSize: 23,
               fontWeight: FontWeight.w500,
               color: Colors.white,
             ),
@@ -452,11 +464,11 @@ class _UserBookingsState extends State<UserBookings> with AutomaticKeepAliveClie
     'Equipment Bookings',
     style: TextStyle(
     color: Colors.white,
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: FontWeight.w500,
     ),
     ),
-    SizedBox(height: 10),
+    SizedBox(height: 15),
     ...equipments.map((equipment) => _buildEquipmentCard(equipment)).toList(),
     SizedBox(height: 20),
     ],
@@ -467,11 +479,11 @@ class _UserBookingsState extends State<UserBookings> with AutomaticKeepAliveClie
     'Artist Bookings',
     style: TextStyle(
     color: Colors.white,
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: FontWeight.w500,
     ),
     ),
-    SizedBox(height: 10),
+    SizedBox(height: 15),
     ...bookings.asMap().entries.map((entry) {
     final index = entry.key;
     final booking = entry.value;
@@ -501,39 +513,91 @@ class _UserBookingsState extends State<UserBookings> with AutomaticKeepAliveClie
 
   // Add a new method to build equipment cards
   Widget _buildEquipmentCard(Map<String, dynamic> equipment) {
-    return Card(
-      color: Color(0xFF292938),
-      margin: EdgeInsets.fromLTRB(5, 0, 5, 20),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-      ),
-      elevation: 0,
-      child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Equipment: ${equipment['name'] ?? 'Unknown'}',
-              style: GoogleFonts.epilogue(
-                fontWeight: FontWeight.w500,
-                fontSize: 18,
-                height: 1.5,
-                color: Colors.white,
+
+
+    double baseWidth = 390;
+    double fem = MediaQuery
+        .of(context)
+        .size
+        .width / baseWidth;
+    double ffem = fem * 0.97;
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) =>
+        BookingDetailScreen(bookingData: equipment),
+          ),
+        );
+      },
+      child: Card(
+        color: Color(0xFF292938),
+        margin: EdgeInsets.fromLTRB(5, 0, 5, 20),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+        ),
+        elevation: 0,
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Equipment: ${equipment['item_names'] ?? 'Unknown'}',
+                style: SafeGoogleFont(
+                  'Be Vietnam Pro',
+                  fontWeight: FontWeight.w500,
+                  fontSize: 18,
+                  height: 1.5,
+                  color: Colors.white,
+                ),
               ),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Booking Date: ${equipment['booking_date'] ?? 'Not specified'}',
-              style: GoogleFonts.epilogue(
-                fontWeight: FontWeight.w500,
-                fontSize: 16,
-                height: 1.5,
-                color: Color(0xFFB4B4DF),
+              SizedBox(height: 8),
+              Text(
+                'Booking Date: ${equipment['booking_date'] ?? 'Not specified'}',
+                style: SafeGoogleFont(
+                  'Be Vietnam Pro',
+                  fontWeight: FontWeight.w500,
+                  fontSize: 16,
+                  height: 1.5,
+                  color: Color(0xFFB4B4DF),
+                ),
               ),
-            ),
-            // Add more equipment details as needed
-          ],
+              SizedBox(height: 8),
+              ElevatedButton(
+                onPressed: () async {
+                  // bool wait = await fetchArtistBooking(artist_id);
+                  // if (wait) {
+                     _makePhoneCall(phoneNumber ?? '');
+                  // }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12 * fem),
+                  ),
+                  padding: EdgeInsets.symmetric(
+                    vertical: 6.5 * fem,
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    'Call Event Manager',
+                    style: SafeGoogleFont(
+                      'Be Vietnam Pro',
+                      fontSize: 16 * ffem,
+                      fontWeight: FontWeight.w700,
+                      height: 1.5 * ffem / fem,
+                      letterSpacing: 0.24 * fem,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+              ),
+              // Add more equipment details as needed
+            ],
+          ),
+
         ),
       ),
     );

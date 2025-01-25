@@ -59,6 +59,8 @@ double? soundSystemPrice=0.0;
   late double totalEquipmentCost;
   double? baseEquipmentPrice;
   late Map<String, dynamic> baseEquipment ;
+  double? customisedPrice;
+  String? razorpayKey;
   // bool remove = true;
   // Place this outside the build method in your widget tree
 
@@ -129,80 +131,78 @@ print('minute is $minutes');
     });
 
   }
+
   double? calculateTotalPrice() {
     // Start with base sound system price
-    double? totalPrice = soundSystemPrice;
+     customisedPrice = soundSystemPrice;
+     if (widget.selectedkits != null && widget.selectedkits.isNotEmpty) {
+       for (var kit in widget.selectedkits) {
+         if (kit.containsKey('price')) {
+           try {
+             String priceString = kit['price'].toString();
+             if (priceString.contains('/per piece')) {
+               priceString = priceString.split('/per piece')[0];
+             }
+             print('mohit $priceString');
+             customisedPrice = customisedPrice! + double.parse(priceString);
+           } catch (e) {
+             print('Error parsing price: ${kit['price']}');
+             // Handle the error appropriately
+           }
+         }
+       }
+       customisedPrice= customisedPrice! - baseEquipmentPrice!;
+     }
 
-    // Check if selectedItems is not empty and not null
-    if (widget.selectedItems != null && widget.selectedItems.isNotEmpty) {
-      for (var item in widget.selectedItems) {
-        if (item.containsKey('price')) {
-          totalPrice = totalPrice! +(item['price'] ?? 0).toDouble();
-        }
-      }
-    }
+     if (widget.selectedItems != null && widget.selectedItems.isNotEmpty) {
+       for (var kit in widget.selectedItems) {
+         if (kit.containsKey('price') && kit.containsKey('quantity')) {
+           try {
+             // Extract and clean the price string
+             String priceString = kit['price'].toString();
+             if (priceString.contains('/per piece')) {
+               priceString = priceString.split('/per piece')[0];
+             }
 
-    // Check if selectedkits is not empty and not null
-    if (widget.selectedkits != null && widget.selectedkits.isNotEmpty) {
-      for (var kit in widget.selectedkits) {
-        if (kit.containsKey('price')) {
-          totalPrice = totalPrice! + (kit['price'] ?? 0).toDouble();
-        }
-      }
-      totalPrice= totalPrice! - baseEquipmentPrice!;
-    }
+             // Parse the price to double
+             double price = double.parse(priceString.trim());
+
+             // Extract the quantity, ensuring it is a valid number
+             int quantity = int.tryParse(kit['quantity'].toString()) ?? 1;
+
+             // Calculate total price for the current item and add to totalPrice
+             customisedPrice =  customisedPrice! + price * quantity;
+           } catch (e) {
+             print('Error parsing price or quantity: ${e.toString()}');
+             // Handle the error appropriately
+           }
+         }
+       }
+     }
+    // // Check if selectedItems is not empty and not null
+    // if (widget.selectedItems != null && widget.selectedItems.isNotEmpty) {
+    //   for (var item in widget.selectedItems) {
+    //     if (item.containsKey('price')) {
+    //       customisedPrice = customisedPrice! +(item['price'] ?? 0).toDouble();
+    //     }
+    //   }
+    // }
+    //
+    // // Check if selectedkits is not empty and not null
+    // if (widget.selectedkits != null && widget.selectedkits.isNotEmpty) {
+    //   for (var kit in widget.selectedkits) {
+    //     if (kit.containsKey('price')) {
+    //       customisedPrice = customisedPrice! + (kit['price'] ?? 0).toDouble();
+    //     }
+    //   }
+    //   customisedPrice= customisedPrice! - baseEquipmentPrice!;
+    // }
     // Update netAmount state
     setState(() {
-      netAmount = totalPrice! + totalAmount!;
+      netAmount = customisedPrice! + totalAmount!;
     });
 
-    // final Map<String, dynamic> customisedData = {
-    //   if (widget.selectedItems != null && widget.selectedItems.isNotEmpty)
-    //     'customisedequipements': widget.selectedItems
-    //         .map((item) => item['name'] ?? '')
-    //         .where((name) => name.isNotEmpty)
-    //         .toList(),
-    //   if (widget.selectedkits != null && widget.selectedkits.isNotEmpty)
-    //     'customisedKit': widget.selectedkits
-    //         .map((kit) => kit['name'] ?? '')
-    //         .where((name) => name.isNotEmpty)
-    //         .toList(),
-    //   if ( widget.selectedkits.isEmpty )
-    //     // 'baseKit': baseEquipment!.keys
-    //     //     .map((key) => '$key' )
-    //     //     .toList(),
-    //   if (equipments != null)
-    //     'artistRequiredEquipments': equipments!.entries
-    //         .where((entry) => entry.key != 'total_equipment_cost') // Exclude total_equipment_cost
-    //         .map((entry) => '${entry.key} (${entry.value})')
-    //         .toList(),
-    // };
-    // // Extract quantities
-    // final String quantities = [
-    //   if (widget.selectedItems != null && widget.selectedItems.isNotEmpty)
-    //     ...widget.selectedItems
-    //         .map((item) => item['quantity']?.toString() ?? '')
-    //         .where((quantity) => quantity.isNotEmpty),
-    //   if (widget.selectedkits != null && widget.selectedkits.isNotEmpty)
-    //     ...widget.selectedkits
-    //         .map((kit) => kit['quantity']?.toString() ?? '')
-    //         .where((quantity) => quantity.isNotEmpty),
-    //   // if (baseEquipment != null && baseEquipment.isNotEmpty)
-    //   //   ...baseEquipment!.values
-    //   //       .map((value) => value['quantity']?.toString() ?? '')
-    //   //       .where((quantity) => quantity.isNotEmpty),
-    //   if (equipments != null)
-    //     ...equipments!.entries
-    //         .where((entry) => entry.key != 'total_equipment_cost')
-    //         .map((entry) => entry.value.toString())
-    // ].join(', ');
-
-
-
-
-
-
-    return totalPrice;
+    return customisedPrice;
   }
 
 
@@ -229,7 +229,10 @@ print('minute is $minutes');
 
   void _saveUserInformation() async {
 
-    String? id = await _getid();
+    Future<String?> _getUserId() async {
+      return await storage.read(key: 'user_id');
+    }
+    String? id = await _getUserId();
 
     print(id);
     // Example URL, replace with your actual API endpoint
@@ -237,7 +240,7 @@ print('minute is $minutes');
 
     // Prepare data to send to the backend
     Map<String, dynamic> userData = {
-      'first_name': nameController,
+      'first_name': nameController.text,
     };
 
     try {
@@ -273,31 +276,50 @@ print('minute is $minutes');
 
 
 
-    void calculateDuration() {
-      if (selectedFromTimeBack != null && selectedToTimeBack != null) {
+  void calculateDuration() {
+    if (selectedFromTimeBack != null && selectedToTimeBack != null) {
+      DateFormat dateFormat = DateFormat('yyyy-MM-dd HH:mm:ss');
+      DateTime fromTime = dateFormat.parse(selectedFromTimeBack!);
+      DateTime toTime = dateFormat.parse(selectedToTimeBack!);
 
-        DateFormat dateFormat = DateFormat('yyyy-MM-dd HH:mm:ss');
-        DateTime fromTime = dateFormat.parse(selectedFromTimeBack!);
-        DateTime toTime = dateFormat.parse(selectedToTimeBack!);
+      // If toTime is on the next day and before fromTime, add 24 hours to toTime
+      if (toTime.isBefore(fromTime)) {
+        toTime = toTime.add(Duration(days: 1));
+      }
 
-        Duration duration = toTime.difference(fromTime);
+      Duration duration = toTime.difference(fromTime);
 
-        if (duration.isNegative) {
-          // Handle the case when 'To' time is before 'From' time
-          duration = Duration.zero;
-        }
+      // Additional validation to ensure we don't get negative duration
+      if (duration.isNegative) {
+        // Reset times and show error
+        setState(() {
+          selectedFromTimeBack = null;
+          durationController.text = "Please select valid time range";
+          hours = 0;
+          minutes = 0;
+        });
 
+        // You might want to show a snackbar or alert to inform the user
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Please select a "From" time that is before the "To" time'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      } else {
+        // Valid duration - update the UI
         setState(() {
           durationController.text = "${duration.inHours} hours ${duration.inMinutes.remainder(60)} minutes";
-           hours= duration.inHours;
-           minutes = duration.inMinutes.remainder(60);
+          hours = duration.inHours;
+          minutes = duration.inMinutes.remainder(60);
         });
-        print(hours);
-        print(minutes);
-
-
       }
+
+      print('Hours: $hours');
+      print('Minutes: $minutes');
     }
+  }
 
 //   Future<Map<String, dynamic>?> calculateTotalAmount(
 //       String pricePerHour, int hours, int minutes, bool hasSoundSystem) async {
@@ -411,7 +433,7 @@ print('minute is $minutes');
     }else{
       apiUrl = '${Config().apiDomain}/featured/artist_info/$artist_id';
     }
-
+print( apiUrl);
     try {
       var response = await http.get(
         Uri.parse(apiUrl),
@@ -433,12 +455,14 @@ print(userDataList );
           setState(() {
             team_name = userData['team_name'] ;
             name = userData['name'] ; // Assign String to name
-            price = (userData['price_per_hour']).toString() ?? ''; // Assign String to price
+            price = (userData['price_per_hour']).toStringAsFixed(2) ?? ''; // Assign String to price
             image = '${userData['profile_photo']}' ;
             fcm_token=userData['fcm_token'] ?? '';
             equipments=userData['sound_system'] ?? '';
+            razorpayKey=userData['razorpayKey'] ?? '';
 
           });
+          print(razorpayKey);
            totalEquipmentCost = equipments['total_equipment_cost']?.toDouble() ?? 0.0;
 print('soundsystem is $equipments');
         }
@@ -552,10 +576,10 @@ print('soundsystem is $equipments');
     setState(() {
       if (hasSoundSystem) {
         // If sound system is already added, subtract its price
-        netAmount = netAmount!  - soundSystemPrice!;
+        netAmount = netAmount! - customisedPrice!;
       } else {
         // If sound system is not added, add its price
-        netAmount = netAmount! + soundSystemPrice! ;
+        netAmount = netAmount! + soundSystemPrice! + customisedPrice!;
       }
       // Toggle the hasSoundSystem state
       hasSoundSystem = !hasSoundSystem;
@@ -991,6 +1015,7 @@ print('soundsystem is $equipments');
                                           selectedFromTimeBack = '$formattedDate ${pickedTime.hour}:${pickedTime.minute}:00';
                                           fromTimeController.text = selectedFromTime ?? ''; // Update the text field
                                         });
+                                        calculateDuration();
                                       }
                                     },
                                     decoration: InputDecoration(contentPadding: EdgeInsets.symmetric(vertical: 17.0, horizontal: 12.0),
@@ -1202,6 +1227,51 @@ print('soundsystem is $equipments');
                                 ),
                               ),
                             ),
+
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(50,20,0,0),
+                              child: ElevatedButton(
+                                onPressed: () async {
+                                  final result = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => CustomizeSoundSystemPage(
+                                        sourceScreen: 'bookingpage',
+                                      ),
+                                    ),
+                                  );
+
+                                  if (result != null && result is Map) {
+                                    setState(() {
+                                      widget.selectedItems = result['selectedItems'] ?? [];
+                                      widget.selectedkits = result['selectedKits'] ?? [];
+                                    });
+                                    // Call the calculateTotalPrice function
+                                    double? totalPrice = calculateTotalPrice();
+                                    print("Total Price: $totalPrice");
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Color(0xffe5195e), // Set the button's background color
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(30), // Rounded corners
+                                  ),
+                                  elevation: 8, // Shadow for depth
+                                  padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15), // Custom padding for better spacing
+                                  shadowColor: Colors.black.withOpacity(0.3), // Soft shadow effect
+                                  textStyle: TextStyle(
+                                    fontWeight: FontWeight.bold, // Bold text for emphasis
+                                    fontSize: 16, // Set a reasonable font size
+                                  ),
+                                ),
+                                child: Text(
+                                  'Customize Sound System',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                            ),
+
+
                             Container(
                               // datetimevj9 (9:1606)
                               margin: EdgeInsets.fromLTRB(0*fem, 25*fem, 0*fem, 0*fem),
@@ -1335,74 +1405,152 @@ print('soundsystem is $equipments');
                                                   SizedBox(width: 8.0),
                                                   GestureDetector(
                                                     onTap: () {
-                                                      // Show dialog box when icon is tapped
                                                       showDialog(
                                                         context: context,
                                                         builder: (BuildContext context) {
-                                                          return AlertDialog(
-                                                            backgroundColor: Colors.white, // Dialog background remains white
-                                                            title: Text(
-                                                              'What\'s Included',
-                                                              style: TextStyle(
-                                                                fontSize: 20.0,
-                                                                fontWeight: FontWeight.w500,
-                                                                color: Color(0xFF121217), // Title text color matches your brand theme
-                                                              ),
-                                                            ),
-                                                            content: Builder(
-                                                                builder: (context) {
-
-                                                                  // Convert equipment map entries to formatted strings
-                                                                  String equipmentList = '';
-                                                                  if (equipments is Map<String, dynamic>) {
-                                                                    equipments.forEach((key, value) {
-                                                                      // Skip the total_equipment_cost entry
-                                                                      if (key != 'total_equipment_cost') {
-                                                                        // Format each equipment with its price
-                                                                        equipmentList += '- $key: ₹${value.toString()}\n';
-                                                                      }
-                                                                    });
-                                                                  }
-                                                                  Map<String, int> equipmentQuantities = {};
-                                                                  if (widget.selectedkits == null || widget.selectedkits.isEmpty) {
-                                                                    // Only add baseEquipment if selectedkits is empty or null
-                                                                    baseEquipment?.forEach((key, value) {
-                                                                      equipmentQuantities[key] = value['quantity'];
-                                                                    });
-                                                                  }
-                                                                  // print(equipmentQuantities);
-
-                                                                  return Text(
-
-                                                                    'Base Equipment: \n $equipmentQuantities \n\n'
-                                                                        'The sound system includes:\n\n$equipmentList\n\n'
-                                                                        'Selected Items:\n${widget.selectedItems.map((item) => item['name'] ?? '').join(', ')}\n\n'
-                                                                        'Selected Kits:\n${widget.selectedkits.map((kit) => kit['name'] ?? '').join(', ')}'
-                                                                    ,
-                                                                    style: TextStyle(
-                                                                      fontSize: 16.0,
-                                                                      color: Colors.black,
-                                                                    ),
-                                                                  );
-                                                                }
-                                                            ),
-                                                            actions: [
-                                                              TextButton(
-                                                                onPressed: () {
-                                                                  Navigator.of(context).pop(); // Close the dialog
-                                                                },
-                                                                child: Text(
-                                                                  'Close',
+                                                          return StatefulBuilder(
+                                                            builder: (BuildContext context, StateSetter dialogSetState) {
+                                                              return AlertDialog(
+                                                                backgroundColor: Colors.white,
+                                                                title: Text(
+                                                                  'What\'s Included',
                                                                   style: TextStyle(
-                                                                    color: Color(0xFFE5195E), // Brand color for button text
-                                                                    fontWeight: FontWeight.bold,
+                                                                    fontSize: 20.0,
+                                                                    fontWeight: FontWeight.w500,
+                                                                    color: Color(0xFF121217),
                                                                   ),
                                                                 ),
-                                                              ),
-                                                            ],
-                                                            shape: RoundedRectangleBorder(
-                                                              borderRadius: BorderRadius.circular(12), // Rounded corners for dialog box
-                                                            ),
+                                                                content: Builder(
+                                                                  builder: (context) {
+                                                                    String baseKitString = '';
+                                                                    if (baseEquipment != null && baseEquipment.isNotEmpty) {
+                                                                      baseKitString = 'Base Kit (${baseEquipment.entries.map((e) => '${e.key} ${e.value['quantity']}').join(', ')})';
+                                                                    }
+                                                                    return SingleChildScrollView(
+                                                                      child: Column(
+                                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                                        mainAxisSize: MainAxisSize.min,
+                                                                        children: [
+                                                                          Text(
+                                                                            'Equipment Required by Artist:',
+                                                                            style: TextStyle(
+                                                                              fontSize: 16.0,
+                                                                              fontWeight: FontWeight.bold,
+                                                                              color: Colors.black,
+                                                                            ),
+                                                                          ),
+                                                                          SizedBox(height: 8),
+                                                                          // Base Equipment
+                                                                          if (widget.selectedkits == null || widget.selectedkits.isEmpty)
+                                                                            Padding(
+                                                                              padding: EdgeInsets.symmetric(vertical: 4),
+                                                                              child: Text(
+                                                                                baseKitString,
+                                                                                style: TextStyle(fontSize: 16.0, color: Colors.black),
+                                                                              ),
+                                                                            ),
+                                                                          // Sound System Equipment
+                                                                          if (equipments is Map<String, dynamic>)
+                                                                            ...equipments.entries.where((e) => e.key != 'total_equipment_cost').map(
+                                                                                  (entry) => Padding(
+                                                                                padding: EdgeInsets.symmetric(vertical: 4),
+                                                                                child: Row(
+                                                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                                                  children: [
+                                                                                    Expanded(
+                                                                                      child: Text(
+                                                                                        '${entry.key}: ₹${entry.value}',
+                                                                                        style: TextStyle(fontSize: 16.0, color: Colors.black),
+                                                                                      ),
+                                                                                    ),
+                                                                                  ],
+                                                                                ),
+                                                                              ),
+                                                                            ),
+
+                                                                          SizedBox(height: 16),
+                                                                          Text(
+                                                                            'Equipment Selected by User:',
+                                                                            style: TextStyle(
+                                                                              fontSize: 16.0,
+                                                                              fontWeight: FontWeight.bold,
+                                                                              color: Colors.black,
+                                                                            ),
+                                                                          ),
+                                                                          SizedBox(height: 8),
+                                                                          // Selected Items
+                                                                          ...widget.selectedItems.map(
+                                                                                (item) => Padding(
+                                                                              padding: EdgeInsets.symmetric(vertical: 4),
+                                                                              child: Row(
+                                                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                                                children: [
+                                                                                  Expanded(
+                                                                                    child: Text(
+                                                                                      item['name'] ?? '',
+                                                                                      style: TextStyle(fontSize: 16.0, color: Colors.black),
+                                                                                    ),
+                                                                                  ),
+                                                                                  IconButton(
+                                                                                    icon: Icon(Icons.remove_circle_outline, color: Color(0xFFE5195E)),
+                                                                                    onPressed: () {
+                                                                                      widget.selectedItems.remove(item);
+                                                                                      dialogSetState(() {});  // Update dialog state
+                                                                                    },
+                                                                                  ),
+                                                                                ],
+                                                                              ),
+                                                                            ),
+                                                                          ),
+                                                                          // Selected Kits
+                                                                          ...widget.selectedkits.map(
+                                                                                (kit) => Padding(
+                                                                              padding: EdgeInsets.symmetric(vertical: 4),
+                                                                              child: Row(
+                                                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                                                children: [
+                                                                                  Expanded(
+                                                                                    child: Text(
+                                                                                      kit['name'] ?? '',
+                                                                                      style: TextStyle(fontSize: 16.0, color: Colors.black),
+                                                                                    ),
+                                                                                  ),
+                                                                                  IconButton(
+                                                                                    icon: Icon(Icons.remove_circle_outline, color: Color(0xFFE5195E)),
+                                                                                    onPressed: () {
+                                                                                      widget.selectedkits.remove(kit);
+                                                                                      dialogSetState(() {});  // Update dialog state
+                                                                                    },
+                                                                                  ),
+                                                                                ],
+                                                                              ),
+                                                                            ),
+                                                                          ),
+                                                                        ],
+                                                                      ),
+                                                                    );
+                                                                  },
+                                                                ),
+                                                                actions: [
+                                                                  TextButton(
+                                                                    onPressed: () {
+                                                                      Navigator.of(context).pop();
+                                                                      setState(() {});  // Update parent widget after dialog closes
+                                                                    },
+                                                                    child: Text(
+                                                                      'Close',
+                                                                      style: TextStyle(
+                                                                        color: Color(0xFFE5195E),
+                                                                        fontWeight: FontWeight.bold,
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                                shape: RoundedRectangleBorder(
+                                                                  borderRadius: BorderRadius.circular(12),
+                                                                ),
+                                                              );
+                                                            },
                                                           );
                                                         },
                                                       );
@@ -1508,12 +1656,9 @@ print('soundsystem is $equipments');
                               Razorpay _razorpay = Razorpay();
 
                               var options = {
-                                'key': 'rzp_test_Hb4hFCm46361XC',
-
+                                'key': razorpayKey,
                                 'amount': 5000,
-
-
-                                'name': 'Home Stage',
+                                'name': 'PrimeStage',
                                 'order_id': orderId,
                                 'description': 'artist book',
                                 'timeout': 120, // in seconds
@@ -1563,45 +1708,10 @@ print('soundsystem is $equipments');
                     color: Color(0xffffffff),
                   ),
                 ),
-          ElevatedButton(
-            onPressed: () async  {
 
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>CustomizeSoundSystemPage(
-                    sourceScreen: 'bookingpage',
-                  ), // Replace with your page widget
-                ),
-              );
 
-              if (result != null && result is Map) {
-                setState(() {
-                  widget.selectedItems = result['selectedItems'] ?? [];
-                  widget.selectedkits = result['selectedKits'] ?? [];
-                });
-                // Call the calculateTotalPrice function
-                double? totalPrice = calculateTotalPrice();
-                print("Total Price: $totalPrice");
-              }
-              // Navigate to the CustomizeSoundSystemPage
-              // Navigator.push(
-              //   context,
-              //   MaterialPageRoute(
-              //     builder: (context) => CustomizeSoundSystemPage(),
-              //   ),
-              // );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue, // Replace with your brand color
-            ),
-            child: Text(
-              'Customize Sound System',
-              style: TextStyle(color: Colors.white),
-            ),
-          )
 
-          ],
+              ],
 
 
 
@@ -1614,6 +1724,14 @@ print('soundsystem is $equipments');
     );
   }
 
+  void _showUpdatedDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return this.build(context);
+      },
+    );
+  }
   void _showLocationDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -1846,6 +1964,7 @@ print('soundsystem is $equipments');
         'latitude': latitude,
         'special_request': specialRequestController.text,
         'category':selectedCategory,
+        'total_amount':netAmount,
         'status':0,
         // 'audience_size':selectedAudienceSize,
       };

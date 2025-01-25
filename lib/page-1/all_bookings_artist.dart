@@ -89,6 +89,7 @@ class _AllBookingsState extends State<AllBookings> {
     }else{
       apiUrl='${Config().apiDomain}/team/bookings/$team_id';
     }
+    print(apiUrl);
 
       final response = await http.get(
           Uri.parse(apiUrl));
@@ -215,7 +216,7 @@ class _AllBookingsState extends State<AllBookings> {
 
 
   Widget _buildRequestCard(
-      String category, String bookingDate, String BookingTime, int booking_id, int user_id,int artist_id, String duration,int index) {
+      String category, String bookingDate, String BookingTime, int booking_id, int user_id,int artist_id, String duration,String phone_number,int index) {
     final booking = bookings[index];
     final status = booking['status'];
 
@@ -406,7 +407,7 @@ class _AllBookingsState extends State<AllBookings> {
                       children: [
                         OutlinedButton(
                           onPressed: () {
-                            _makePhoneCall(user_phonenumber!);
+                            _makePhoneCall(phone_number);
                           },
                           style: OutlinedButton.styleFrom(
                             backgroundColor: Colors.white,
@@ -421,7 +422,7 @@ class _AllBookingsState extends State<AllBookings> {
                           ),
                           child: Center(
                             child: Text(
-                              'Call User',
+                              'Call Event Manager',
                               style: GoogleFonts.epilogue(
                                 fontWeight: FontWeight.w500,
                                 fontSize: 16,
@@ -539,6 +540,7 @@ class _AllBookingsState extends State<AllBookings> {
             booking['user_id'],
             idToUse,
             booking['duration'],
+            booking['manager_number'],
             index,
           );
         },

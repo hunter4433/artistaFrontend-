@@ -1,8 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:test1/page-1/page0.3_booking.dart';
-import 'package:test1/page-1/page_0.3_artist_home.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../config.dart';
 import '../utils.dart';
 import 'package:http/http.dart' as http;
@@ -21,6 +20,7 @@ class _booking_historyState extends State<booking_history>{
   bool isLoading = true;
   late List<String> feedback;
   // bool isLoading = false;
+  final storage = FlutterSecureStorage();
 
   @override
   void initState() {
@@ -49,6 +49,7 @@ class _booking_historyState extends State<booking_history>{
     }else{
     apiUrl='${Config().apiDomain}/team/bookings/completed/$team_id';
     }
+    print(apiUrl);
 
     final response = await http.get(Uri.parse(apiUrl));
 

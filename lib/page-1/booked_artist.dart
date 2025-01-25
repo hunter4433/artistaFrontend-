@@ -23,8 +23,9 @@ import 'bottom_nav.dart';
 class Booked extends StatefulWidget {
   final String BookingId;
   final String artistId;
+   bool? isEquipment;
   String? isteam;
-  Booked({required this.BookingId, required this.artistId , this.isteam});
+  Booked({required this.BookingId, required this.artistId , this.isteam, this.isEquipment});
 
   @override
   _BookedState createState() => _BookedState();
@@ -56,7 +57,7 @@ class _BookedState extends State<Booked> {
   TextEditingController _locationController= TextEditingController();
   TextEditingController _dateTextController= TextEditingController();
   TextEditingController _timeTextController= TextEditingController();
-
+ String? total_amount;
   // TextEditingController _durationTextController= TextEditingController();
   bool _isLoading = false;
 
@@ -145,6 +146,7 @@ class _BookedState extends State<Booked> {
 
         setState(() {
           ratings = (responseData['average_rating']).toDouble();
+          ratings = double.parse(ratings!.toStringAsFixed(1));
         });
 
 
@@ -209,6 +211,7 @@ class _BookedState extends State<Booked> {
           _locationController.text = userData['location'] ?? '';
           _dateTextController.text = userData['booking_date'] ?? '';
           _timeTextController.text = userData['booked_from'] ?? '';
+          total_amount=userData['total_amount'] ?? '';
           // status= userData['status'] ?? '';
           sound_system_price= userData['sound_system_price'] ;
 
@@ -774,39 +777,25 @@ class _BookedState extends State<Booked> {
                               ),
                               SizedBox(height: 10 * fem,),
                               // Use FutureBuilder to handle async calculation
-                              FutureBuilder<String>(
-                                future: _calculateTotalPrice(), // Call the async function
-                                builder: (context, snapshot) {
-                                  // Check for different states
-                                  if (snapshot.connectionState == ConnectionState.waiting) {
-                                    // While waiting, show a loading spinner or message
-                                    return CircularProgressIndicator();
-                                  } else if (snapshot.hasError) {
-                                    // If there's an error, show an error message
-                                    return Text('Error calculating price');
-                                  } else if (snapshot.hasData) {
-                                    // Once the data is ready, display the total price
-                                    return Expanded(
-                                      child: Container(
-                                        width: 249 * fem,
-                                        height: 24 * fem,
-                                        child: Text(
-                                          snapshot.data ?? 'Price not available', // Use the calculated price
-                                          style: SafeGoogleFont(
-                                            'Be Vietnam Pro',
-                                            fontSize: 17 * ffem,
-                                            fontWeight: FontWeight.w400,
-                                            height: 1.5 * ffem / fem,
-                                            color: Color(0xff876370),
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  } else {
-                                    // Fallback for unexpected states
-                                    return Text('Price not available');
-                                  }
-                                },
+                              Container(
+                                width: 249 * fem,
+                                height: 24 * fem,
+
+                                child: Text(
+                                  '$total_amount',
+                                  style: SafeGoogleFont(
+                                    'Be Vietnam Pro',
+                                    fontSize: 17 * ffem,
+                                    fontWeight: FontWeight.w400,
+                                    height: 1.5 * ffem / fem,
+                                    color:  Color(
+                                        0xff876370),
+                                  ),
+                                  // enabled: _isEditing,
+                                  // decoration: InputDecoration(
+                                  //   border: InputBorder.none,
+                                  // ),
+                                ),
                               ),
                             ],
                           ),

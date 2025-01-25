@@ -36,7 +36,7 @@ class _SceneState extends State<Scene> {
                       width: double.infinity,
                       height: MediaQuery.of(context).orientation == Orientation.portrait ? 230 * fem : 180 * fem,
                       child: Image.asset(
-                        'assets/page-1/images/party.jpg',
+                        'assets/page-1/images/pexels-koolshooters-6983014.jpg',
                         fit: BoxFit.cover,
                       ),
                     ),

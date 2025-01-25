@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:test1/page-1/artist_showcase.dart';
 import 'package:test1/page-1/party_addons.dart';
 import 'package:test1/page-1/searched_artist.dart';
-import 'package:test1/page-1/team_showcase.dart';
+// import 'package:test1/page-1/team_showcase.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
@@ -41,29 +41,58 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
 
       'name':'Infuse your gathering with the singer.',
       'type': 'video',
-      'url': 'assets/page-1/images/newmarraige.mov',
+      'url': 'assets/page-1/images/homemarrage.mov',
       'nav':'Singer'
     },
     {
       'name': 'Treat your elite guests to culinary perfection.',
       'type': 'video',
       'url': 'assets/page-1/images/homestage2.mov',
-      'nav': 'Dancer'
+      'nav': 'Musician'
 
 
     },
     {
       'name': 'Make your little one’s birthday magical.',
       'type': 'video',
-      'url': 'assets/page-1/images/mehandi.mov',
-      'nav':'Comedian, Dancer'
+      'url': 'assets/page-1/images/cfcffa41920c1c8f63a3414483055651.mov',
+      'nav':'Dancer'
+
+    },
+    // {
+    //   'name': 'Exclusive Haldi Entertainment to Complement Your Traditional Celebration',
+    //   'type': 'video',
+    //   'url': 'assets/page-1/images/b6d72c6ab8ae0d23b322e019cab0b565.mp4',
+    //   'nav':'Dancer'
+    //
+    // },
+
+  ];
+  final List<Map<String, dynamic>> newsection = [
+    {
+
+      'name':'Infuse your gathering with the singer.',
+      'subheading': 'Feel the Air',
+      'type':'image',
+      'url': 'assets/page-1/images/00bc0d425decae5f6bd5022c6efc41d6.jpg',
+      'nav':'Anchor'
+    },
+
+    {
+      'name': 'Treat your elite guests to culinary perfection.',
+      'subheading': 'Feel the Air',
+      'type':'image',
+      'url': 'assets/page-1/images/pexels-yankrukov-9002001 2.jpg',
+      'nav': 'Musician'
+
 
     },
     {
-      'name': 'Exclusive Haldi Entertainment to Complement Your Traditional Celebration',
-      'type': 'video',
-      'url': 'assets/page-1/images/b6d72c6ab8ae0d23b322e019cab0b565.mp4',
-      'nav':'Dancer'
+      'name': 'Make your little one’s birthday magical.',
+      'subheading': 'Feel the Air',
+      'type':'image',
+      'url': 'assets/page-1/images/514f5c2e851363191bb1b020237eec7b.jpg',
+      'nav':'Sketch Artist'
 
     },
 
@@ -74,30 +103,30 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
 
       'name':'Infuse your gathering with the singer.',
       'type': 'video',
-      'url': 'assets/videos/6273824-uhd_2160_3840_30fps.MOV',
+      'url': 'assets/page-1/images/6273824-uhd_2160_3840_30fps.mp4',
       'nav':'Singer'
     },
 
     {
       'name': 'Treat your elite guests to culinary perfection.',
       'type': 'image',
-      'url': 'assets/page-1/images/0091cab0989eb9eb56ae106b3d5e4181.HEIC',
-      'nav': 'Dancer'
+      'url': 'assets/page-1/images/0091cab0989eb9eb56ae106b3d5e4181 2.jpg',
+      'nav': 'SoundSystem'
 
 
     },
     {
       'name': 'Make your little one’s birthday magical.',
       'type': 'video',
-      'url': 'assets/videos/e5ccca38898b29f3851c4588c8327c44.MOV',
-      'nav':'Comedian, Dancer'
+      'url': 'assets/page-1/images/e5ccca38898b29f3851c4588c8327c44.mov',
+      'nav':'Devotional Music'
 
     },
     {
       'name': 'Exclusive Haldi Entertainment to Complement Your Traditional Celebration',
       'type': 'video',
       'url': 'assets/page-1/images/b6d72c6ab8ae0d23b322e019cab0b565.mp4',
-      'nav':'Dancer'
+      'nav':'Chef'
 
     },
 
@@ -403,7 +432,7 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
             ),
           ),
         ),
-        backgroundColor: Color(0xFF121217),
+        backgroundColor: Color(0xFF0F0F12),
       ),
       body: FutureBuilder<Map<String, List<dynamic>>>(
           future: _cachedData != null ? Future.value(_cachedData) : _fetchAssetsFuture,
@@ -442,7 +471,7 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
                 );
               }
               return Container(
-                color: Color(0xFF121217),
+                color: Color(0xFF0F0F12),
                 child: SafeArea(
                   child: SingleChildScrollView(
                     child: Column(
@@ -569,7 +598,7 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
                               child: Container(
                                 decoration: BoxDecoration(
                                   image: DecorationImage(
-                                    image: AssetImage('assets/page-1/images/pexels-steve-johnson-1655046970-29666286.HEIC'), // Replace with your background image path
+                                    image: AssetImage('assets/page-1/images/pexels-steve-johnson-1655046970-29666286.jpg'), // Replace with your background image path
                                     fit: BoxFit.cover,
                                   ),
                                 ),
@@ -586,7 +615,7 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
                                   padding: EdgeInsets.fromLTRB(16 * fem, 50 * fem, 0 * fem, 18 * fem),
                                   alignment: Alignment.centerLeft,  // Align the text to the left
                                   child: Text(
-                                    'Wedding Special',
+                                    'Sound Equipments',
                                     style: TextStyle(
                                       fontSize: 22 * ffem,
                                       fontWeight: FontWeight.w400,
@@ -610,32 +639,27 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
                                         margin: EdgeInsets.symmetric(horizontal: 6*fem),
                                         child: GestureDetector(
                                           onTap: () async {
-                                            // Parse the 'nav' field and ensure it's a List<String>.
-                                            List<String> skills = (artist['nav'] as String)
-                                                .split(',')
-                                                .map((s) => s.trim())
-                                                .toList()
-                                                .cast<String>();  // Ensure type safety.
+                                            if (artist != null && artist['nav'] != null) {
+                                              if (artist['nav'] == 'SoundSystem') {
+                                                // Navigate to CustomizeSoundSystemPage if 'nav' is 'sound system'
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) => CustomizeSoundSystemPage(),
+                                                  ),
+                                                );
+                                              } else {
+                                                // Otherwise, perform the search and navigate to SearchedArtist page
+                                                List<Map<String, dynamic>> filteredData = await searchArtists(artist['nav']);
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) => SearchedArtist(filteredArtistData: filteredData),
+                                                  ),
+                                                );
+                                              }
+                                            }
 
-// Join the skills back into a comma-separated string for the API call.
-                                            String skillQuery = skills.join(',');
-
-// Fetch the filtered artist data.
-                                            List<Map<String, dynamic>> filteredData = await searchArtists(skillQuery);
-                                            // Navigate to a new page on tap, passing the category data if needed
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) => SearchedArtist(filteredArtistData: filteredData),
-                                              ),
-                                            );
-                                            // String team_id = artist['id']; // Use artist ID if needed
-                                            // Navigator.push(
-                                            //   context,
-                                            //   MaterialPageRoute(
-                                            //     builder: (context) => ArtistProfile(artist_id: team_id),
-                                            //   ),
-                                            // );
                                           },
                                           child: Stack(
                                             children: [
@@ -733,21 +757,15 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
                                        String isteam= featuredArtist?[index]['team'] ?? '';
                                        print('isteam $isteam');
                                         // Navigate to the ArtistProfile screen
-                                        // Navigator.push(
-                                        //   context,
-                                        //   MaterialPageRoute(
-                                        //     builder: (context) =>
-                                        //         ArtistProfile(
-                                        //           artist_id: id.toString(), isteam : isteam ),
-                                        //   ),
-                                        // );
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
                                             builder: (context) =>
-                                                CustomizeSoundSystemPage(),
+                                                ArtistProfile(
+                                                  artist_id: id.toString(), isteam : isteam ),
                                           ),
                                         );
+
                                       },
                                       child: Container(
                                         margin: EdgeInsets.only(
@@ -835,15 +853,28 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
                                   // Handle the tap event here
                                 // String id = recommended?[index]['id'];
                                 // String isteam = recommended?[index]['isteam'];
-                                List<Map<String, dynamic>> filteredData =
-                                    await searchArtists(recommended?[index]['skill']);
-                                // Navigate to a new page on tap, passing the category data if needed
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => SearchedArtist(filteredArtistData: filteredData),
-                                  ),
-                                );
+                                  String skill = recommended?[index]['skill'];
+
+                                  if (skill != null) {
+                                    if (skill == 'SoundSystem') {
+                                      // Navigate to CustomizeSoundSystemPage if the skill is 'sound system'
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => CustomizeSoundSystemPage(),
+                                        ),
+                                      );
+                                    } else {
+                                      // Otherwise, search for artists based on the skill and navigate to SearchedArtist page
+                                      List<Map<String, dynamic>> filteredData = await searchArtists(skill);
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => SearchedArtist(filteredArtistData: filteredData),
+                                        ),
+                                      );
+                                    }
+                                  }
                                   // You can perform any action, like navigating to a details page
                                 },
                                 child: Container(
@@ -1035,12 +1066,111 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
                           ),
                         ),
 
+                        Container(
+                          padding: EdgeInsets.fromLTRB(12 * fem, 20 * fem,
+                              0 * fem, 0 * fem),
+                          child: Text(
+                            'New Section',
+                            style: TextStyle(
+                              fontSize: 22 * ffem,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          height: 430 * fem,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: newsection?.length,
+                            itemBuilder: (context, index) {
+                              return GestureDetector(
+                                onTap: () async {
+                                  // Handle the tap event here
+                                  // String id = recommended?[index]['id'];
+                                  // String isteam = recommended?[index]['isteam'];
+                                  String skill = newsection?[index]['nav'];
 
+                                  if (skill != null) {
+                                    if (skill == 'SoundSystem') {
+                                      // Navigate to CustomizeSoundSystemPage if the skill is 'sound system'
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => CustomizeSoundSystemPage(),
+                                        ),
+                                      );
+                                    } else {
+                                      // Otherwise, search for artists based on the skill and navigate to SearchedArtist page
+                                      List<Map<String, dynamic>> filteredData = await searchArtists(skill);
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => SearchedArtist(filteredArtistData: filteredData),
+                                        ),
+                                      );
+                                    }
+                                  }
+                                  // You can perform any action, like navigating to a details page
+                                },
+                                child: Container(
+                                  width: 300 * fem,
+                                  padding: EdgeInsets.fromLTRB(12 * fem, 16 * fem, 0 * fem, 16 * fem),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        margin: EdgeInsets.only(bottom: 12 * fem),
+                                        width: 305 * fem,
+                                        height: 313 * fem,
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(8 * fem),
+                                          child: newsection?[index]['type'] == 'image'
+                                              ? Image.asset(
+                                            newsection?[index]['url'],
+                                            fit: BoxFit.cover,
+                                          )
+                                              : CustomVideoPlayer(
+                                              source: newsection?[index]['url'],
+                                              isAsset: false),
+                                        ),
+                                      ),
+                                      Text(
+                                        newsection?[index]['subheading'],
+                                        style: TextStyle(
+                                          fontSize: 14 * ffem,
+                                          fontWeight: FontWeight.w500,
+                                          height: 1.5 * ffem / fem,
+                                          color: Color(0xFF9E9EB8),
+                                        ),
+                                      ),
+                                      SizedBox(height: 5),
+                                      Container(
+                                        width: 260 * fem,
+                                        // Set the desired width here
+                                        child: Text(
+                                          newsection?[index]['name'],
+                                          style: TextStyle(
+                                            fontSize: 18 * ffem,
+                                            fontWeight: FontWeight.w400,
+                                            height: 1.3625 * ffem / fem,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        SizedBox(height: 40),
                         Container(
                           height: 790*fem, // Full height for the container
                           decoration: BoxDecoration(
                             image: DecorationImage(
-                              image: AssetImage('assets/page-1/images/party.jpg'), // Background image
+                              image: AssetImage('assets/page-1/images/bulbs.jpg'), // Background image
                               fit: BoxFit.cover, // Adjust image to cover the container
                             ),
                           ),
@@ -1155,7 +1285,7 @@ class _Home_userState extends State<Home_user> with AutomaticKeepAliveClientMixi
                                 right: 0,
                                 child: Center(
                                   child: Text(
-                                    'HOMESTAGE',
+                                    'PRIMESTAGE',
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.w400,

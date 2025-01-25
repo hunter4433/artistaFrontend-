@@ -306,9 +306,9 @@ class _VerificationCodeInputScreenState
     if (userType == 'hire') {
       targetPage = ServiceCheckerPage();
     } else if (userType == 'solo_artist' || userType == 'team') {
-      // targetPage = BottomNavart(data: {});
-      // targetPage = artist_cred();
-      targetPage = team_info();
+       targetPage = BottomNavart(data: {});
+     //  targetPage = artist_cred();
+      //targetPage = team_info();
     } else {
       return; // Exit if no valid userType is found
     }

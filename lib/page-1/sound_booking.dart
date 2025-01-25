@@ -53,7 +53,7 @@ class _SoundBookingState extends State<sound_booking> {
   String? crowdSize;
   double? soundSystemPrice = 0.0;
   bool hasSoundSystem = true;
-
+  final storage = FlutterSecureStorage();
   late Map<String, dynamic> equipments;
   double? totalAmount = 0.0;
   String? selectedAudienceSize;
@@ -76,6 +76,7 @@ class _SoundBookingState extends State<sound_booking> {
   TextEditingController fromTimeController = TextEditingController();
   TextEditingController toTimeController = TextEditingController();
   String? selectedCategory;
+  String? razorpayKey;
   List<String> categories = [
     'House party',
     'Corporate event',
@@ -91,28 +92,152 @@ class _SoundBookingState extends State<sound_booking> {
   ]; // Replace with your actual categories
 
 
+  @override
+  void initState() {
+    super.initState();
+    razorpayKeyFetch();
+  }
+
+
+
+  //rzp_test_Hb4hFCm46361XC
+  void razorpayKeyFetch() async {
+
+    // Example URL, replace with your actual API endpoint
+    String apiUrl = '${Config().apiDomain}/razorpay/info';
+
+    try {
+      // Make PATCH request to the API
+      var response = await http.post(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/vnd.api+json',
+          'Accept': 'application/vnd.api+json',
+
+        },
+      );
+
+      // Check if request was successful (status code 200)
+      if (response.statusCode == 200) {
+        Map<String,dynamic> key=jsonDecode(response.body);
+        setState(() {
+          razorpayKey= key['razorpayKey'];
+        });
+        // User information saved successfully, handle response if needed
+        print('razorpaykey fetched successfully $razorpayKey');
+        // Example response handling
+        print('Response: ${response.body}');
+      } else {
+        // Request failed, handle error
+        print('Failed to fetch razorpaykey. Status code: ${response.statusCode}');
+        // Example error handling
+        print('Error response: ${response.body}');
+      }
+    } catch (e) {
+      // Handle network errors
+      print('Error fetching razorpaykey: $e');
+    }
+  }
+
+
+
+  void _saveUserInformation() async {
+
+    Future<String?> _getUserId() async {
+      return await storage.read(key: 'user_id');
+    }
+    String? id = await _getUserId();
+
+    print(id);
+    // Example URL, replace with your actual API endpoint
+    String apiUrl = '${Config().apiDomain}/info/$id';
+
+    // Prepare data to send to the backend
+    Map<String, dynamic> userData = {
+      'first_name': nameController.text,
+    };
+
+    try {
+      // Make PATCH request to the API
+      var response = await http.patch(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/vnd.api+json',
+          'Accept': 'application/vnd.api+json',
+
+        },
+        body: jsonEncode(userData),
+      );
+
+      // Check if request was successful (status code 200)
+      if (response.statusCode == 200) {
+        // User information saved successfully, handle response if needed
+        print('User information saved successfully');
+        // Example response handling
+        print('Response: ${response.body}');
+      } else {
+        // Request failed, handle error
+        print('Failed to save user information. Status code: ${response.statusCode}');
+        // Example error handling
+        print('Error response: ${response.body}');
+      }
+    } catch (e) {
+      // Handle network errors
+      print('Error saving user information: $e');
+    }
+  }
+
+
   double? calculateTotalPrice() {
     // Start with base sound system price
     double? totalPrice = soundSystemPrice;
 
-    // Check if selectedItems is not empty and not null
-    if (widget.selectedItems != null && widget.selectedItems.isNotEmpty) {
-      for (var item in widget.selectedItems) {
-        if (item.containsKey('price')) {
-          totalPrice = totalPrice! +(item['price'] ?? 0).toDouble();
+    if (widget.selectedkits != null && widget.selectedkits.isNotEmpty) {
+      for (var kit in widget.selectedkits) {
+        if (kit.containsKey('price')) {
+          try {
+            String priceString = kit['price'].toString();
+            if (priceString.contains('/per piece')) {
+              priceString = priceString.split('/per piece')[0];
+            }
+            print('mohit $priceString');
+            totalPrice = totalPrice! + double.parse(priceString);
+          } catch (e) {
+            print('Error parsing price: ${kit['price']}');
+            // Handle the error appropriately
+          }
         }
       }
     }
 
-    // Check if selectedkits is not empty and not null
-    if (widget.selectedkits != null && widget.selectedkits.isNotEmpty) {
-      for (var kit in widget.selectedkits) {
-        if (kit.containsKey('price')) {
-          totalPrice = totalPrice! + (kit['price'] ?? 0).toDouble();
+    if (widget.selectedItems != null && widget.selectedItems.isNotEmpty) {
+      for (var kit in widget.selectedItems) {
+        if (kit.containsKey('price') && kit.containsKey('quantity')) {
+          try {
+            // Extract and clean the price string
+            String priceString = kit['price'].toString();
+            if (priceString.contains('/per piece')) {
+              priceString = priceString.split('/per piece')[0];
+            }
+
+            // Parse the price to double
+            double price = double.parse(priceString.trim());
+
+            // Extract the quantity, ensuring it is a valid number
+            int quantity = int.tryParse(kit['quantity'].toString()) ?? 1;
+
+            // Calculate total price for the current item and add to totalPrice
+            totalPrice =  totalPrice! + price * quantity;
+          } catch (e) {
+            print('Error parsing price or quantity: ${e.toString()}');
+            // Handle the error appropriately
+          }
         }
       }
-      totalPrice= totalPrice! ;
     }
+      totalPrice = totalPrice!;
+
+
     // // Update netAmount state
     setState(() {
       netAmount = totalPrice;
@@ -131,21 +256,42 @@ class _SoundBookingState extends State<sound_booking> {
       DateTime fromTime = dateFormat.parse(selectedFromTimeBack!);
       DateTime toTime = dateFormat.parse(selectedToTimeBack!);
 
-      Duration duration = toTime.difference(fromTime);
-
-      if (duration.isNegative) {
-        // Handle the case when 'To' time is before 'From' time
-        duration = Duration.zero;
+      // If toTime is on the next day and before fromTime, add 24 hours to toTime
+      if (toTime.isBefore(fromTime)) {
+        toTime = toTime.add(Duration(days: 1));
       }
 
-      setState(() {
-        durationController.text =
-        "${duration.inHours} hours ${duration.inMinutes.remainder(60)} minutes";
-        hours = duration.inHours;
-        minutes = duration.inMinutes.remainder(60);
-      });
-      print(hours);
-      print(minutes);
+      Duration duration = toTime.difference(fromTime);
+
+      // Additional validation to ensure we don't get negative duration
+      if (duration.isNegative) {
+        // Reset times and show error
+        setState(() {
+          selectedFromTimeBack = null;
+          durationController.text = "Please select valid time range";
+          hours = 0;
+          minutes = 0;
+        });
+
+        // You might want to show a snackbar or alert to inform the user
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Please select a "From" time that is before the "To" time'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      } else {
+        // Valid duration - update the UI
+        setState(() {
+          durationController.text = "${duration.inHours} hours ${duration.inMinutes.remainder(60)} minutes";
+          hours = duration.inHours;
+          minutes = duration.inMinutes.remainder(60);
+        });
+      }
+
+      print('Hours: $hours');
+      print('Minutes: $minutes');
     }
   }
 
@@ -158,6 +304,7 @@ class _SoundBookingState extends State<sound_booking> {
 
     // Convert pricePerHour to double
     double pricePerHourDouble = double.tryParse(pricePerHour) ?? 0.0;
+
     // double? sound_price=sound_system_price?.toDouble();
     // Calculate the total amount
     double totalAmount = totalTimeInHours * pricePerHourDouble;
@@ -244,12 +391,12 @@ class _SoundBookingState extends State<sound_booking> {
 
     final String name = kit?['name'] ?? items?['name'] ?? '';
     final String image = kit?['image'] ?? items?['image'] ?? '';
-    final int price = kit?['price'] ?? items?['price'] ?? 0;
-    final bool hasMoreItems = (widget.selectedkits.length > 1 || widget.selectedItems.length > 1);
+    // final int price = kit?['price'] ?? items?['price'] ?? 0;
+    final bool hasMoreItems = (widget.selectedkits.length > 1 || widget.selectedItems.length > 1 || widget.selectedkits.length+widget.selectedItems.length > 1);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Book Sound Equipments Detail',
+        title: Text('Book  Equipments',
           style: SafeGoogleFont('Be Vietnam Pro', color: Colors.black,
               fontWeight: FontWeight.w500, fontSize: 21 * fem),
         ),
@@ -318,18 +465,18 @@ class _SoundBookingState extends State<sound_booking> {
                             color: Color(0xff1e0a11),
                           ),
                         ),
+
+                        // Text(
+                        //   '₹ $price' ,
+                        //   style: SafeGoogleFont(
+                        //     'Be Vietnam Pro',
+                        //     fontSize: 17 * ffem,
+                        //     fontWeight: FontWeight.w400,
+                        //     height: 1.5 * ffem / fem,
+                        //     color: Color(0xffa53a5e),
+                        //   ),
+                        // ),
                         SizedBox(height: 4),
-                        Text(
-                          '₹ $price' ,
-                          style: SafeGoogleFont(
-                            'Be Vietnam Pro',
-                            fontSize: 17 * ffem,
-                            fontWeight: FontWeight.w400,
-                            height: 1.5 * ffem / fem,
-                            color: Color(0xffa53a5e),
-                          ),
-                        ),
-                        SizedBox(height: 8),
                         // "+more" Icon
                         if (hasMoreItems)
                           GestureDetector(
@@ -401,6 +548,18 @@ class _SoundBookingState extends State<sound_booking> {
                               ],
                             ),
                           ),
+                        SizedBox(height: 4),
+                        Text(
+                          '₹${calculateTotalPrice()
+                              ?.toStringAsFixed(2)}' ,
+                          style: SafeGoogleFont(
+                            'Be Vietnam Pro',
+                            fontSize: 17 * ffem,
+                            fontWeight: FontWeight.w400,
+                            height: 1.5 * ffem / fem,
+                            color: Color(0xffa53a5e),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -735,6 +894,7 @@ class _SoundBookingState extends State<sound_booking> {
                                                     ''; // Update the text field
                                           });
                                         }
+                                        calculateDuration();
                                       },
                                       decoration: InputDecoration(
                                         contentPadding: EdgeInsets.symmetric(
@@ -1124,147 +1284,7 @@ class _SoundBookingState extends State<sound_booking> {
                                             SizedBox(height: 01.0),
                                             // Space between price and "See what's included"
                                             // See What's Included Row
-                                            Row(
-                                              mainAxisAlignment: MainAxisAlignment
-                                                  .start,
-                                              children: [
-                                                Text(
-                                                  'See what\'s included',
-                                                  style: TextStyle(
-                                                    fontSize: 15.0,
-                                                    fontWeight: FontWeight.w500,
-                                                    color: Colors
-                                                        .blue, // Highlighted color for visibility
-                                                  ),
-                                                ),
-                                                SizedBox(width: 8.0),
-                                                GestureDetector(
-                                                  onTap: () {
-                                                    // Show dialog box when icon is tapped
-                                                    showDialog(
-                                                      context: context,
-                                                      builder: (
-                                                          BuildContext context) {
-                                                        return AlertDialog(
-                                                          backgroundColor: Colors
-                                                              .white,
-                                                          // Dialog background remains white
-                                                          title: Text(
-                                                            'What\'s Included',
-                                                            style: TextStyle(
-                                                              fontSize: 20.0,
-                                                              fontWeight: FontWeight
-                                                                  .w500,
-                                                              color: Color(
-                                                                  0xFF121217), // Title text color matches your brand theme
-                                                            ),
-                                                          ),
-                                                          content: Builder(
-                                                              builder: (
-                                                                  context) {
-                                                                // Convert equipment map entries to formatted strings
-                                                                String equipmentList = '';
-                                                                if (equipments is Map<
-                                                                    String,
-                                                                    dynamic>) {
-                                                                  equipments
-                                                                      .forEach((
-                                                                      key,
-                                                                      value) {
-                                                                    // Skip the total_equipment_cost entry
-                                                                    if (key !=
-                                                                        'total_equipment_cost') {
-                                                                      // Format each equipment with its price
-                                                                      equipmentList +=
-                                                                      '- $key: ₹${value
-                                                                          .toString()}\n';
-                                                                    }
-                                                                  });
-                                                                }
-                                                                Map<String,
-                                                                    int> equipmentQuantities = {
-                                                                };
-                                                                if (widget
-                                                                    .selectedkits ==
-                                                                    null ||
-                                                                    widget
-                                                                        .selectedkits
-                                                                        .isEmpty) {
-                                                                  // Only add baseEquipment if selectedkits is empty or null
-                                                                  baseEquipment
-                                                                      ?.forEach((
-                                                                      key,
-                                                                      value) {
-                                                                    equipmentQuantities[key] =
-                                                                    value['quantity'];
-                                                                  });
-                                                                }
-                                                                // print(equipmentQuantities);
 
-                                                                return Text(
-
-                                                                  'Base Equipment: \n $equipmentQuantities \n\n'
-                                                                      'The sound system includes:\n\n$equipmentList\n\n'
-                                                                      'Selected Items:\n${widget
-                                                                      .selectedItems
-                                                                      .map((
-                                                                      item) =>
-                                                                  item['name'] ??
-                                                                      '').join(
-                                                                      ', ')}\n\n'
-                                                                      'Selected Kits:\n${widget
-                                                                      .selectedkits
-                                                                      .map((
-                                                                      kit) =>
-                                                                  kit['name'] ??
-                                                                      '').join(
-                                                                      ', ')}'
-                                                                  ,
-                                                                  style: TextStyle(
-                                                                    fontSize: 16.0,
-                                                                    color: Colors
-                                                                        .black,
-                                                                  ),
-                                                                );
-                                                              }
-                                                          ),
-                                                          actions: [
-                                                            TextButton(
-                                                              onPressed: () {
-                                                                Navigator.of(
-                                                                    context)
-                                                                    .pop(); // Close the dialog
-                                                              },
-                                                              child: Text(
-                                                                'Close',
-                                                                style: TextStyle(
-                                                                  color: Color(
-                                                                      0xFFE5195E),
-                                                                  // Brand color for button text
-                                                                  fontWeight: FontWeight
-                                                                      .bold,
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ],
-                                                          shape: RoundedRectangleBorder(
-                                                            borderRadius: BorderRadius
-                                                                .circular(
-                                                                12), // Rounded corners for dialog box
-                                                          ),
-                                                        );
-                                                      },
-                                                    );
-                                                  },
-                                                  child: Icon(
-                                                    Icons.info_outline,
-                                                    size: 20.0,
-                                                    color: Color(0xFFE5195E),
-                                                  ),
-                                                ),
-
-                                              ],
-                                            ),
                                           ],
                                         ),
 
@@ -1272,28 +1292,7 @@ class _SoundBookingState extends State<sound_booking> {
                                       SizedBox(height: 3.0),
 
                                       // Row for toggle button and message
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment
-                                            .spaceBetween,
-                                        children: [
-                                          Text(
-                                            'Have your own sound system?',
-                                            style: TextStyle(fontSize: 16.0,
-                                                fontStyle: FontStyle.italic),
-                                          ),
-                                          TextButton(
-                                            onPressed: toggleSoundSystem,
-                                            child: Text(
-                                              hasSoundSystem ? 'Remove' : 'Add',
-                                              style: TextStyle(
-                                                color: hasSoundSystem ? Colors
-                                                    .red : Colors.green,
-                                                fontSize: 16,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+
                                     ],
                                   ),
                                   SizedBox(height: 5.0),
@@ -1724,7 +1723,8 @@ class _SoundBookingState extends State<sound_booking> {
       String razorpayOrderId = response.orderId!;
       String razorpaySignature = response.signature!;
       String? bookingId;
-      // _saveUserInformation();
+      _saveUserInformation();
+
        try {
         bookingId = (await _saveBookingInformation()).toString();
          if (bookingId == null || bookingId.isEmpty) {

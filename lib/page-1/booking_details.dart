@@ -32,6 +32,7 @@ class _EventDetailsState extends State<EventDetails> {
   late Future<void> fetchFuture;
   String? audience_size;
   String? user_name;
+  String? phone_number;
 
 
 
@@ -131,10 +132,10 @@ class _EventDetailsState extends State<EventDetails> {
             booked_to=booking['booked_to'];
             user_id=booking['user_id'].toString();
             audience_size=booking['audience_size'];
-            user_name=booking['user_name'];
 
           });
         }
+        _saveUserInformation(user_id);
       } else {
         print('Booking fetch unsuccessful: ${response.body}');
       }
@@ -142,6 +143,56 @@ class _EventDetailsState extends State<EventDetails> {
       print('Error fetching booking details: $e');
     }
   }
+
+
+  void _saveUserInformation(String? user_id) async {
+
+    // Example URL, replace with your actual API endpoint
+    String apiUrl = '${Config().apiDomain}/info/$user_id';
+
+    // // Prepare data to send to the backend
+    // Map<String, dynamic> userData = {
+    //   'first_name': nameController.text,
+    // };
+
+    try {
+      // Make PATCH request to the API
+      var response = await http.get(
+        Uri.parse(apiUrl),
+        headers: <String, String>{
+          'Content-Type': 'application/vnd.api+json',
+          'Accept': 'application/vnd.api+json',
+
+        },
+        // body: jsonEncode(userData),
+      );
+
+      // Check if request was successful (status code 200)
+      if (response.statusCode == 200) {
+        Map<String, dynamic> userData = jsonDecode(response.body);
+        setState(() {
+        user_name=userData['first_name'];
+        phone_number=userData['phone_number'];
+        });
+        print(user_name);
+        // User information saved successfully, handle response if needed
+        print('User information saved successfully');
+        // Example response handling
+        print('Response: ${response.body}');
+      } else {
+        // Request failed, handle error
+        print('Failed to save user information. Status code: ${response.statusCode}');
+        // Example error handling
+        print('Error response: ${response.body}');
+      }
+    } catch (e) {
+      // Handle network errors
+      print('Error saving user information: $e');
+    }
+  }
+
+
+
 
   String calculateTotalAmount(String duration, String pricePerHour) {
     // Extract hours and minutes from the duration string
@@ -330,33 +381,70 @@ class _EventDetailsState extends State<EventDetails> {
     );
   }
 
-// Function to generate OTP
   Future<void> generateOtp(BuildContext context) async {
-    // Your OTP generation logic here
-    final String apiUrl = '${Config().apiDomain}/sms/user/$user_id'; // Replace with the correct API URL
+    String phoneNumber = phone_number!.trim();
+    if (phoneNumber.startsWith('+91')) {
+      phoneNumber = phoneNumber.substring(3).trim();
+    }
+    print(phoneNumber);
+    // Prepare the API request
+    final url = '${Config().apiDomain}/sms'; // Update this with your backend URL
+    final body = json.encode({
+      'numbers': phoneNumber,
+    });
 
     try {
-      final response = await http.get(
-        Uri.parse(apiUrl),
-        headers: {'Accept': 'application/json',
-        'Content-Type': 'application/json',},
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: body,
       );
-
+      print(response.statusCode );
+      // Handle the response
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
-         number = responseData['number']; // Display only in testing, remove in production
+        number = responseData['number']; // Display only in testing, remove in production
         _showSnackBar('OTP sent successfully! ');
+
       } else {
         print('error sending otp ');
         final errorMessage = jsonDecode(response.body)['response']['message'];
         print(errorMessage);
-        // _showSnackBar(errorMessage ?? 'Failed to send OTP');
       }
     } catch (e) {
       print(e);
-      // _showSnackBar('Error: $e');
+      _showSnackBar('Something went wrong: $e');
     }
   }
+// Function to generate OTP
+//   Future<void> generateOtp(BuildContext context) async {
+//     // Your OTP generation logic here
+//     final String apiUrl = '${Config().apiDomain}/sms/user/$user_id'; // Replace with the correct API URL
+//
+//     try {
+//       final response = await http.get(
+//         Uri.parse(apiUrl),
+//         headers: {'Accept': 'application/json',
+//         'Content-Type': 'application/json',},
+//       );
+//
+//       if (response.statusCode == 200) {
+//         final responseData = jsonDecode(response.body);
+//          number = responseData['number']; // Display only in testing, remove in production
+//         _showSnackBar('OTP sent successfully! ');
+//       } else {
+//         print('error sending otp ');
+//         final errorMessage = jsonDecode(response.body)['response']['message'];
+//         print(errorMessage);
+//         // _showSnackBar(errorMessage ?? 'Failed to send OTP');
+//       }
+//     } catch (e) {
+//       print(e);
+//       // _showSnackBar('Error: $e');
+//     }
+//   }
 
   // Function to display a Snackbar with the provided message
   void _showSnackBar(String message) {
@@ -409,7 +497,7 @@ class _EventDetailsState extends State<EventDetails> {
 
                     print('Entered OTP: $enteredOtp');
 
-                    bool verify = await _verifyOTP(enteredOtp);
+                    bool verify = await _verifyOTP(phone_number!, enteredOtp);
 
                     if (verify) {
                       _bookingCompleted(widget.bookingId);
@@ -418,7 +506,7 @@ class _EventDetailsState extends State<EventDetails> {
                       });
 
                       // Optionally close dialog after showing the tick for a short period
-                      await Future.delayed(Duration(seconds: 2));
+                      await Future.delayed(Duration(seconds: 1));
                       Navigator.of(context).pop();
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -486,27 +574,26 @@ class _EventDetailsState extends State<EventDetails> {
 // >>>>>>> 71fc5321e6356695c1a1f769543a7c429f07c784
     }
   }
-
-  Future<bool> _verifyOTP(String otpCode) async {
+  Future<bool> _verifyOTP(String phoneNumber, String otpCode) async {
     // Your backend endpoint that verifies the OTP via Twilio
-    final String url = '${Config().apiDomain}/verify/user';
+    final String url = '${Config().apiDomain}/verify';
     // String? userType = await _getSelectedValue();
-    // if (phoneNumber.startsWith('+91')) {
-    //   phoneNumber = phoneNumber.substring(3).trim();
-    // }
-    // print(phoneNumber);
+    if (phoneNumber.startsWith('+91')) {
+      phoneNumber = phoneNumber.substring(3).trim();
+    }
+    print(phoneNumber);
 
     final response = await http.post(
       Uri.parse(url),
       headers: {'Content-Type': 'application/vnd.api+json',
         'Accept': 'application/vnd.api+json'},
-      body: jsonEncode({'user_id': user_id, 'otp': otpCode}),
+      body: jsonEncode({'numbers': phoneNumber, 'otp': otpCode}),
     );
 
     if (response.statusCode == 200) {
       print('OTP verified successfully');
       // Navigate to the relevant home page
-
+      // _navigateToHome(userType);
       return true;
     } else {
       print('Failed to verify OTP: ${response.body}');
@@ -515,6 +602,35 @@ class _EventDetailsState extends State<EventDetails> {
     }
     return false;
   }
+
+  // Future<bool> _verifyOTP(String otpCode) async {
+  //   // Your backend endpoint that verifies the OTP via Twilio
+  //   final String url = '${Config().apiDomain}/verify/user';
+  //   // String? userType = await _getSelectedValue();
+  //   // if (phoneNumber.startsWith('+91')) {
+  //   //   phoneNumber = phoneNumber.substring(3).trim();
+  //   // }
+  //   // print(phoneNumber);
+  //
+  //   final response = await http.post(
+  //     Uri.parse(url),
+  //     headers: {'Content-Type': 'application/vnd.api+json',
+  //       'Accept': 'application/vnd.api+json'},
+  //     body: jsonEncode({'user_id': user_id, 'otp': otpCode}),
+  //   );
+  //
+  //   if (response.statusCode == 200) {
+  //     print('OTP verified successfully');
+  //     // Navigate to the relevant home page
+  //
+  //     return true;
+  //   } else {
+  //     print('Failed to verify OTP: ${response.body}');
+  //     return false;
+  //     _showSnackBar('Invalid OTP. Please try again.');
+  //   }
+  //   return false;
+  // }
 
 
   Widget _buildInfoSection({required String title, required String info}) {

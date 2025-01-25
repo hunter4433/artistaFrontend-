@@ -14,9 +14,6 @@ import 'package:test1/page-1/party_addons.dart';
 import 'package:test1/page-1/phone_varification.dart';
 import 'package:test1/page-1/review.dart';
 
-import 'package:test1/page-1/sign_in.dart';
-import 'package:test1/page-1/skills_artist.dart';
-import 'package:test1/page-1/skjs.dart';
 
 import '../config.dart';
 import '../utils.dart';
@@ -243,9 +240,10 @@ print(' data is $userData');
                 onPressed: () async {
                   bool flag= await logout();
                   if (flag) {
-                    Navigator.push(
+                    Navigator.pushAndRemoveUntil(
                       context,
                       MaterialPageRoute(builder: (context) => Scene1()),
+                            (route) => false,
                     );
                   }else{
                     // You can also show a snackbar or dialog here to notify the user of the error
@@ -617,7 +615,7 @@ print(' data is $userData');
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => CustomizeSoundSystemPage()),
+                      MaterialPageRoute(builder: (context) => SupportScreen()),
                     );
                   },
                   child: Container(
